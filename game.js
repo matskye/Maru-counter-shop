@@ -13,6 +13,22 @@ const shelfDiv = document.getElementById("shelf");
 const counterDiv = document.getElementById("counter");
 const reactionDiv = document.getElementById("maruReaction");
 
+let japaneseVoice = null;
+
+function initVoices() {
+  if (!('speechSynthesis' in window)) return;
+
+  const setVoice = () => {
+    const voices = window.speechSynthesis.getVoices();
+    japaneseVoice = voices.find(voice => voice.lang && voice.lang.toLowerCase().startsWith('ja')) || null;
+  };
+
+  setVoice();
+  window.speechSynthesis.addEventListener('voiceschanged', setVoice);
+}
+
+initVoices();
+
 // Load JSON
 fetch("data/counters.json")
   .then(res => res.json())
@@ -25,7 +41,11 @@ function speakJapanese(text) {
   if (!voiceEnabled) return;
   if ('speechSynthesis' in window) {
     const utter = new SpeechSynthesisUtterance(text);
+    if (japaneseVoice) {
+      utter.voice = japaneseVoice;
+    }
     utter.lang = 'ja-JP';
+    window.speechSynthesis.cancel();
     speechSynthesis.speak(utter);
   }
 }
@@ -82,6 +102,8 @@ function renderShelf(items) {
     });
     shelfDiv.appendChild(div);
   });
+
+  syncCounterItemSize();
 }
 
 function populateShelfForRequest(request) {
@@ -120,6 +142,7 @@ counterDiv.addEventListener("drop", e => {
   const data = JSON.parse(e.dataTransfer.getData("text/plain"));
   const hint = counterDiv.querySelector(".drop-hint");
   if (hint) hint.remove();
+  counterDiv.classList.add("has-items");
   const div = document.createElement("div");
   div.className = "item";
   const item = gameData.counters
@@ -132,13 +155,16 @@ counterDiv.addEventListener("drop", e => {
     div.remove();
     if (!counterDiv.querySelector(".item")) {
       counterDiv.innerHTML = '<span class="drop-hint">Drag items here</span>';
+      counterDiv.classList.remove("has-items");
     }
   });
   counterDiv.appendChild(div);
+  syncCounterItemSize();
 });
 
 function clearCounter() {
   counterDiv.innerHTML = '<span class="drop-hint">Drag items here</span>';
+  counterDiv.classList.remove("has-items");
 }
 
 // Done button
@@ -211,6 +237,9 @@ furiganaCheckbox.addEventListener("change", () => {
 voiceCheckbox.addEventListener("change", () => {
   voiceEnabled = voiceCheckbox.checked;
   localStorage.setItem("voiceEnabled", voiceEnabled);
+  if (voiceEnabled && currentRequest) {
+    speakJapanese(getCounterReading(currentRequest.counterObj, currentRequest.number) + "ください。");
+  }
 });
 
 window.addEventListener("click", (event) => {
@@ -218,3 +247,20 @@ window.addEventListener("click", (event) => {
     settingsModal.style.display = "none";
   }
 });
+
+function getShelfItemSize() {
+  const shelfItem = shelfDiv.querySelector('.item');
+  if (!shelfItem) return null;
+  return shelfItem.getBoundingClientRect().width;
+}
+
+function syncCounterItemSize() {
+  const size = getShelfItemSize();
+  if (!size) return;
+  counterDiv.querySelectorAll('.item').forEach(item => {
+    item.style.width = `${size}px`;
+    item.style.height = `${size}px`;
+  });
+}
+
+window.addEventListener('resize', syncCounterItemSize);
