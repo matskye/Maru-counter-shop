@@ -62,6 +62,9 @@ fetch("data/counters.json")
   .then(res => res.json())
   .then(data => {
     gameData = data;
+    if (!currentRequest) {
+      newCustomer();
+    }
   });
 
 // Speak Japanese if voice enabled
@@ -130,6 +133,7 @@ function randomRequest() {
 }
 
 function newCustomer() {
+  if (!gameData || !gameData.counters) return;
   currentRequest = randomRequest();
   updateCustomerText();
   clearCounter();
@@ -250,23 +254,57 @@ function clearCounter() {
   counterDiv.classList.remove("has-items");
 }
 
+function updateCounterItemCount(counterItem, count) {
+  const badge = counterItem.querySelector('.item-count');
+  if (badge) {
+    badge.textContent = `x${count}`;
+  }
+  counterItem.title = count > 1
+    ? `Click to remove one (x${count})`
+    : "Click to remove";
+}
+
 function addItemToCounter(item, counterObj) {
   if (!item || !counterObj) return;
   const hint = counterDiv.querySelector(".drop-hint");
   if (hint) hint.remove();
   counterDiv.classList.add("has-items");
+  const existingItem = counterDiv.querySelector(`.item[data-item-id="${item.id}"][data-counter="${counterObj.counter}"]`);
+  if (existingItem) {
+    const newCount = parseInt(existingItem.dataset.count || "1", 10) + 1;
+    existingItem.dataset.count = String(newCount);
+    updateCounterItemCount(existingItem, newCount);
+    return;
+  }
+
   const div = document.createElement("div");
   div.className = "item";
   div.style.backgroundImage = `url(${item.image})`;
   div.dataset.itemId = item.id;
   div.dataset.counter = counterObj.counter;
+  div.dataset.count = "1";
+
+  const countBadge = document.createElement("span");
+  countBadge.className = "item-count";
+  countBadge.textContent = "x1";
+  div.appendChild(countBadge);
+
   div.addEventListener("click", () => {
-    div.remove();
-    if (!counterDiv.querySelector(".item")) {
-      clearCounter();
+    const currentCount = parseInt(div.dataset.count || "1", 10);
+    if (currentCount <= 1) {
+      div.remove();
+      if (!counterDiv.querySelector(".item")) {
+        clearCounter();
+      }
+      return;
     }
+    const nextCount = currentCount - 1;
+    div.dataset.count = String(nextCount);
+    updateCounterItemCount(div, nextCount);
   });
+
   counterDiv.appendChild(div);
+  updateCounterItemCount(div, 1);
   syncCounterItemSize();
 }
 
@@ -275,7 +313,8 @@ document.getElementById("doneBtn").addEventListener("click", () => {
   if (!currentRequest) return;
 
   const items = [...counterDiv.querySelectorAll(".item")];
-  const correctNumber = items.length === currentRequest.number;
+  const totalCount = items.reduce((sum, el) => sum + parseInt(el.dataset.count || "1", 10), 0);
+  const correctNumber = totalCount === currentRequest.number;
   const correctCategory = items.every(p => p.dataset.counter === currentRequest.counterObj.counter);
 
   if (correctNumber && correctCategory) {
