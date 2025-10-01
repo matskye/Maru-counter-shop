@@ -12,6 +12,7 @@ const customerDiv = document.getElementById("customer");
 const shelfDiv = document.getElementById("shelf");
 const counterDiv = document.getElementById("counter");
 const reactionDiv = document.getElementById("maruReaction");
+const COUNTER_HINT_HTML = '<span class="drop-hint">Drag or click items to add</span>';
 
 let japaneseVoice = null;
 
@@ -94,11 +95,15 @@ function renderShelf(items) {
     div.dataset.itemId = item.id;
     div.dataset.counter = counter.counter;
     div.draggable = true;
+    div.title = "Click or drag to add to the counter";
     div.addEventListener("dragstart", e => {
       e.dataTransfer.setData("text/plain", JSON.stringify({
         id: item.id,
         counter: counter.counter
       }));
+    });
+    div.addEventListener("click", () => {
+      addItemToCounter(item, counter);
     });
     shelfDiv.appendChild(div);
   });
@@ -139,32 +144,45 @@ function populateShelfForRequest(request) {
 counterDiv.addEventListener("dragover", e => e.preventDefault());
 counterDiv.addEventListener("drop", e => {
   e.preventDefault();
-  const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+  if (!gameData) return;
+  const rawData = e.dataTransfer.getData("text/plain");
+  if (!rawData) return;
+  let data;
+  try {
+    data = JSON.parse(rawData);
+  } catch (err) {
+    return;
+  }
+  const counterObj = gameData.counters.find(c => c.counter === data.counter);
+  if (!counterObj) return;
+  const item = counterObj.items.find(i => i.id === data.id);
+  if (!item) return;
+  addItemToCounter(item, counterObj);
+});
+
+function clearCounter() {
+  counterDiv.innerHTML = COUNTER_HINT_HTML;
+  counterDiv.classList.remove("has-items");
+}
+
+function addItemToCounter(item, counterObj) {
+  if (!item || !counterObj) return;
   const hint = counterDiv.querySelector(".drop-hint");
   if (hint) hint.remove();
   counterDiv.classList.add("has-items");
   const div = document.createElement("div");
   div.className = "item";
-  const item = gameData.counters
-    .find(c => c.counter === data.counter)
-    .items.find(i => i.id === data.id);
   div.style.backgroundImage = `url(${item.image})`;
-  div.dataset.itemId = data.id;
-  div.dataset.counter = data.counter;
+  div.dataset.itemId = item.id;
+  div.dataset.counter = counterObj.counter;
   div.addEventListener("click", () => {
     div.remove();
     if (!counterDiv.querySelector(".item")) {
-      counterDiv.innerHTML = '<span class="drop-hint">Drag items here</span>';
-      counterDiv.classList.remove("has-items");
+      clearCounter();
     }
   });
   counterDiv.appendChild(div);
   syncCounterItemSize();
-});
-
-function clearCounter() {
-  counterDiv.innerHTML = '<span class="drop-hint">Drag items here</span>';
-  counterDiv.classList.remove("has-items");
 }
 
 // Done button
