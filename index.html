@@ -6,25 +6,39 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Maru's Counter Shop</h1>
+  <div class="app-shell">
+    <header class="app-header">
+      <h1>Maru's Counter Shop</h1>
+      <p class="subtitle">Master Japanese counters with a friendly feline coach.</p>
+    </header>
 
-  <div id="game">
-    <div id="customer">「---」</div>
+    <main id="game" class="game-panel">
+      <section class="customer-card">
+        <div id="customer" class="speech-bubble">「---」</div>
+        <div id="maruReaction" class="reaction"></div>
+      </section>
 
-    <div id="shelf"></div>
+      <section class="play-area">
+        <div class="panel">
+          <h2 class="section-title">Shelf</h2>
+          <div id="shelf" class="shelf-grid"></div>
+        </div>
 
-    <div id="counter" class="dropzone">
-      <p>Drop items here</p>
-    </div>
+        <div class="panel">
+          <h2 class="section-title">Counter</h2>
+          <div id="counter" class="dropzone">
+            <span class="drop-hint">Drag items here</span>
+          </div>
+        </div>
+      </section>
 
-    <div id="controls">
-      <button id="doneBtn">Done!</button>
-      <button id="startPractice">Practice Mode</button>
-      <button id="startChallenge">Challenge Mode</button>
-      <button id="settingsBtn">⚙️ Settings</button>
-    </div>
-
-    <div id="maruReaction"></div>
+      <section id="controls" class="controls">
+        <button id="doneBtn" class="primary">Done!</button>
+        <button id="startPractice">Practice Mode</button>
+        <button id="startChallenge">Challenge Mode</button>
+        <button id="settingsBtn" class="ghost">⚙️ Settings</button>
+      </section>
+    </main>
   </div>
 
   <!-- Settings modal -->
