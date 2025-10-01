@@ -91,6 +91,8 @@ counterDiv.addEventListener("dragover", e => e.preventDefault());
 counterDiv.addEventListener("drop", e => {
   e.preventDefault();
   const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+  const hint = counterDiv.querySelector(".drop-hint");
+  if (hint) hint.remove();
   const div = document.createElement("div");
   div.className = "item";
   const item = gameData.counters
@@ -103,7 +105,7 @@ counterDiv.addEventListener("drop", e => {
 });
 
 function clearCounter() {
-  counterDiv.innerHTML = "<p>Drop items here</p>";
+  counterDiv.innerHTML = '<span class="drop-hint">Drag items here</span>';
 }
 
 // Done button
@@ -158,7 +160,7 @@ const voiceCheckbox = document.getElementById("voiceCheckbox");
 const closeSettings = document.getElementById("closeSettings");
 
 settingsBtn.addEventListener("click", () => {
-  settingsModal.style.display = "block";
+  settingsModal.style.display = "flex";
   furiganaCheckbox.checked = showFurigana;
   voiceCheckbox.checked = voiceEnabled;
 });
