@@ -14,8 +14,32 @@ const counterDiv = document.getElementById("counter");
 const reactionDiv = document.getElementById("maruReaction");
 const feedbackDiv = document.getElementById("feedback");
 const counterHintDiv = document.getElementById("counterHint");
+const hintToggleBtn = document.getElementById("toggleHintBtn");
 const replayVoiceBtn = document.getElementById("replayVoiceBtn");
 const COUNTER_HINT_HTML = '<span class="drop-hint">Drag or click items to add</span>';
+
+let hintVisible = false;
+
+const HINT_SHOW_LABEL = "💡 Show hint";
+const HINT_HIDE_LABEL = "🙈 Hide hint";
+
+function setHintVisibility(visible) {
+  const canShow = counterHintDiv && counterHintDiv.innerHTML.trim().length > 0;
+  hintVisible = Boolean(visible && canShow);
+  if (counterHintDiv) {
+    counterHintDiv.hidden = !hintVisible;
+  }
+  if (hintToggleBtn) {
+    hintToggleBtn.textContent = hintVisible ? HINT_HIDE_LABEL : HINT_SHOW_LABEL;
+    hintToggleBtn.setAttribute("aria-expanded", hintVisible ? "true" : "false");
+  }
+}
+
+function updateHintButtonState() {
+  if (!hintToggleBtn) return;
+  const hasHint = Boolean(currentRequest);
+  hintToggleBtn.disabled = !hasHint;
+}
 
 let japaneseVoice = null;
 
@@ -74,6 +98,8 @@ function updateCounterHint() {
   if (!counterHintDiv) return;
   if (!currentRequest) {
     counterHintDiv.textContent = "";
+    setHintVisibility(false);
+    updateHintButtonState();
     return;
   }
   const { counterObj } = currentRequest;
@@ -82,6 +108,10 @@ function updateCounterHint() {
     .map(item => item.label_en)
     .join(", ");
   counterHintDiv.innerHTML = `Counter <strong>「${counterObj.counter}」</strong> is used for <strong>${counterObj.category}</strong>. Try things like ${examples}.`;
+  updateHintButtonState();
+  if (!hintVisible) {
+    counterHintDiv.hidden = true;
+  }
 }
 
 // Get correct reading (handles irregular)
@@ -110,6 +140,7 @@ function newCustomer() {
   populateShelfForRequest(currentRequest);
   speakJapanese(getPromptSpeechText(currentRequest));
   updateCounterHint();
+  setHintVisibility(false);
   updateReplayButtonState();
 }
 
@@ -129,6 +160,15 @@ if (replayVoiceBtn) {
     if (!currentRequest) return;
     speakJapanese(getPromptSpeechText(currentRequest));
   });
+}
+
+if (hintToggleBtn && counterHintDiv) {
+  hintToggleBtn.addEventListener("click", () => {
+    if (!currentRequest) return;
+    setHintVisibility(!hintVisible);
+  });
+  hintToggleBtn.textContent = HINT_SHOW_LABEL;
+  hintToggleBtn.setAttribute("aria-controls", "counterHint");
 }
 
 function renderShelf(items) {
