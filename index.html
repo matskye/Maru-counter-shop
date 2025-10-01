@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Maru's Counter Shop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Maru's Counter Shop</h1>
+
+  <div id="game">
+    <div id="customer">「---」</div>
+
+    <div id="shelf"></div>
+
+    <div id="counter" class="dropzone">
+      <p>Drop items here</p>
+    </div>
+
+    <div id="controls">
+      <button id="doneBtn">Done!</button>
+      <button id="startPractice">Practice Mode</button>
+      <button id="startChallenge">Challenge Mode</button>
+      <button id="settingsBtn">⚙️ Settings</button>
+    </div>
+
+    <div id="maruReaction"></div>
+  </div>
+
+  <!-- Settings modal -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <h2>Settings</h2>
+      <label>
+        <input type="checkbox" id="furiganaCheckbox"> Show Furigana
+      </label>
+      <br>
+      <label>
+        <input type="checkbox" id="voiceCheckbox"> Enable Voice
+      </label>
+      <br><br>
+      <button id="closeSettings">Close</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
