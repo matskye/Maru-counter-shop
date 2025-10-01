@@ -18,7 +18,6 @@ fetch("data/counters.json")
   .then(res => res.json())
   .then(data => {
     gameData = data;
-    populateShelf();
   });
 
 // Speak Japanese if voice enabled
@@ -51,6 +50,7 @@ function newCustomer() {
   updateCustomerText();
   clearCounter();
   reactionDiv.innerHTML = "";
+  populateShelfForRequest(currentRequest);
   speakJapanese(getCounterReading(currentRequest.counterObj, currentRequest.number) + "ください。");
 }
 
@@ -65,25 +65,52 @@ function updateCustomerText() {
   }
 }
 
-function populateShelf() {
+function renderShelf(items) {
   shelfDiv.innerHTML = "";
-  gameData.counters.forEach(c => {
-    c.items.forEach(item => {
-      const div = document.createElement("div");
-      div.className = "item";
-      div.style.backgroundImage = `url(${item.image})`;
-      div.dataset.itemId = item.id;
-      div.dataset.counter = c.counter;
-      div.draggable = true;
-      div.addEventListener("dragstart", e => {
-        e.dataTransfer.setData("text/plain", JSON.stringify({
-          id: item.id,
-          counter: c.counter
-        }));
-      });
-      shelfDiv.appendChild(div);
+  items.forEach(({ item, counter }) => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.style.backgroundImage = `url(${item.image})`;
+    div.dataset.itemId = item.id;
+    div.dataset.counter = counter.counter;
+    div.draggable = true;
+    div.addEventListener("dragstart", e => {
+      e.dataTransfer.setData("text/plain", JSON.stringify({
+        id: item.id,
+        counter: counter.counter
+      }));
+    });
+    shelfDiv.appendChild(div);
+  });
+}
+
+function populateShelfForRequest(request) {
+  if (!gameData) return;
+
+  const allItems = [];
+  gameData.counters.forEach(counter => {
+    counter.items.forEach(item => {
+      allItems.push({ item, counter });
     });
   });
+
+  const selectedItems = [{ item: request.item, counter: request.counterObj }];
+
+  const remainingItems = allItems.filter(({ item, counter }) => {
+    return !(counter.counter === request.counterObj.counter && item.id === request.item.id);
+  });
+
+  while (selectedItems.length < 6 && remainingItems.length) {
+    const index = Math.floor(Math.random() * remainingItems.length);
+    selectedItems.push(remainingItems.splice(index, 1)[0]);
+  }
+
+  for (let i = selectedItems.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [selectedItems[i], selectedItems[j]] = [selectedItems[j], selectedItems[i]];
+  }
+
+  renderShelf(selectedItems);
 }
 
 // Dropzone logic
@@ -101,6 +128,12 @@ counterDiv.addEventListener("drop", e => {
   div.style.backgroundImage = `url(${item.image})`;
   div.dataset.itemId = data.id;
   div.dataset.counter = data.counter;
+  div.addEventListener("click", () => {
+    div.remove();
+    if (!counterDiv.querySelector(".item")) {
+      counterDiv.innerHTML = '<span class="drop-hint">Drag items here</span>';
+    }
+  });
   counterDiv.appendChild(div);
 });
 
