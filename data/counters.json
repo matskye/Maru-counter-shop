@@ -1,6 +1,6 @@
 {
   "meta": {
-    "assetBasePath": "assets",
+    "assetBasePath": "data/assets",
     "imageFormat": "png",
     "version": 3,
     "ui": {
@@ -20,11 +20,11 @@
         "default": "{n}さつ"
       },
       "category": "bound volumes",
-      "icon": "assets/counters/counter_satsu.png",
+      "icon": "data/assets/counters/satsu.png",
       "items": [
-        { "id": "book",      "label_en": "book",      "label_ja": "本",   "image": "assets/items/book/book.png" },
-        { "id": "magazine",  "label_en": "magazine",  "label_ja": "雑誌", "image": "assets/items/magazine/magazine.png" },
-        { "id": "notebook",  "label_en": "notebook",  "label_ja": "ノート","image": "assets/items/notebook/notebook.png" }
+        { "id": "book",      "label_en": "book",      "label_ja": "本",   "image": "data/assets/items/book/book.png" },
+        { "id": "magazine",  "label_en": "magazine",  "label_ja": "雑誌", "image": "data/assets/items/magazine/magazine.png" },
+        { "id": "notebook",  "label_en": "notebook",  "label_ja": "ノート","image": "data/assets/items/notebook/notebook.png" }
       ]
     },
     {
@@ -39,11 +39,11 @@
         "default": "{n}ひき"
       },
       "category": "small animals",
-      "icon": "assets/counters/counter_hiki.png",
+      "icon": "data/assets/counters/hiki.png",
       "items": [
-        { "id": "cat",   "label_en": "cat",   "label_ja": "猫", "image": "assets/items/cat/cat.png" },
-        { "id": "dog",   "label_en": "dog",   "label_ja": "犬", "image": "assets/items/dog/dog.png" },
-        { "id": "fish",  "label_en": "fish",  "label_ja": "魚", "image": "assets/items/fish/fish.png" }
+        { "id": "cat",   "label_en": "cat",   "label_ja": "猫", "image": "data/assets/items/cat/cat.png" },
+        { "id": "dog",   "label_en": "dog",   "label_ja": "犬", "image": "data/assets/items/dog/dog.png" },
+        { "id": "fish",  "label_en": "fish",  "label_ja": "魚", "image": "data/assets/items/fish/fish.png" }
       ]
     },
     {
@@ -58,11 +58,11 @@
         "default": "{n}ほん"
       },
       "category": "long cylindrical objects",
-      "icon": "assets/counters/counter_hon.png",
+      "icon": "data/assets/counters/hon.png",
       "items": [
-        { "id": "carrot", "label_en": "carrot", "label_ja": "にんじん", "image": "assets/items/carrot/carrot.png" },
-        { "id": "bottle", "label_en": "bottle", "label_ja": "ボトル",   "image": "assets/items/bottle/bottle.png" },
-        { "id": "pencil", "label_en": "pencil", "label_ja": "えんぴつ", "image": "assets/items/pencil/pencil.png" }
+        { "id": "carrot", "label_en": "carrot", "label_ja": "にんじん", "image": "data/assets/items/carrot/carrot.png" },
+        { "id": "bottle", "label_en": "bottle", "label_ja": "ボトル",   "image": "data/assets/items/bottle/bottle.png" },
+        { "id": "pencil", "label_en": "pencil", "label_ja": "えんぴつ", "image": "data/assets/items/pencil/pencil.png" }
       ]
     },
     {
@@ -70,11 +70,11 @@
       "reading": "まい",
       "irregular": { "default": "{n}まい" },
       "category": "flat objects",
-      "icon": "assets/counters/counter_mai.png",
+      "icon": "data/assets/counters/mai.png",
       "items": [
-        { "id": "paper",       "label_en": "sheet of paper", "label_ja": "紙",         "image": "assets/items/paper/paper.png" },
-        { "id": "cd",          "label_en": "CD",             "label_ja": "CD",         "image": "assets/items/cd/cd.png" },
-        { "id": "pizza_slice", "label_en": "pizza slice",    "label_ja": "ピザスライス","image": "assets/items/pizza_slice/pizza_slice.png" }
+        { "id": "paper",       "label_en": "sheet of paper", "label_ja": "紙",         "image": "data/assets/items/paper/paper.png" },
+        { "id": "cd",          "label_en": "CD",             "label_ja": "CD",         "image": "data/assets/items/cd/cd.png" },
+        { "id": "pizza_slice", "label_en": "pizza slice",    "label_ja": "ピザスライス","image": "data/assets/items/pizza_slice/pizza_slice.png" }
       ]
     },
     {
@@ -82,11 +82,11 @@
       "reading": "だい",
       "irregular": { "default": "{n}だい" },
       "category": "machines/vehicles",
-      "icon": "assets/counters/counter_dai.png",
+      "icon": "data/assets/counters/dai.png",
       "items": [
-        { "id": "car",        "label_en": "car",        "label_ja": "車",       "image": "assets/items/car/car.png" },
-        { "id": "computer",   "label_en": "computer",   "label_ja": "コンピューター","image": "assets/items/computer/computer.png" },
-        { "id": "game_console","label_en": "game console","label_ja": "ゲーム機","image": "assets/items/game_console/game_console.png" }
+        { "id": "car",        "label_en": "car",        "label_ja": "車",       "image": "data/assets/items/car/car.png" },
+        { "id": "computer",   "label_en": "computer",   "label_ja": "コンピューター","image": "data/assets/items/computer/computer.png" },
+        { "id": "game_console","label_en": "game console","label_ja": "ゲーム機","image": "data/assets/items/game_console/game_console.png" }
       ]
     },
     {
@@ -94,11 +94,11 @@
       "reading": "こ",
       "irregular": { "default": "{n}こ" },
       "category": "small general objects",
-      "icon": "assets/counters/counter_ko.png",
+      "icon": "data/assets/counters/ko.png",
       "items": [
-        { "id": "apple",  "label_en": "apple",  "label_ja": "りんご", "image": "assets/items/apple/apple.png" },
-        { "id": "egg",    "label_en": "egg",    "label_ja": "卵",     "image": "assets/items/egg/egg.png" },
-        { "id": "orange", "label_en": "orange", "label_ja": "オレンジ","image": "assets/items/orange/orange.png" }
+        { "id": "apple",  "label_en": "apple",  "label_ja": "りんご", "image": "data/assets/items/apple/apple.png" },
+        { "id": "egg",    "label_en": "egg",    "label_ja": "卵",     "image": "data/assets/items/egg/egg.png" },
+        { "id": "orange", "label_en": "orange", "label_ja": "オレンジ","image": "data/assets/items/orange/orange.png" }
       ]
     },
     {
@@ -110,9 +110,9 @@
         "default": "{n}にん"
       },
       "category": "people",
-      "icon": "assets/counters/counter_nin.png",
+      "icon": "data/assets/counters/nin.png",
       "items": [
-        { "id": "person", "label_en": "person", "label_ja": "人", "image": "assets/items/person/person.png" }
+        { "id": "person", "label_en": "person", "label_ja": "人", "image": "data/assets/items/person/person.png" }
       ]
     },
     {
@@ -124,11 +124,11 @@
         "default": "{n}わ"
       },
       "category": "birds/rabbits",
-      "icon": "assets/counters/counter_wa.png",
+      "icon": "data/assets/counters/wa.png",
       "items": [
-        { "id": "bird",    "label_en": "bird",    "label_ja": "鳥",   "image": "assets/items/bird/bird.png" },
-        { "id": "rabbit",  "label_en": "rabbit",  "label_ja": "うさぎ","image": "assets/items/rabbit/rabbit.png" },
-        { "id": "chicken", "label_en": "chicken", "label_ja": "鶏",   "image": "assets/items/chicken/chicken.png" }
+        { "id": "bird",    "label_en": "bird",    "label_ja": "鳥",   "image": "data/assets/items/bird/bird.png" },
+        { "id": "rabbit",  "label_en": "rabbit",  "label_ja": "うさぎ","image": "data/assets/items/rabbit/rabbit.png" },
+        { "id": "chicken", "label_en": "chicken", "label_ja": "鶏",   "image": "data/assets/items/chicken/chicken.png" }
       ]
     },
     {
@@ -136,11 +136,11 @@
       "reading": "とう",
       "irregular": { "default": "{n}とう" },
       "category": "large animals",
-      "icon": "assets/counters/counter_tou.png",
+      "icon": "data/assets/counters/tou.png",
       "items": [
-        { "id": "cow",     "label_en": "cow",     "label_ja": "牛", "image": "assets/items/cow/cow.png" },
-        { "id": "horse",   "label_en": "horse",   "label_ja": "馬", "image": "assets/items/horse/horse.png" },
-        { "id": "elephant","label_en": "elephant","label_ja": "象", "image": "assets/items/elephant/elephant.png" }
+        { "id": "cow",     "label_en": "cow",     "label_ja": "牛", "image": "data/assets/items/cow/cow.png" },
+        { "id": "horse",   "label_en": "horse",   "label_ja": "馬", "image": "data/assets/items/horse/horse.png" },
+        { "id": "elephant","label_en": "elephant","label_ja": "象", "image": "data/assets/items/elephant/elephant.png" }
       ]
     },
     {
@@ -155,11 +155,11 @@
         "default": "{n}はい"
       },
       "category": "cups/glasses of liquid",
-      "icon": "assets/counters/counter_hai.png",
+      "icon": "data/assets/counters/hai.png",
       "items": [
-        { "id": "tea_cup",    "label_en": "cup of tea",    "label_ja": "お茶",   "image": "assets/items/tea_cup/tea_cup.png" },
-        { "id": "beer_glass", "label_en": "glass of beer", "label_ja": "ビール", "image": "assets/items/beer_glass/beer_glass.png" },
-        { "id": "coffee_cup", "label_en": "cup of coffee", "label_ja": "コーヒー","image": "assets/items/coffee_cup/coffee_cup.png" }
+        { "id": "tea_cup",    "label_en": "cup of tea",    "label_ja": "お茶",   "image": "data/assets/items/tea_cup/tea_cup.png" },
+        { "id": "beer_glass", "label_en": "glass of beer", "label_ja": "ビール", "image": "data/assets/items/beer_glass/beer_glass.png" },
+        { "id": "coffee_cup", "label_en": "cup of coffee", "label_ja": "コーヒー","image": "data/assets/items/coffee_cup/coffee_cup.png" }
       ]
     },
     {
@@ -167,11 +167,11 @@
       "reading": "ちゃく",
       "irregular": { "default": "{n}ちゃく" },
       "category": "clothing",
-      "icon": "assets/counters/counter_chaku.png",
+      "icon": "data/assets/counters/chaku.png",
       "items": [
-        { "id": "shirt", "label_en": "shirt", "label_ja": "シャツ", "image": "assets/items/shirt/shirt.png" },
-        { "id": "hat",   "label_en": "hat",   "label_ja": "帽子",   "image": "assets/items/hat/hat.png" },
-        { "id": "dress", "label_en": "dress", "label_ja": "ドレス", "image": "assets/items/dress/dress.png" }
+        { "id": "shirt", "label_en": "shirt", "label_ja": "シャツ", "image": "data/assets/items/shirt/shirt.png" },
+        { "id": "hat",   "label_en": "hat",   "label_ja": "帽子",   "image": "data/assets/items/hat/hat.png" },
+        { "id": "dress", "label_en": "dress", "label_ja": "ドレス", "image": "data/assets/items/dress/dress.png" }
       ]
     },
     {
@@ -179,11 +179,11 @@
       "reading": "そく",
       "irregular": { "default": "{n}そく" },
       "category": "pairs of footwear",
-      "icon": "assets/counters/counter_soku.png",
+      "icon": "data/assets/counters/soku.png",
       "items": [
-        { "id": "shoes",   "label_en": "shoes (pair)",   "label_ja": "靴",   "image": "assets/items/shoes/shoes.png" },
-        { "id": "socks",   "label_en": "socks (pair)",   "label_ja": "靴下", "image": "assets/items/socks/socks.png" },
-        { "id": "sandals", "label_en": "sandals (pair)", "label_ja": "サンダル","image": "assets/items/sandals/sandals.png" }
+        { "id": "shoes",   "label_en": "shoes (pair)",   "label_ja": "靴",   "image": "data/assets/items/shoes/shoes.png" },
+        { "id": "socks",   "label_en": "socks (pair)",   "label_ja": "靴下", "image": "data/assets/items/socks/socks.png" },
+        { "id": "sandals", "label_en": "sandals (pair)", "label_ja": "サンダル","image": "data/assets/items/sandals/sandals.png" }
       ]
     },
     {
@@ -191,11 +191,11 @@
       "reading": "けん",
       "irregular": { "default": "{n}けん" },
       "category": "houses/buildings",
-      "icon": "assets/counters/counter_ken.png",
+      "icon": "data/assets/counters/ken.png",
       "items": [
-        { "id": "house",          "label_en": "house",          "label_ja": "家",          "image": "assets/items/house/house.png" },
-        { "id": "apartment",      "label_en": "apartment",      "label_ja": "アパート",    "image": "assets/items/apartment/apartment.png" },
-        { "id": "office_building","label_en": "office building","label_ja": "オフィスビル","image": "assets/items/office_building/office_building.png" }
+        { "id": "house",          "label_en": "house",          "label_ja": "家",          "image": "data/assets/items/house/house.png" },
+        { "id": "apartment",      "label_en": "apartment",      "label_ja": "アパート",    "image": "data/assets/items/apartment/apartment.png" },
+        { "id": "office_building","label_en": "office building","label_ja": "オフィスビル","image": "data/assets/items/office_building/office_building.png" }
       ]
     }
   ]
