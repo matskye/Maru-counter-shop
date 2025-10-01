@@ -115,10 +115,10 @@ document.getElementById("doneBtn").addEventListener("click", () => {
   const correctCategory = items.every(p => p.dataset.counter === currentRequest.counterObj.counter);
 
   if (correctNumber && correctCategory) {
-    reactionDiv.innerHTML = `<img src="assets/ui/maru_ok.png" alt="OK" height="80">`;
+    reactionDiv.innerHTML = `<img src="data/assets/ui/maru_ok.png" alt="OK" height="80">`;
     if (challengeMode) challengeScore++;
   } else {
-    reactionDiv.innerHTML = `<img src="assets/ui/maru_wrong.png" alt="Wrong" height="80">`;
+    reactionDiv.innerHTML = `<img src="data/assets/ui/maru_wrong.png" alt="Wrong" height="80">`;
     clearCounter();
   }
 
