@@ -43,6 +43,50 @@ function updateHintButtonState() {
 
 let japaneseVoice = null;
 
+const JAPANESE_NUMBER_READINGS = {
+  0: "れい",
+  1: "いち",
+  2: "に",
+  3: "さん",
+  4: "よん",
+  5: "ご",
+  6: "ろく",
+  7: "なな",
+  8: "はち",
+  9: "きゅう",
+  10: "じゅう"
+};
+
+function getJapaneseNumberReading(number) {
+  if (!Number.isFinite(number)) return "";
+
+  const rounded = Math.floor(number);
+  if (rounded <= 10) {
+    return JAPANESE_NUMBER_READINGS.hasOwnProperty(rounded)
+      ? JAPANESE_NUMBER_READINGS[rounded]
+      : String(rounded);
+  }
+
+  const tens = Math.floor(rounded / 10);
+  const ones = rounded % 10;
+  let reading = "";
+
+  if (tens > 0) {
+    if (tens === 1) {
+      reading += JAPANESE_NUMBER_READINGS[10];
+    } else {
+      const tensReading = JAPANESE_NUMBER_READINGS[tens] || String(tens);
+      reading += `${tensReading}${JAPANESE_NUMBER_READINGS[10]}`;
+    }
+  }
+
+  if (ones !== 0) {
+    reading += JAPANESE_NUMBER_READINGS[ones] || String(ones);
+  }
+
+  return reading || String(rounded);
+}
+
 function initVoices() {
   if (!('speechSynthesis' in window)) return;
 
@@ -119,8 +163,19 @@ function updateCounterHint() {
 
 // Get correct reading (handles irregular)
 function getCounterReading(counterObj, number) {
-  if (!counterObj.irregular) return `${number}${counterObj.reading}`;
-  return counterObj.irregular[number] || counterObj.irregular["default"].replace("{n}", number);
+  const numberReading = getJapaneseNumberReading(number);
+
+  if (counterObj.irregular) {
+    if (counterObj.irregular[number]) {
+      return counterObj.irregular[number];
+    }
+
+    if (counterObj.irregular["default"]) {
+      return counterObj.irregular["default"].replace("{n}", numberReading);
+    }
+  }
+
+  return `${numberReading}${counterObj.reading}`;
 }
 
 // Random request
