@@ -12,6 +12,9 @@ const customerDiv = document.getElementById("customer");
 const shelfDiv = document.getElementById("shelf");
 const counterDiv = document.getElementById("counter");
 const reactionDiv = document.getElementById("maruReaction");
+const feedbackDiv = document.getElementById("feedback");
+const counterHintDiv = document.getElementById("counterHint");
+const replayVoiceBtn = document.getElementById("replayVoiceBtn");
 const COUNTER_HINT_HTML = '<span class="drop-hint">Drag or click items to add</span>';
 
 let japaneseVoice = null;
@@ -51,6 +54,36 @@ function speakJapanese(text) {
   }
 }
 
+function getPromptSpeechText(request) {
+  if (!request) return "";
+  const { counterObj, number } = request;
+  return getCounterReading(counterObj, number) + "ください。";
+}
+
+function updateReplayButtonState() {
+  if (!replayVoiceBtn) return;
+  const supported = 'speechSynthesis' in window;
+  const hasRequest = Boolean(currentRequest);
+  replayVoiceBtn.disabled = !(voiceEnabled && supported && hasRequest);
+  replayVoiceBtn.title = replayVoiceBtn.disabled
+    ? "Enable voice in settings to listen to Maru's request again."
+    : "Hear Maru repeat the current request.";
+}
+
+function updateCounterHint() {
+  if (!counterHintDiv) return;
+  if (!currentRequest) {
+    counterHintDiv.textContent = "";
+    return;
+  }
+  const { counterObj } = currentRequest;
+  const examples = counterObj.items
+    .slice(0, 3)
+    .map(item => item.label_en)
+    .join(", ");
+  counterHintDiv.innerHTML = `Counter <strong>「${counterObj.counter}」</strong> is used for <strong>${counterObj.category}</strong>. Try things like ${examples}.`;
+}
+
 // Get correct reading (handles irregular)
 function getCounterReading(counterObj, number) {
   if (!counterObj.irregular) return `${number}${counterObj.reading}`;
@@ -71,8 +104,13 @@ function newCustomer() {
   updateCustomerText();
   clearCounter();
   reactionDiv.innerHTML = "";
+  if (feedbackDiv) {
+    feedbackDiv.textContent = "";
+  }
   populateShelfForRequest(currentRequest);
-  speakJapanese(getCounterReading(currentRequest.counterObj, currentRequest.number) + "ください。");
+  speakJapanese(getPromptSpeechText(currentRequest));
+  updateCounterHint();
+  updateReplayButtonState();
 }
 
 function updateCustomerText() {
@@ -84,6 +122,13 @@ function updateCustomerText() {
   } else {
     customerDiv.textContent = `「${number}${counterObj.counter}ください。」`;
   }
+}
+
+if (replayVoiceBtn) {
+  replayVoiceBtn.addEventListener("click", () => {
+    if (!currentRequest) return;
+    speakJapanese(getPromptSpeechText(currentRequest));
+  });
 }
 
 function renderShelf(items) {
@@ -195,9 +240,22 @@ document.getElementById("doneBtn").addEventListener("click", () => {
 
   if (correctNumber && correctCategory) {
     reactionDiv.innerHTML = `<img src="data/assets/ui/maru_ok.png" alt="OK" height="80">`;
+    if (feedbackDiv) {
+      feedbackDiv.innerHTML = `<strong>Nice!</strong> 「${currentRequest.number}${currentRequest.counterObj.counter}」 is perfect for ${currentRequest.counterObj.category}.`;
+    }
     if (challengeMode) challengeScore++;
   } else {
     reactionDiv.innerHTML = `<img src="data/assets/ui/maru_wrong.png" alt="Wrong" height="80">`;
+    const messages = [];
+    if (!correctNumber) {
+      messages.push(`You need ${currentRequest.number} in total.`);
+    }
+    if (!correctCategory) {
+      messages.push(`Choose items that use 「${currentRequest.counterObj.counter}」 (${currentRequest.counterObj.category}).`);
+    }
+    if (feedbackDiv) {
+      feedbackDiv.innerHTML = `<strong>Almost!</strong> ${messages.join(" ")}`;
+    }
     clearCounter();
   }
 
@@ -209,10 +267,10 @@ document.getElementById("doneBtn").addEventListener("click", () => {
         challengeMode = false;
       }, 500);
     } else {
-      setTimeout(newCustomer, 800);
+      setTimeout(newCustomer, 1600);
     }
   } else {
-    setTimeout(newCustomer, 800);
+    setTimeout(newCustomer, 1600);
   }
 });
 
@@ -250,14 +308,16 @@ furiganaCheckbox.addEventListener("change", () => {
   showFurigana = furiganaCheckbox.checked;
   localStorage.setItem("showFurigana", showFurigana);
   if (currentRequest) updateCustomerText();
+  updateReplayButtonState();
 });
 
 voiceCheckbox.addEventListener("change", () => {
   voiceEnabled = voiceCheckbox.checked;
   localStorage.setItem("voiceEnabled", voiceEnabled);
   if (voiceEnabled && currentRequest) {
-    speakJapanese(getCounterReading(currentRequest.counterObj, currentRequest.number) + "ください。");
+    speakJapanese(getPromptSpeechText(currentRequest));
   }
+  updateReplayButtonState();
 });
 
 window.addEventListener("click", (event) => {
@@ -282,3 +342,6 @@ function syncCounterItemSize() {
 }
 
 window.addEventListener('resize', syncCounterItemSize);
+
+updateReplayButtonState();
+updateCounterHint();
