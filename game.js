@@ -3,6 +3,9 @@ let currentRequest = null;
 let challengeMode = false;
 let challengeScore = 0;
 let challengeRounds = 0;
+let correctStreak = 0;
+
+const MAX_CHALLENGE_ROUNDS = 10;
 
 // Load preferences from localStorage
 let showFurigana = localStorage.getItem("showFurigana") === "true";
@@ -16,6 +19,11 @@ const feedbackDiv = document.getElementById("feedback");
 const counterHintDiv = document.getElementById("counterHint");
 const hintToggleBtn = document.getElementById("toggleHintBtn");
 const replayVoiceBtn = document.getElementById("replayVoiceBtn");
+const modeStatusDiv = document.getElementById("modeStatus");
+const challengeStatusDiv = document.getElementById("challengeStatus");
+const challengeRoundSpan = document.getElementById("challengeRound");
+const challengeScoreSpan = document.getElementById("challengeScore");
+const streakCountSpan = document.getElementById("streakCount");
 const COUNTER_HINT_HTML = '<span class="drop-hint">Drag or click items to add</span>';
 
 let hintVisible = false;
@@ -141,6 +149,34 @@ function updateReplayButtonState() {
     : "Hear Maru repeat the current request.";
 }
 
+function updateModeStatus() {
+  if (!modeStatusDiv) return;
+  if (challengeMode) {
+    const currentRound = Math.min(challengeRounds + 1, MAX_CHALLENGE_ROUNDS);
+    modeStatusDiv.textContent = `Challenge mode – round ${currentRound} of ${MAX_CHALLENGE_ROUNDS}`;
+  } else {
+    modeStatusDiv.textContent = "Practice mode";
+  }
+}
+
+function updateChallengeStatus() {
+  if (!challengeStatusDiv) return;
+  challengeStatusDiv.hidden = !challengeMode;
+  if (!challengeMode) return;
+  const currentRound = Math.min(challengeRounds + 1, MAX_CHALLENGE_ROUNDS);
+  if (challengeRoundSpan) {
+    challengeRoundSpan.textContent = String(currentRound);
+  }
+  if (challengeScoreSpan) {
+    challengeScoreSpan.textContent = String(challengeScore);
+  }
+}
+
+function updateStreakStatus() {
+  if (!streakCountSpan) return;
+  streakCountSpan.textContent = String(correctStreak);
+}
+
 function updateCounterHint() {
   if (!counterHintDiv) return;
   if (!currentRequest) {
@@ -201,6 +237,9 @@ function newCustomer() {
   updateCounterHint();
   setHintVisibility(false);
   updateReplayButtonState();
+  updateModeStatus();
+  updateChallengeStatus();
+  updateStreakStatus();
 }
 
 function updateCustomerText() {
@@ -372,11 +411,14 @@ document.getElementById("doneBtn").addEventListener("click", () => {
   const correctNumber = totalCount === currentRequest.number;
   const correctCategory = items.every(p => p.dataset.counter === currentRequest.counterObj.counter);
 
-  if (correctNumber && correctCategory) {
+  const wasCorrect = correctNumber && correctCategory;
+
+  if (wasCorrect) {
     reactionDiv.innerHTML = `<img src="data/assets/ui/maru_ok.png" alt="OK" height="80">`;
     if (feedbackDiv) {
       feedbackDiv.innerHTML = `<strong>Nice!</strong> 「${currentRequest.number}${currentRequest.counterObj.counter}」 is perfect for ${currentRequest.counterObj.category}.`;
     }
+    correctStreak++;
     if (challengeMode) challengeScore++;
   } else {
     reactionDiv.innerHTML = `<img src="data/assets/ui/maru_wrong.png" alt="Wrong" height="80">`;
@@ -391,14 +433,24 @@ document.getElementById("doneBtn").addEventListener("click", () => {
       feedbackDiv.innerHTML = `<strong>Almost!</strong> ${messages.join(" ")}`;
     }
     clearCounter();
+    correctStreak = 0;
   }
+
+  updateStreakStatus();
 
   if (challengeMode) {
     challengeRounds++;
-    if (challengeRounds >= 10) {
+    updateChallengeStatus();
+    if (challengeRounds >= MAX_CHALLENGE_ROUNDS) {
       setTimeout(() => {
         alert(`Challenge over! Score: ${challengeScore}/10`);
         challengeMode = false;
+        challengeRounds = 0;
+        challengeScore = 0;
+        correctStreak = 0;
+        updateModeStatus();
+        updateChallengeStatus();
+        updateStreakStatus();
       }, 500);
     } else {
       setTimeout(newCustomer, 1600);
@@ -411,6 +463,12 @@ document.getElementById("doneBtn").addEventListener("click", () => {
 // Practice / Challenge buttons
 document.getElementById("startPractice").addEventListener("click", () => {
   challengeMode = false;
+  challengeRounds = 0;
+  challengeScore = 0;
+  correctStreak = 0;
+  updateModeStatus();
+  updateChallengeStatus();
+  updateStreakStatus();
   newCustomer();
 });
 
@@ -418,6 +476,10 @@ document.getElementById("startChallenge").addEventListener("click", () => {
   challengeMode = true;
   challengeRounds = 0;
   challengeScore = 0;
+  correctStreak = 0;
+  updateModeStatus();
+  updateChallengeStatus();
+  updateStreakStatus();
   newCustomer();
 });
 
