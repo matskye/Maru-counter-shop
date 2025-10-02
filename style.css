@@ -76,6 +76,33 @@ h1 {
   font-size: 0.95rem;
 }
 
+.status-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.status-chip {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(107, 91, 255, 0.12);
+  color: var(--accent-dark);
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(107, 91, 255, 0.2);
+}
+
+.status-chip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .customer-card .inline:hover,
 .customer-card .inline:focus-visible {
   background: rgba(107, 91, 255, 0.12);
@@ -243,6 +270,54 @@ h1 {
   flex-wrap: wrap;
   gap: 12px;
   justify-content: center;
+}
+
+.learn-more {
+  display: flex;
+  justify-content: center;
+}
+
+.learn-more details {
+  width: min(520px, 100%);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: inset 0 0 0 1px rgba(107, 91, 255, 0.1);
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.learn-more summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--accent-dark);
+  margin-bottom: 10px;
+  outline: none;
+}
+
+.learn-more summary::-webkit-details-marker {
+  display: none;
+}
+
+.learn-more summary::after {
+  content: "↓";
+  margin-left: 8px;
+  font-size: 0.85em;
+  transition: transform var(--transition);
+}
+
+.learn-more details[open] summary::after {
+  transform: rotate(-180deg);
+}
+
+.learn-more ol {
+  padding-left: 20px;
+  margin: 0 0 12px;
+}
+
+.learn-more p {
+  margin: 0;
+  line-height: 1.5;
 }
 
 button {

@@ -22,6 +22,16 @@
         <div id="counterHint" class="hint-window"></div>
       </section>
 
+      <section class="status-bar" aria-live="polite">
+        <div class="status-chip" id="modeStatus">Practice mode</div>
+        <div class="status-chip" id="challengeStatus" hidden>
+          <span>Round <span id="challengeRound">1</span> / 10</span>
+          <span aria-hidden="true">·</span>
+          <span>Score <span id="challengeScore">0</span></span>
+        </div>
+        <div class="status-chip" id="streakStatus">Current streak: <span id="streakCount">0</span></div>
+      </section>
+
       <section class="play-area">
         <div class="panel">
           <h2 class="section-title">Shelf</h2>
@@ -41,6 +51,21 @@
         <button id="startPractice">Practice Mode</button>
         <button id="startChallenge">Challenge Mode</button>
         <button id="settingsBtn" class="ghost">⚙️ Settings</button>
+      </section>
+
+      <section class="learn-more">
+        <details id="howToPlay">
+          <summary>How to play &amp; study tips</summary>
+          <ol>
+            <li>Listen to Maru&rsquo;s request or read the speech bubble.</li>
+            <li>Drag or click items from the shelf that match the counter being used.</li>
+            <li>Use the <em>Done!</em> button to check your answer and keep your streak going.</li>
+          </ol>
+          <p>
+            Need a hand? Toggle the hint to learn what a counter is used for, or replay the voice prompt as many times as
+            you like. Challenge mode runs for ten rounds&mdash;aim for a perfect score!
+          </p>
+        </details>
       </section>
     </main>
   </div>
