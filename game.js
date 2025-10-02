@@ -25,11 +25,54 @@ const challengeRoundSpan = document.getElementById("challengeRound");
 const challengeScoreSpan = document.getElementById("challengeScore");
 const streakCountSpan = document.getElementById("streakCount");
 const COUNTER_HINT_HTML = '<span class="drop-hint">Drag or click items to add</span>';
+const SCALE_EPSILON = 0.005;
 
 let hintVisible = false;
 
 const HINT_SHOW_LABEL = "💡 Show hint";
 const HINT_HIDE_LABEL = "🙈 Hide hint";
+
+function applyScaleToFit() {
+  const shell = document.querySelector(".app-shell");
+  const bodyEl = document.body;
+  if (!shell || !bodyEl) return;
+
+  shell.style.removeProperty("transform");
+  shell.style.removeProperty("transform-origin");
+  bodyEl.classList.remove("is-scaled");
+
+  const rect = shell.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+
+  const bodyStyles = window.getComputedStyle(bodyEl);
+  const paddingX = parseFloat(bodyStyles.paddingLeft || "0") + parseFloat(bodyStyles.paddingRight || "0");
+  const paddingY = parseFloat(bodyStyles.paddingTop || "0") + parseFloat(bodyStyles.paddingBottom || "0");
+  const availableWidth = window.innerWidth - paddingX;
+  const availableHeight = window.innerHeight - paddingY;
+
+  if (availableWidth <= 0 || availableHeight <= 0) {
+    return;
+  }
+
+  const scale = Math.min(1, availableWidth / rect.width, availableHeight / rect.height);
+
+  if (scale < 1 - SCALE_EPSILON) {
+    shell.style.transform = `scale(${scale})`;
+    shell.style.transformOrigin = "top center";
+    bodyEl.classList.add("is-scaled");
+  }
+}
+
+const scheduleScaleToFit = () => window.requestAnimationFrame(applyScaleToFit);
+
+document.addEventListener("DOMContentLoaded", () => {
+  applyScaleToFit();
+  window.setTimeout(applyScaleToFit, 150);
+});
+
+window.addEventListener("load", applyScaleToFit);
+window.addEventListener("resize", scheduleScaleToFit);
+window.addEventListener("orientationchange", scheduleScaleToFit);
 
 function setHintVisibility(visible) {
   const canShow = counterHintDiv && counterHintDiv.innerHTML.trim().length > 0;
