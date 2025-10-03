@@ -197,6 +197,59 @@
         { "id": "apartment",      "label_en": "apartment",      "label_ja": "アパート",    "image": "data/assets/items/apartment/apartment.png" },
         { "id": "office_building","label_en": "office building","label_ja": "オフィスビル","image": "data/assets/items/office_building/office_building.png" }
       ]
+    },
+    {
+      "counter": "缶",
+      "reading": "かん",
+      "irregular": {
+        "1": "いっかん",
+        "3": "さんかん",
+        "6": "ろっかん",
+        "8": "はっかん",
+        "10": "じゅっかん",
+        "default": "{n}かん"
+      },
+      "category": "cans and tinned drinks",
+      "icon": "data/assets/counters/kan.png",
+      "items": [
+        { "id": "soda_can",   "label_en": "soda can",   "label_ja": "ジュース缶", "image": "data/assets/items/soda_can/soda_can.png" },
+        { "id": "coffee_can", "label_en": "coffee can", "label_ja": "コーヒー缶", "image": "data/assets/items/coffee_can/coffee_can.png" },
+        { "id": "soup_can",   "label_en": "soup can",   "label_ja": "スープ缶",   "image": "data/assets/items/soup_can/soup_can.png" }
+      ]
+    },
+    {
+      "counter": "袋",
+      "reading": "ふくろ",
+      "irregular": {
+        "1": "ひとふくろ",
+        "2": "ふたふくろ",
+        "default": "{n}ふくろ"
+      },
+      "category": "bags and pouches",
+      "icon": "data/assets/counters/fukuro.png",
+      "items": [
+        { "id": "grocery_bag", "label_en": "grocery bag", "label_ja": "買い物袋", "image": "data/assets/items/grocery_bag/grocery_bag.png" },
+        { "id": "gift_bag",    "label_en": "gift bag",    "label_ja": "ギフト袋", "image": "data/assets/items/gift_bag/gift_bag.png" },
+        { "id": "trash_bag",   "label_en": "trash bag",   "label_ja": "ゴミ袋",   "image": "data/assets/items/trash_bag/trash_bag.png" }
+      ]
+    },
+    {
+      "counter": "球",
+      "reading": "きゅう",
+      "irregular": {
+        "1": "いっきゅう",
+        "6": "ろっきゅう",
+        "8": "はっきゅう",
+        "10": "じゅっきゅう",
+        "default": "{n}きゅう"
+      },
+      "category": "balls and round sports gear",
+      "icon": "data/assets/counters/kyuu.png",
+      "items": [
+        { "id": "soccer_ball",  "label_en": "soccer ball",  "label_ja": "サッカーボール",   "image": "data/assets/items/soccer_ball/soccer_ball.png" },
+        { "id": "basketball",   "label_en": "basketball",   "label_ja": "バスケットボール", "image": "data/assets/items/basketball/basketball.png" },
+        { "id": "tennis_ball",  "label_en": "tennis ball",  "label_ja": "テニスボール",    "image": "data/assets/items/tennis_ball/tennis_ball.png" }
+      ]
     }
   ]
 }
