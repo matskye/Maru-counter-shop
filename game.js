@@ -1151,11 +1151,12 @@ const drawerState = {
     initialized: false,
     activeHand: null,
     activePointerId: null,
+    expectedHand: null,
     values: { hours: 0, minutes: 0, seconds: 0 },
     config: {
-      hours: { steps: 12, element: null, degPerStep: 360 / 12 },
-      minutes: { steps: 60, element: null, degPerStep: 360 / 60 },
-      seconds: { steps: 60, element: null, degPerStep: 360 / 60 }
+      hours: { steps: 12, element: null, degPerStep: 360 / 12, baseZIndex: 2 },
+      minutes: { steps: 60, element: null, degPerStep: 360 / 60, baseZIndex: 3 },
+      seconds: { steps: 60, element: null, degPerStep: 360 / 60, baseZIndex: 4 }
     }
   },
   calendar: {
@@ -1415,6 +1416,7 @@ function initClockDrawer() {
   });
 
   clockState.initialized = true;
+  refreshClockHandPriority();
   updateClockValue();
 }
 
@@ -1482,17 +1484,95 @@ function updateClockHand(handKey, value) {
   updateClockValue();
 }
 
+function getExpectedClockHandKey() {
+  if (!currentRequest || !currentRequest.counterObj) return null;
+  const practice = getCounterPractice(currentRequest.counterObj);
+  if (!practice || practice.type !== "clock") return null;
+  const { hand } = practice;
+  return CLOCK_HAND_KEYS.includes(hand) ? hand : null;
+}
+
+function refreshClockHandPriority() {
+  const clockState = drawerState.clock;
+  if (!clockState || !clockState.config) return;
+  const expectedHand = getExpectedClockHandKey();
+  clockState.expectedHand = expectedHand;
+
+  CLOCK_HAND_KEYS.forEach(handKey => {
+    const config = clockState.config[handKey];
+    if (!config || !config.element) return;
+    const baseZ = Number.isFinite(config.baseZIndex) ? config.baseZIndex : 1;
+    const zIndex = handKey === expectedHand ? baseZ + 20 : baseZ;
+    config.element.style.zIndex = String(zIndex);
+  });
+}
+
 function resetClockHands() {
   CLOCK_HAND_KEYS.forEach(handKey => {
     updateClockHand(handKey, 0);
   });
+  refreshClockHandPriority();
 }
 
 function updateClockValue() {
   if (!clockValueEl) return;
   const { hours, minutes, seconds } = drawerState.clock.values;
   const pad = value => String(value).padStart(2, "0");
-  clockValueEl.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  const formatted = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  if (clockValueEl instanceof HTMLInputElement) {
+    clockValueEl.value = formatted;
+  } else {
+    clockValueEl.textContent = formatted;
+  }
+}
+
+function parseClockInputValue(rawValue) {
+  if (typeof rawValue !== "string") return null;
+  const trimmed = rawValue.trim();
+  if (!trimmed) return null;
+  const parts = trimmed.split(":");
+  if (parts.length > 3) return null;
+  const normalizedParts = parts.map(part => part.trim());
+  if (normalizedParts.some(part => part && !/^\d{1,2}$/.test(part))) {
+    return null;
+  }
+
+  while (normalizedParts.length < 3) {
+    normalizedParts.push("");
+  }
+
+  const [hoursPart, minutesPart, secondsPart] = normalizedParts;
+  const toNumber = part => {
+    if (!part) return 0;
+    const numeric = Number(part);
+    return Number.isFinite(numeric) ? numeric : 0;
+  };
+
+  const rawHours = toNumber(hoursPart);
+  const rawMinutes = toNumber(minutesPart);
+  const rawSeconds = toNumber(secondsPart);
+
+  return {
+    hours: ((rawHours % 12) + 12) % 12,
+    minutes: ((rawMinutes % 60) + 60) % 60,
+    seconds: ((rawSeconds % 60) + 60) % 60
+  };
+}
+
+function commitClockInputFromField() {
+  if (!clockValueEl || !(clockValueEl instanceof HTMLInputElement)) return;
+  const parsed = parseClockInputValue(clockValueEl.value);
+  if (!parsed) {
+    updateClockValue();
+    return;
+  }
+
+  CLOCK_HAND_KEYS.forEach(handKey => {
+    const nextValue = parsed[handKey];
+    if (Number.isFinite(nextValue)) {
+      updateClockHand(handKey, nextValue);
+    }
+  });
 }
 
 function getClockSelectedTime() {
@@ -1937,6 +2017,25 @@ window.checkClockAnswer = handleClockPracticeAnswer;
 window.checkCalendarAnswer = handleCalendarPracticeAnswer;
 
 setupDrawerLaunchers();
+
+if (clockValueEl && clockValueEl instanceof HTMLInputElement) {
+  const handleClockValueChange = () => {
+    commitClockInputFromField();
+  };
+
+  clockValueEl.addEventListener("change", handleClockValueChange);
+  clockValueEl.addEventListener("keydown", event => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      commitClockInputFromField();
+      clockValueEl.blur();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      updateClockValue();
+      clockValueEl.blur();
+    }
+  });
+}
 
 if (clockDoneBtn) {
   clockDoneBtn.addEventListener("click", emitClockAnswer);

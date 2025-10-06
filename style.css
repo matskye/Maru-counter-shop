@@ -759,6 +759,20 @@ input[type="checkbox"] {
   background: rgba(107, 91, 255, 0.08);
   border-radius: 999px;
   padding: 8px 18px;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  text-align: center;
+  min-width: 140px;
+  cursor: text;
+  outline: none;
+}
+
+.clock-value:focus {
+  border-color: rgba(107, 91, 255, 0.35);
+  box-shadow: 0 0 0 3px rgba(107, 91, 255, 0.12);
 }
 
 /* Calendar drawer */
