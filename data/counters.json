@@ -59,6 +59,12 @@
       },
       "category": "long cylindrical objects",
       "icon": "data/assets/counters/hon.png",
+      "practice": {
+        "type": "house",
+        "target": "trees",
+        "min": 1,
+        "max": 3
+      },
       "items": [
         { "id": "carrot", "label_en": "carrot", "label_ja": "にんじん", "image": "data/assets/items/carrot/carrot.png" },
         { "id": "bottle", "label_en": "bottle", "label_ja": "ボトル",   "image": "data/assets/items/bottle/bottle.png" },
@@ -71,6 +77,12 @@
       "irregular": { "default": "{n}まい" },
       "category": "flat objects",
       "icon": "data/assets/counters/mai.png",
+      "practice": {
+        "type": "house",
+        "target": "windows",
+        "min": 1,
+        "max": 6
+      },
       "items": [
         { "id": "paper",       "label_en": "sheet of paper", "label_ja": "紙",         "image": "data/assets/items/paper/paper.png" },
         { "id": "cd",          "label_en": "CD",             "label_ja": "CD",         "image": "data/assets/items/cd/cd.png" },
@@ -83,11 +95,64 @@
       "irregular": { "default": "{n}だい" },
       "category": "machines/vehicles",
       "icon": "data/assets/counters/dai.png",
+      "practice": {
+        "type": "house",
+        "target": "cars",
+        "min": 1,
+        "max": 3
+      },
       "items": [
         { "id": "car",        "label_en": "car",        "label_ja": "車",       "image": "data/assets/items/car/car.png" },
         { "id": "computer",   "label_en": "computer",   "label_ja": "コンピューター","image": "data/assets/items/computer/computer.png" },
         { "id": "game_console","label_en": "game console","label_ja": "ゲーム機","image": "data/assets/items/game_console/game_console.png" }
       ]
+    },
+    {
+      "counter": "階",
+      "reading": "かい",
+      "irregular": {
+        "1": "いっかい",
+        "3": "さんがい",
+        "4": "よんかい",
+        "6": "ろっかい",
+        "8": "はっかい",
+        "10": "じゅっかい",
+        "default": "{n}かい"
+      },
+      "category": "building floors",
+      "practice": {
+        "type": "house",
+        "target": "floors",
+        "min": 1,
+        "max": 3
+      },
+      "items": []
+    },
+    {
+      "counter": "部屋",
+      "reading": "へや",
+      "irregular": { "default": "{n}へや" },
+      "category": "rooms in a building",
+      "practice": {
+        "type": "house",
+        "target": "rooms",
+        "min": 1,
+        "max": 6
+      },
+      "items": []
+    },
+    {
+      "counter": "畳",
+      "reading": "じょう",
+      "irregular": { "default": "{n}じょう" },
+      "category": "tatami mats",
+      "practice": {
+        "type": "house",
+        "target": "tatami",
+        "min": 1,
+        "max": 12
+      },
+      "items": []
     },
     {
       "counter": "個",
