@@ -1165,6 +1165,8 @@ const drawerState = {
     selectedDays: new Set(),
     selectedWeeks: new Set(),
     selectedMonths: new Set(),
+    lastDayAnchor: null,
+    lastMonthAnchor: null,
     yearTorn: false,
     weekDragActive: false,
     weekDragPointerId: null,
@@ -1662,13 +1664,29 @@ function handleCalendarDayClick(event) {
   const dayEl = event.currentTarget;
   const dayId = dayEl.dataset.dayId;
   if (!dayId) return;
-  const isSelected = drawerState.calendar.selectedDays.has(dayId);
+  const calendarState = drawerState.calendar;
+
+  if (event.shiftKey) {
+    let anchorId = calendarState.lastDayAnchor;
+    if (!anchorId && calendarState.elements.days.length) {
+      const firstDay = calendarState.elements.days[0];
+      anchorId = firstDay ? firstDay.dataset.dayId : null;
+    }
+    if (anchorId) {
+      selectCalendarDayRange(anchorId, dayId);
+      updateCalendarSummary();
+    }
+    return;
+  }
+
+  const isSelected = calendarState.selectedDays.has(dayId);
   if (isSelected) {
-    drawerState.calendar.selectedDays.delete(dayId);
+    calendarState.selectedDays.delete(dayId);
   } else {
-    drawerState.calendar.selectedDays.add(dayId);
+    calendarState.selectedDays.add(dayId);
   }
   dayEl.classList.toggle("is-selected", !isSelected);
+  calendarState.lastDayAnchor = dayId;
   updateCalendarSummary();
 }
 
@@ -1677,13 +1695,26 @@ function handleCalendarMonthClick(event) {
   const monthEl = event.currentTarget;
   const monthIndex = Number(monthEl.dataset.month);
   if (!Number.isFinite(monthIndex)) return;
-  const isSelected = drawerState.calendar.selectedMonths.has(monthIndex);
+  const calendarState = drawerState.calendar;
+
+  if (event.shiftKey) {
+    let anchorIndex = calendarState.lastMonthAnchor;
+    if (!Number.isFinite(anchorIndex)) {
+      anchorIndex = 0;
+    }
+    selectCalendarMonthRange(anchorIndex, monthIndex);
+    updateCalendarSummary();
+    return;
+  }
+
+  const isSelected = calendarState.selectedMonths.has(monthIndex);
   if (isSelected) {
-    drawerState.calendar.selectedMonths.delete(monthIndex);
+    calendarState.selectedMonths.delete(monthIndex);
   } else {
-    drawerState.calendar.selectedMonths.add(monthIndex);
+    calendarState.selectedMonths.add(monthIndex);
   }
   monthEl.classList.toggle("is-selected", !isSelected);
+  calendarState.lastMonthAnchor = monthIndex;
   updateCalendarSummary();
 }
 
@@ -1763,6 +1794,8 @@ function setCalendarMode(mode) {
   calendarState.selectedDays.clear();
   calendarState.selectedWeeks.clear();
   calendarState.selectedMonths.clear();
+  calendarState.lastDayAnchor = null;
+  calendarState.lastMonthAnchor = null;
   calendarState.yearTorn = false;
   calendarState.weekDragActive = false;
   calendarState.weekDragPointerId = null;
@@ -1858,6 +1891,59 @@ function parseCalendarWeekId(id) {
     month: Number.isFinite(month) ? month : 0,
     week: Number.isFinite(week) ? week : 0
   };
+}
+
+function getCalendarDayDetails(dayId) {
+  if (typeof dayId !== "string") return null;
+  const parts = dayId.split(":");
+  if (parts.length !== 3) return null;
+  const [month, week, day] = parts.map(part => Number(part));
+  if (!Number.isFinite(month) || !Number.isFinite(week) || !Number.isFinite(day)) {
+    return null;
+  }
+  return {
+    month,
+    week,
+    day,
+    index: month * 28 + week * 7 + day
+  };
+}
+
+function selectCalendarDayRange(startDayId, endDayId) {
+  const startDetails = getCalendarDayDetails(startDayId);
+  const endDetails = getCalendarDayDetails(endDayId);
+  if (!startDetails || !endDetails) return;
+  const [minIndex, maxIndex] = startDetails.index <= endDetails.index
+    ? [startDetails.index, endDetails.index]
+    : [endDetails.index, startDetails.index];
+  const calendarState = drawerState.calendar;
+  calendarState.selectedDays.clear();
+  calendarState.elements.days.forEach(dayEl => {
+    const id = dayEl.dataset.dayId;
+    const details = getCalendarDayDetails(id);
+    const shouldSelect = Boolean(details && details.index >= minIndex && details.index <= maxIndex);
+    dayEl.classList.toggle("is-selected", shouldSelect);
+    if (shouldSelect && id) {
+      calendarState.selectedDays.add(id);
+    }
+  });
+}
+
+function selectCalendarMonthRange(startMonthIndex, endMonthIndex) {
+  if (!Number.isFinite(startMonthIndex) || !Number.isFinite(endMonthIndex)) return;
+  const [minIndex, maxIndex] = startMonthIndex <= endMonthIndex
+    ? [startMonthIndex, endMonthIndex]
+    : [endMonthIndex, startMonthIndex];
+  const calendarState = drawerState.calendar;
+  calendarState.selectedMonths.clear();
+  calendarState.elements.months.forEach(monthEl => {
+    const index = Number(monthEl.dataset.month);
+    const shouldSelect = Number.isFinite(index) && index >= minIndex && index <= maxIndex;
+    monthEl.classList.toggle("is-selected", shouldSelect);
+    if (shouldSelect) {
+      calendarState.selectedMonths.add(index);
+    }
+  });
 }
 
 function getCalendarSelection() {
