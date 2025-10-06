@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   sodipodi:docname="Floor_GroundFloor.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.75277076"
+     inkscape:cx="397.19927"
+     inkscape:cy="714.0288"
+     inkscape:window-width="1920"
+     inkscape:window-height="1054"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <rect
+       x="123.54359"
+       y="925.91269"
+       width="87.676094"
+       height="148.78367"
+       id="rect3" />
+    <rect
+       x="111.58776"
+       y="944.51065"
+       width="95.646648"
+       height="115.57303"
+       id="rect2" />
+    <rect
+       x="111.58776"
+       y="944.51062"
+       width="95.646645"
+       height="115.57303"
+       id="rect2-9" />
+    <rect
+       x="111.58776"
+       y="944.51062"
+       width="95.646645"
+       height="115.57303"
+       id="rect2-2" />
+  </defs>
+  <g
+     class="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       id="Room_1_Grouped"
+       class="Room_Grouped">
+      <rect
+         style="fill:#ffaaf7;stroke-width:0.264583;fill-opacity:1"
+         id="Room_1"
+         width="88.572784"
+         height="97.359764"
+         x="22.494675"
+         y="24.252069"
+         class="Room" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_1_Tatami_1"
+         width="26.712425"
+         height="46.043785"
+         x="26.009466"
+         y="26.70853"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_1_Tatami_6"
+         width="26.712425"
+         height="46.043785"
+         x="81.756264"
+         y="73.289581"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_1_Tatami_2"
+         width="26.712425"
+         height="46.043785"
+         x="53.4459"
+         y="26.193754"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_1_Tatami_3"
+         width="26.712425"
+         height="46.043785"
+         x="81.227081"
+         y="25.929169"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_1_Tatami_4"
+         width="26.712425"
+         height="46.043785"
+         x="26.193754"
+         y="73.554169"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_1_Tatami_5"
+         width="26.712425"
+         height="46.043785"
+         x="53.975018"
+         y="73.554169"
+         class="Tatami" />
+    </g>
+    <g
+       id="Room_2_Grouped"
+       class="Room_Grouped">
+      <rect
+         style="fill:#ffaaf7;fill-opacity:1;stroke-width:0.264583"
+         id="rect1-0"
+         width="88.572784"
+         height="97.359764"
+         x="116.15211"
+         y="23.54792" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_2_Tatami_1"
+         width="26.712425"
+         height="46.043785"
+         x="119.66687"
+         y="26.004381"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="rect2-1-6"
+         width="26.712425"
+         height="46.043785"
+         x="175.41379"
+         y="72.585434" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="tatami_8"
+         width="26.712425"
+         height="46.043785"
+         x="147.10342"
+         y="25.489605"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_2_Tatami_3"
+         width="26.712425"
+         height="46.043785"
+         x="174.8846"
+         y="25.225019"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_2_Tatami_4"
+         width="26.712425"
+         height="46.043785"
+         x="119.85117"
+         y="72.850021"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_2_Tatami_5"
+         width="26.712425"
+         height="46.043785"
+         x="147.63254"
+         y="72.850021"
+         class="Tatami" />
+    </g>
+    <g
+       id="Room_3_Grouped"
+       class="Room_Grouped">
+      <rect
+         style="fill:#ffaaf7;fill-opacity:1;stroke-width:0.264583"
+         id="Room_3"
+         width="88.572784"
+         height="97.359764"
+         x="22.225"
+         y="126.47081"
+         class="Room" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_3_Tatami_1"
+         width="26.712425"
+         height="46.043785"
+         x="25.739792"
+         y="128.92728"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_3_Tatami_6"
+         width="26.712425"
+         height="46.043785"
+         x="81.486588"
+         y="175.50822"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_3_Tatami_2"
+         width="26.712425"
+         height="46.043785"
+         x="53.176228"
+         y="128.41251"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_3_Tatami_3"
+         width="26.712425"
+         height="46.043785"
+         x="80.957405"
+         y="128.14793"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_3_Tatami_4"
+         width="26.712425"
+         height="46.043785"
+         x="25.92408"
+         y="175.77281"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_3_Tatami_5"
+         width="26.712425"
+         height="46.043785"
+         x="53.705345"
+         y="175.77281"
+         class="Tatami" />
+    </g>
+    <g
+       id="Room_4_Grouped"
+       class="Room_Grouped">
+      <rect
+         style="fill:#ffaaf7;fill-opacity:1;stroke-width:0.264583"
+         id="Room_4"
+         width="88.572784"
+         height="97.359764"
+         x="116.15207"
+         y="126.47083"
+         class="Room" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_4_Tatami_1"
+         width="26.712425"
+         height="46.043785"
+         x="119.66687"
+         y="128.92731"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_4_Tatami_6"
+         width="26.712425"
+         height="46.043785"
+         x="175.41374"
+         y="175.50836"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_4_Tatami_2"
+         width="26.712425"
+         height="46.043785"
+         x="147.10338"
+         y="128.41254"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_4_Tatami_3"
+         width="26.712425"
+         height="46.043785"
+         x="174.88455"
+         y="128.14795"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_4_Tatami_4"
+         width="26.712425"
+         height="46.043785"
+         x="119.85117"
+         y="175.77295"
+         class="Tatami" />
+      <rect
+         style="fill:#c8ab37;fill-opacity:1;stroke-width:0.264583"
+         id="Room_4_Tatami_5"
+         width="26.712425"
+         height="46.043785"
+         x="147.63249"
+         y="175.77295"
+         class="Tatami" />
+    </g>
+    <g
+       id="ParkingSpot_1"
+       class="ParkingSpot">
+      <g
+         id="g3">
+        <rect
+           style="display:inline;fill:#757575;fill-opacity:1;stroke-width:0.264583"
+           id="rect1"
+           width="38.662724"
+           height="61.860355"
+           x="25.128819"
+           y="230.918" />
+      </g>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,7.9375004,1.0583333)"
+         id="text1"
+         style="font-size:85.3333px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect2);display:inline;fill:#ffffff;fill-opacity:1;stroke-width:1.00157;stroke-dasharray:none"><tspan
+           x="111.58789"
+           y="1020.0097"
+           id="tspan3">P</tspan></text>
+    </g>
+    <g
+       id="ParkingSpot_2"
+       class="ParkingSpot">
+      <g
+         id="g3-2"
+         transform="translate(45.514931,-0.46591646)">
+        <rect
+           style="display:inline;fill:#757575;fill-opacity:1;stroke-width:0.264583"
+           id="rect1-3"
+           width="38.662724"
+           height="61.860355"
+           x="25.128819"
+           y="230.918" />
+      </g>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,53.452431,0.59241673)"
+         id="text1-7"
+         style="font-size:85.3333px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect2-9);display:inline;fill:#ffffff;fill-opacity:1;stroke-width:1.00157;stroke-dasharray:none"><tspan
+           x="111.58789"
+           y="1020.0097"
+           id="tspan4">P</tspan></text>
+    </g>
+    <g
+       id="ParkingSpot_3"
+       class="ParkingSpot">
+      <g
+         id="g3-9"
+         transform="translate(91.287849,-0.99508333)">
+        <rect
+           style="display:inline;fill:#757575;fill-opacity:1;stroke-width:0.264583"
+           id="rect1-7"
+           width="38.662724"
+           height="61.860355"
+           x="25.128819"
+           y="230.918" />
+      </g>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,99.225349,0.06324997)"
+         id="text1-3"
+         style="font-size:85.3333px;text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect2-2);display:inline;fill:#ffffff;fill-opacity:1;stroke-width:1.00157;stroke-dasharray:none"><tspan
+           x="111.58789"
+           y="1020.0097"
+           id="tspan5">P</tspan></text>
+    </g>
+    <ellipse
+       style="fill:#00f211;fill-opacity:1;stroke-width:0.264999;stroke-dasharray:none"
+       id="Tree_1"
+       cx="173.2793"
+       cy="246.56465"
+       rx="10.895858"
+       ry="10.544379"
+       class="Tree" />
+    <ellipse
+       style="fill:#00f211;fill-opacity:1;stroke-width:0.264999;stroke-dasharray:none"
+       id="Tree_3"
+       cx="173.08543"
+       cy="273.27554"
+       rx="10.895858"
+       ry="10.544379"
+       class="Tree" />
+    <ellipse
+       style="fill:#00f211;fill-opacity:1;stroke-width:0.264999;stroke-dasharray:none"
+       id="Tree_2"
+       cx="199.01459"
+       cy="245.75896"
+       rx="10.895858"
+       ry="10.544379"
+       class="Tree" />
+    <ellipse
+       style="fill:#00f211;fill-opacity:1;stroke-width:0.264999;stroke-dasharray:none"
+       id="Tree_4"
+       cx="198.75002"
+       cy="273.2756"
+       rx="10.895858"
+       ry="10.544379"
+       class="Tree" />
+  </g>
+</svg>

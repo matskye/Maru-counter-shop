@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   sodipodi:docname="Sideview.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.75277076"
+     inkscape:cx="397.19927"
+     inkscape:cy="315.50109"
+     inkscape:window-width="1920"
+     inkscape:window-height="1054"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1" />
+  <g
+     class="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:#fcc7ff;fill-opacity:1;stroke-width:0.264583"
+       id="Ground_Floor_Sideview"
+       width="102.28"
+       height="41.474556"
+       x="58.697041"
+       y="127.58698"
+       class="Floor_Sideview" />
+    <rect
+       style="fill:#fcc7ff;fill-opacity:1;stroke-width:0.264583"
+       id="1stFloor_Sideview"
+       width="102.28047"
+       height="41.474556"
+       x="58.491199"
+       y="83.385406"
+       class="Floor_Sideview" />
+    <rect
+       style="fill:#fcc7ff;fill-opacity:1;stroke-width:0.264583"
+       id="2ndFloor_Sideview"
+       width="102.28047"
+       height="41.474556"
+       x="58.737503"
+       y="39.687511"
+       class="Floor_Sideview" />
+    <path
+       sodipodi:type="star"
+       style="fill:#ffb6c5;fill-opacity:1;stroke-width:0.264583"
+       id="Roof"
+       inkscape:flatsided="true"
+       sodipodi:sides="3"
+       sodipodi:cx="59.048519"
+       sodipodi:cy="36.905327"
+       sodipodi:r1="50.527515"
+       sodipodi:r2="25.263758"
+       sodipodi:arg1="0.51655768"
+       sodipodi:arg2="1.5637552"
+       inkscape:rounded="0"
+       inkscape:randomized="0"
+       d="M 102.98343,61.860356 15.469375,62.476561 58.692753,-13.620936 Z"
+       inkscape:transform-center-x="-0.2093186"
+       inkscape:transform-center-y="-6.0228234"
+       transform="matrix(1.1767155,0,0,0.48269415,40.849754,7.3683569)"
+       class="Roof" />
+  </g>
+</svg>
