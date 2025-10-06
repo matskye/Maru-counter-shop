@@ -652,6 +652,261 @@ input[type="checkbox"] {
   justify-content: flex-end;
 }
 
+/* House drawer */
+.house-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.house-layout {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.house-floor-plan,
+.house-side-view,
+.house-outdoor {
+  background: linear-gradient(160deg, rgba(107, 91, 255, 0.12), rgba(255, 111, 145, 0.08));
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: inset 0 0 0 1px rgba(107, 91, 255, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.house-outdoor-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.house-floor-plan__level {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.house-floor-plan__label {
+  font-weight: 600;
+  color: var(--accent-dark);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.house-floor-plan__rooms {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.house-room {
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: inset 0 0 0 1px rgba(107, 91, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.house-toggle {
+  border: none;
+  background: rgba(107, 91, 255, 0.12);
+  color: var(--muted);
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 8px 10px;
+  cursor: pointer;
+  transition: background var(--transition), box-shadow var(--transition), transform var(--transition);
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40px;
+}
+
+.house-toggle:hover,
+.house-toggle:focus-visible {
+  background: rgba(107, 91, 255, 0.18);
+  box-shadow: 0 10px 24px -18px rgba(81, 66, 208, 0.7);
+}
+
+.house-toggle.is-selected {
+  background: linear-gradient(135deg, rgba(107, 91, 255, 0.9), rgba(255, 111, 145, 0.85));
+  color: white;
+  box-shadow: 0 18px 36px -20px rgba(81, 66, 208, 0.75);
+}
+
+.house-toggle.is-target:not(.is-selected) {
+  box-shadow: inset 0 0 0 2px rgba(107, 91, 255, 0.4);
+}
+
+.house-tatami-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.house-tatami {
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  border: none;
+  background: rgba(107, 91, 255, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(107, 91, 255, 0.25);
+  cursor: pointer;
+  transition: background var(--transition), transform var(--transition);
+}
+
+.house-tatami:hover,
+.house-tatami:focus-visible {
+  background: rgba(107, 91, 255, 0.18);
+}
+
+.house-tatami.is-selected {
+  background: linear-gradient(135deg, rgba(107, 91, 255, 0.88), rgba(255, 111, 145, 0.75));
+  box-shadow: 0 12px 28px -18px rgba(81, 66, 208, 0.7);
+}
+
+.house-tatami.is-target:not(.is-selected) {
+  box-shadow: inset 0 0 0 2px rgba(107, 91, 255, 0.4);
+}
+
+.house-side-levels {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.house-side-level {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.house-window-row {
+  display: none;
+  gap: 10px;
+}
+
+.house-window {
+  flex: 1;
+  border-radius: 12px;
+  border: none;
+  padding: 14px 0;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: inset 0 0 0 1px rgba(107, 91, 255, 0.2);
+  cursor: pointer;
+  transition: background var(--transition), box-shadow var(--transition);
+}
+
+.house-window:hover,
+.house-window:focus-visible {
+  background: rgba(107, 91, 255, 0.16);
+}
+
+.house-window.is-selected {
+  background: linear-gradient(135deg, rgba(107, 91, 255, 0.9), rgba(255, 111, 145, 0.85));
+  color: white;
+  box-shadow: 0 16px 32px -18px rgba(81, 66, 208, 0.75);
+}
+
+.house-window.is-target:not(.is-selected) {
+  box-shadow: inset 0 0 0 2px rgba(107, 91, 255, 0.45);
+}
+
+.house-drawer--windows .house-floor-toggle {
+  display: none;
+}
+
+.house-drawer--windows .house-window-row {
+  display: flex;
+}
+
+.house-outdoor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.house-outdoor-label {
+  font-weight: 600;
+  color: var(--accent-dark);
+}
+
+.house-car,
+.house-tree {
+  border: none;
+  border-radius: 16px;
+  padding: 16px 0;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(107, 91, 255, 0.2);
+  cursor: pointer;
+  font-size: 1.6rem;
+  transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
+}
+
+.house-car:hover,
+.house-car:focus-visible,
+.house-tree:hover,
+.house-tree:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px -22px rgba(81, 66, 208, 0.8);
+}
+
+.house-car.is-selected,
+.house-tree.is-selected {
+  background: linear-gradient(135deg, rgba(107, 91, 255, 0.9), rgba(255, 111, 145, 0.85));
+  color: white;
+}
+
+.house-car.is-target:not(.is-selected),
+.house-tree.is-target:not(.is-selected) {
+  box-shadow: inset 0 0 0 2px rgba(107, 91, 255, 0.45);
+}
+
+.house-selection-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: inset 0 0 0 1px rgba(107, 91, 255, 0.16);
+}
+
+.house-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.house-summary-item strong {
+  font-size: 1.2rem;
+  color: var(--accent-dark);
+}
+
+.house-summary-item.is-target {
+  background: linear-gradient(135deg, rgba(107, 91, 255, 0.12), rgba(255, 111, 145, 0.1));
+  border-radius: 12px;
+  padding: 10px;
+  box-shadow: inset 0 0 0 1px rgba(107, 91, 255, 0.2);
+}
+
+@media (max-width: 640px) {
+  .house-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .house-floor-plan__rooms {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 /* Clock drawer */
 .clock-face-wrapper {
   display: flex;

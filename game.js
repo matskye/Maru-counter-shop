@@ -36,7 +36,8 @@ const drawerOverlay = document.getElementById("drawerOverlay");
 const drawerContainer = document.getElementById("drawerContainer");
 const drawerPanels = {
   clock: document.getElementById("clockDrawer"),
-  calendar: document.getElementById("calendarDrawer")
+  calendar: document.getElementById("calendarDrawer"),
+  house: document.getElementById("houseDrawer")
 };
 const drawerLaunchers = document.querySelectorAll("[data-drawer-toggle]");
 const clockFaceEl = document.getElementById("clockFace");
@@ -50,6 +51,12 @@ const calendarTarget = document.getElementById("calendarTarget");
 const calendarSelectionCount = document.getElementById("calendarSelectionCount");
 const calendarDoneBtn = document.getElementById("calendarDoneBtn");
 const calendarTearBtn = document.getElementById("calendarTearBtn");
+const houseDrawerEl = document.getElementById("houseDrawer");
+const houseFloorPlanEl = document.getElementById("houseFloorPlan");
+const houseSideViewEl = document.getElementById("houseSideView");
+const houseOutdoorEl = document.getElementById("houseOutdoor");
+const houseSelectionSummaryEl = document.getElementById("houseSelectionSummary");
+const houseDoneBtn = document.getElementById("houseDoneBtn");
 
 let hintVisible = false;
 let counterStats = loadCounterStats();
@@ -80,6 +87,11 @@ function isClockCounter(counterObj) {
 function isCalendarCounter(counterObj) {
   const practice = getCounterPractice(counterObj);
   return Boolean(practice && practice.type === "calendar");
+}
+
+function isHouseCounter(counterObj) {
+  const practice = getCounterPractice(counterObj);
+  return Boolean(practice && practice.type === "house");
 }
 
 function randomInt(min, max) {
@@ -640,6 +652,11 @@ function updateCounterHint() {
   } else if (practice && practice.type === "calendar") {
     const label = formatCalendarLabel(practice.mode, currentRequest.number);
     hintHTML = `Use the calendar drawer to mark <strong>${currentRequest.number} ${label}</strong>.`;
+  } else if (practice && practice.type === "house") {
+    const targetKey = getHousePracticeTarget(counterObj);
+    const label = formatHouseTargetLabel(targetKey, currentRequest.number);
+    const targetTitle = getHouseTargetTitle(targetKey);
+    hintHTML = `Use the house drawer to select <strong>${currentRequest.number} ${label}</strong> (${targetTitle.toLowerCase()}).`;
   } else {
     const examples = Array.isArray(counterObj.items)
       ? counterObj.items
@@ -718,6 +735,18 @@ function randomRequest() {
     };
   }
 
+  if (practice && practice.type === "house") {
+    const min = Number.isFinite(practice.min) ? practice.min : 1;
+    const max = Number.isFinite(practice.max) ? practice.max : min;
+    const value = randomInt(min, max);
+    return {
+      counterObj,
+      number: value,
+      item: null,
+      houseTarget: getHousePracticeTarget(counterObj)
+    };
+  }
+
   const number = Math.ceil(Math.random() * 5); // up to 5 items for demo
   const item = counterObj.items[Math.floor(Math.random() * counterObj.items.length)];
   return { counterObj, number, item };
@@ -749,6 +778,9 @@ function newCustomer() {
   } else if (drawerState.currentType === "calendar") {
     initCalendarDrawer();
     refreshCalendarMode();
+  } else if (drawerState.currentType === "house") {
+    initHouseDrawer();
+    prepareHouseDrawerForRequest();
   }
 }
 
@@ -812,7 +844,7 @@ function populateShelfForRequest(request) {
   if (!gameData || !request) return;
 
   const practice = getCounterPractice(request.counterObj);
-  if (practice && (practice.type === "clock" || practice.type === "calendar")) {
+  if (practice && (practice.type === "clock" || practice.type === "calendar" || practice.type === "house")) {
     renderShelf([]);
     return;
   }
@@ -881,6 +913,11 @@ function getCounterDropHintHTML() {
   if (practice && practice.type === "calendar") {
     const label = formatCalendarLabel(practice.mode, currentRequest.number);
     return `<span class="drop-hint">Use the calendar drawer to mark ${currentRequest.number} ${label}.</span>`;
+  }
+  if (practice && practice.type === "house") {
+    const targetKey = getHousePracticeTarget(currentRequest.counterObj);
+    const label = formatHouseTargetLabel(targetKey, currentRequest.number);
+    return `<span class="drop-hint">Use the house drawer to select ${currentRequest.number} ${label}.</span>`;
   }
   return COUNTER_HINT_HTML;
 }
@@ -1181,6 +1218,26 @@ const drawerState = {
       weekMap: new Map(),
       dayMap: new Map()
     }
+  },
+  house: {
+    initialized: false,
+    activeTarget: null,
+    selected: {
+      floors: new Set(),
+      rooms: new Set(),
+      tatami: new Set(),
+      cars: new Set(),
+      trees: new Set(),
+      windows: new Set()
+    },
+    elements: {
+      floors: [],
+      rooms: [],
+      tatami: [],
+      cars: [],
+      trees: [],
+      windows: []
+    }
   }
 };
 
@@ -1214,12 +1271,78 @@ const CALENDAR_MODE_TARGET_LABELS = {
   years: "year(s)"
 };
 
+const HOUSE_SELECTION_KEYS = ["floors", "rooms", "tatami", "cars", "trees", "windows"];
+
+const HOUSE_TARGET_LABELS = {
+  floors: "floor(s)",
+  rooms: "room(s)",
+  tatami: "tatami mat(s)",
+  cars: "car(s)",
+  trees: "tree(s)",
+  windows: "window(s)"
+};
+
+const HOUSE_TARGET_TITLES = {
+  floors: "Floors",
+  rooms: "Rooms",
+  tatami: "Tatami",
+  cars: "Cars",
+  trees: "Trees",
+  windows: "Windows"
+};
+
+const HOUSE_COUNTER_TARGET_MAP = {
+  "階": "floors",
+  "フロア": "floors",
+  "部屋": "rooms",
+  "ルーム": "rooms",
+  "畳": "tatami",
+  "枚": "windows",
+  "台": "cars",
+  "車": "cars",
+  "本": "trees"
+};
+
 function formatCalendarLabel(mode, count) {
   const base = CALENDAR_MODE_TARGET_LABELS[mode] || "item(s)";
   if (!base.includes("(s)")) {
     return base;
   }
   return base.replace("(s)", count === 1 ? "" : "s");
+}
+
+function formatHouseTargetLabel(targetKey, count) {
+  const base = HOUSE_TARGET_LABELS[targetKey];
+  if (!base) return "item(s)";
+  if (!base.includes("(s)")) {
+    return base;
+  }
+  return base.replace("(s)", count === 1 ? "" : "s");
+}
+
+function getHouseTargetTitle(targetKey) {
+  return HOUSE_TARGET_TITLES[targetKey] || "Items";
+}
+
+function getHousePracticeTarget(counterObj) {
+  if (!counterObj) return null;
+  const practice = getCounterPractice(counterObj);
+  if (practice && practice.type === "house") {
+    if (practice.target) {
+      const normalized = practice.target
+        .toString()
+        .trim()
+        .toLowerCase();
+      if (HOUSE_SELECTION_KEYS.includes(normalized)) {
+        return normalized;
+      }
+    }
+  }
+  const counterKey = counterObj.counter;
+  if (counterKey && HOUSE_COUNTER_TARGET_MAP[counterKey]) {
+    return HOUSE_COUNTER_TARGET_MAP[counterKey];
+  }
+  return null;
 }
 
 function normalizeCalendarKey(value) {
@@ -1301,7 +1424,8 @@ function updateLauncherState(activeType) {
 
 function openDrawer(type) {
   if (!drawerContainer) return;
-  const normalizedType = type === "clock" || type === "calendar" ? type : null;
+  const allowedTypes = ["clock", "calendar", "house"];
+  const normalizedType = allowedTypes.includes(type) ? type : null;
   if (!normalizedType || !drawerPanels[normalizedType]) return;
 
   const isActive = drawerContainer.classList.contains("is-active");
@@ -1342,6 +1466,9 @@ function openDrawer(type) {
   } else if (normalizedType === "calendar") {
     initCalendarDrawer();
     refreshCalendarMode();
+  } else if (normalizedType === "house") {
+    initHouseDrawer();
+    prepareHouseDrawerForRequest();
   }
 }
 
@@ -1990,6 +2117,284 @@ function dispatchCalendarAnswer(selection) {
   }
 }
 
+function registerHouseSelectable(element, type, { stopPropagation = false } = {}) {
+  if (!element || !HOUSE_SELECTION_KEYS.includes(type)) return;
+  const houseState = drawerState.house;
+  element.dataset.selectionType = type;
+  if (!element.dataset.selectionId) {
+    element.dataset.selectionId = `${type}-${houseState.elements[type].length + 1}`;
+  }
+  element.setAttribute("aria-pressed", "false");
+  const activate = event => {
+    if (stopPropagation) {
+      event.stopPropagation();
+    }
+    toggleSelection(element);
+  };
+  element.addEventListener("click", activate);
+  element.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+      event.preventDefault();
+      if (stopPropagation) {
+        event.stopPropagation();
+      }
+      toggleSelection(element);
+    }
+  });
+  houseState.elements[type].push(element);
+}
+
+function toggleSelection(element, forceState) {
+  if (!element) return false;
+  const type = element.dataset.selectionType;
+  if (!HOUSE_SELECTION_KEYS.includes(type)) return false;
+  const id = element.dataset.selectionId || `${type}-${Date.now()}`;
+  element.dataset.selectionId = id;
+  const houseState = drawerState.house;
+  if (!(houseState.selected[type] instanceof Set)) {
+    houseState.selected[type] = new Set();
+  }
+  const selectedSet = houseState.selected[type];
+  const shouldSelect = typeof forceState === "boolean" ? forceState : !selectedSet.has(id);
+  if (shouldSelect) {
+    selectedSet.add(id);
+  } else {
+    selectedSet.delete(id);
+  }
+  element.classList.toggle("is-selected", shouldSelect);
+  element.setAttribute("aria-pressed", shouldSelect ? "true" : "false");
+  updateHouseSelectionSummary();
+  return shouldSelect;
+}
+
+function resetHouseSelections() {
+  const houseState = drawerState.house;
+  HOUSE_SELECTION_KEYS.forEach(key => {
+    if (!(houseState.selected[key] instanceof Set)) {
+      houseState.selected[key] = new Set();
+    } else {
+      houseState.selected[key].clear();
+    }
+    houseState.elements[key].forEach(element => {
+      element.classList.remove("is-selected");
+      element.setAttribute("aria-pressed", "false");
+    });
+  });
+  updateHouseSelectionSummary();
+}
+
+function getHouseSelectionSnapshot() {
+  const snapshot = {};
+  const houseState = drawerState.house;
+  HOUSE_SELECTION_KEYS.forEach(key => {
+    const set = houseState.selected[key];
+    snapshot[key] = set instanceof Set ? set.size : 0;
+  });
+  return snapshot;
+}
+
+function updateHouseSelectionSummary() {
+  if (!houseSelectionSummaryEl) return;
+  const fragment = document.createDocumentFragment();
+  const snapshot = getHouseSelectionSnapshot();
+  const activeTarget = drawerState.house.activeTarget;
+  HOUSE_SELECTION_KEYS.forEach(key => {
+    const item = document.createElement("div");
+    item.className = "house-summary-item";
+    if (key === activeTarget) {
+      item.classList.add("is-target");
+    }
+    const label = document.createElement("span");
+    label.textContent = getHouseTargetTitle(key);
+    const count = document.createElement("strong");
+    count.textContent = snapshot[key];
+    item.append(label, count);
+    fragment.appendChild(item);
+  });
+  houseSelectionSummaryEl.innerHTML = "";
+  houseSelectionSummaryEl.appendChild(fragment);
+}
+
+function renderHouseView(counterObj) {
+  if (!houseDrawerEl) return;
+  const targetKey = counterObj ? getHousePracticeTarget(counterObj) : null;
+  const validTarget = HOUSE_SELECTION_KEYS.includes(targetKey) ? targetKey : null;
+  drawerState.house.activeTarget = validTarget;
+  houseDrawerEl.classList.toggle("house-drawer--windows", validTarget === "windows");
+  HOUSE_SELECTION_KEYS.forEach(key => {
+    const elements = drawerState.house.elements[key];
+    const isTarget = key === validTarget;
+    elements.forEach(element => {
+      element.classList.toggle("is-target", isTarget);
+    });
+  });
+  updateHouseSelectionSummary();
+}
+
+function prepareHouseDrawerForRequest() {
+  if (!houseDrawerEl) return;
+  resetHouseSelections();
+  const counterObj = currentRequest ? currentRequest.counterObj : null;
+  renderHouseView(counterObj);
+}
+
+function initHouseDrawer() {
+  const houseState = drawerState.house;
+  if (houseState.initialized) return;
+  if (!houseDrawerEl) return;
+
+  HOUSE_SELECTION_KEYS.forEach(key => {
+    houseState.elements[key] = [];
+    if (!(houseState.selected[key] instanceof Set)) {
+      houseState.selected[key] = new Set();
+    } else {
+      houseState.selected[key].clear();
+    }
+  });
+
+  if (houseFloorPlanEl) {
+    houseFloorPlanEl.innerHTML = "";
+    for (let floor = 3; floor >= 1; floor--) {
+      const level = document.createElement("div");
+      level.className = "house-floor-plan__level";
+
+      const label = document.createElement("div");
+      label.className = "house-floor-plan__label";
+      label.innerHTML = `<span>Floor ${floor}</span><span>📐</span>`;
+      level.appendChild(label);
+
+      const roomsGrid = document.createElement("div");
+      roomsGrid.className = "house-floor-plan__rooms";
+
+      for (let room = 1; room <= 4; room++) {
+        const roomWrapper = document.createElement("div");
+        roomWrapper.className = "house-room";
+
+        const roomButton = document.createElement("button");
+        roomButton.type = "button";
+        roomButton.className = "house-toggle house-room-toggle";
+        roomButton.textContent = `Room ${room}`;
+        roomButton.dataset.selectionId = `floor-${floor}-room-${room}`;
+        roomButton.setAttribute("aria-label", `Room ${room} on floor ${floor}`);
+        registerHouseSelectable(roomButton, "rooms");
+        roomWrapper.appendChild(roomButton);
+
+        const tatamiGrid = document.createElement("div");
+        tatamiGrid.className = "house-tatami-grid";
+        for (let mat = 1; mat <= 4; mat++) {
+          const tatami = document.createElement("button");
+          tatami.type = "button";
+          tatami.className = "house-tatami";
+          tatami.dataset.selectionId = `floor-${floor}-room-${room}-tatami-${mat}`;
+          tatami.setAttribute("aria-label", `Tatami ${mat} in room ${room} floor ${floor}`);
+          registerHouseSelectable(tatami, "tatami", { stopPropagation: true });
+          tatamiGrid.appendChild(tatami);
+        }
+        roomWrapper.appendChild(tatamiGrid);
+        roomsGrid.appendChild(roomWrapper);
+      }
+
+      level.appendChild(roomsGrid);
+      houseFloorPlanEl.appendChild(level);
+    }
+  }
+
+  if (houseSideViewEl) {
+    houseSideViewEl.innerHTML = "";
+    const levelsWrapper = document.createElement("div");
+    levelsWrapper.className = "house-side-levels";
+    for (let floor = 3; floor >= 1; floor--) {
+      const level = document.createElement("div");
+      level.className = "house-side-level";
+
+      const floorButton = document.createElement("button");
+      floorButton.type = "button";
+      floorButton.className = "house-toggle house-floor-toggle";
+      floorButton.textContent = `Floor ${floor}`;
+      floorButton.dataset.selectionId = `side-floor-${floor}`;
+      floorButton.setAttribute("aria-label", `Select floor ${floor}`);
+      registerHouseSelectable(floorButton, "floors");
+      level.appendChild(floorButton);
+
+      const windowRow = document.createElement("div");
+      windowRow.className = "house-window-row";
+      for (let windowIndex = 1; windowIndex <= 2; windowIndex++) {
+        const windowButton = document.createElement("button");
+        windowButton.type = "button";
+        windowButton.className = "house-window";
+        windowButton.textContent = "🪟";
+        windowButton.dataset.selectionId = `floor-${floor}-window-${windowIndex}`;
+        windowButton.setAttribute("aria-label", `Window ${windowIndex} on floor ${floor}`);
+        registerHouseSelectable(windowButton, "windows");
+        windowRow.appendChild(windowButton);
+      }
+      level.appendChild(windowRow);
+      levelsWrapper.appendChild(level);
+    }
+    houseSideViewEl.appendChild(levelsWrapper);
+  }
+
+  if (houseOutdoorEl) {
+    houseOutdoorEl.innerHTML = "";
+
+    const carSection = document.createElement("div");
+    carSection.className = "house-outdoor-section";
+    const carLabel = document.createElement("div");
+    carLabel.className = "house-outdoor-label";
+    carLabel.textContent = "Car spaces";
+    carSection.appendChild(carLabel);
+    const carGrid = document.createElement("div");
+    carGrid.className = "house-outdoor-grid";
+    for (let slot = 1; slot <= 3; slot++) {
+      const carButton = document.createElement("button");
+      carButton.type = "button";
+      carButton.className = "house-car";
+      carButton.textContent = "🚗";
+      carButton.dataset.selectionId = `car-${slot}`;
+      carButton.setAttribute("aria-label", `Car space ${slot}`);
+      registerHouseSelectable(carButton, "cars");
+      carGrid.appendChild(carButton);
+    }
+    carSection.appendChild(carGrid);
+    houseOutdoorEl.appendChild(carSection);
+
+    const treeSection = document.createElement("div");
+    treeSection.className = "house-outdoor-section";
+    const treeLabel = document.createElement("div");
+    treeLabel.className = "house-outdoor-label";
+    treeLabel.textContent = "Trees";
+    treeSection.appendChild(treeLabel);
+    const treeGrid = document.createElement("div");
+    treeGrid.className = "house-outdoor-grid";
+    for (let index = 1; index <= 3; index++) {
+      const treeButton = document.createElement("button");
+      treeButton.type = "button";
+      treeButton.className = "house-tree";
+      treeButton.textContent = "🌳";
+      treeButton.dataset.selectionId = `tree-${index}`;
+      treeButton.setAttribute("aria-label", `Tree ${index}`);
+      registerHouseSelectable(treeButton, "trees");
+      treeGrid.appendChild(treeButton);
+    }
+    treeSection.appendChild(treeGrid);
+    houseOutdoorEl.appendChild(treeSection);
+  }
+
+  houseState.initialized = true;
+  resetHouseSelections();
+  renderHouseView(currentRequest ? currentRequest.counterObj : null);
+}
+
+function emitHouseAnswer() {
+  const selection = getHouseSelectionSnapshot();
+  if (typeof window.checkHouseAnswer === "function") {
+    window.checkHouseAnswer(selection);
+  } else {
+    console.info("[House drawer] Selected layout:", selection);
+  }
+  closeDrawer();
+}
+
 function computeClockTargetFromPractice(practice, number) {
   const target = { hours: 0, minutes: 0, seconds: 0 };
   if (!practice) return target;
@@ -2099,8 +2504,45 @@ function handleCalendarPracticeAnswer(selection) {
   });
 }
 
+function handleHousePracticeAnswer(selection) {
+  if (!currentRequest || !currentRequest.counterObj) return;
+  const { counterObj } = currentRequest;
+  if (!isHouseCounter(counterObj)) {
+    console.info("[House drawer] Selected layout:", selection);
+    return;
+  }
+
+  const targetKey = getHousePracticeTarget(counterObj);
+  const validTarget = HOUSE_SELECTION_KEYS.includes(targetKey) ? targetKey : null;
+  const expectedCount = Number(currentRequest.number) || 0;
+  const normalizedSelection = selection && typeof selection === "object" ? selection : {};
+  const rawSelected = validTarget ? normalizedSelection[validTarget] : 0;
+  const selectedCount = Number.isFinite(Number(rawSelected)) ? Number(rawSelected) : 0;
+
+  const wasCorrect = selectedCount === expectedCount;
+
+  recordCounterResult(counterObj, wasCorrect);
+
+  const label = formatHouseTargetLabel(validTarget, expectedCount);
+  const successHTML = `<strong>Nice!</strong> You selected ${expectedCount} ${label}.`;
+
+  const failureParts = [];
+  if (selectedCount !== expectedCount) {
+    failureParts.push(`Select ${expectedCount} ${label} (you chose ${selectedCount}).`);
+  }
+
+  const failureHTML = `<strong>Almost!</strong> ${failureParts.join(" ") || `Select ${expectedCount} ${label}.`}`;
+
+  handleAnswerFeedback(wasCorrect, {
+    successHTML,
+    failureHTML,
+    clearCounterOnFailure: false
+  });
+}
+
 window.checkClockAnswer = handleClockPracticeAnswer;
 window.checkCalendarAnswer = handleCalendarPracticeAnswer;
+window.checkHouseAnswer = handleHousePracticeAnswer;
 
 setupDrawerLaunchers();
 
@@ -2133,6 +2575,10 @@ if (calendarDoneBtn) {
 
 if (calendarTearBtn) {
   calendarTearBtn.addEventListener("click", toggleCalendarTear);
+}
+
+if (houseDoneBtn) {
+  houseDoneBtn.addEventListener("click", emitHouseAnswer);
 }
 
 window.addEventListener('resize', syncCounterItemSize);
