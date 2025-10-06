@@ -1245,6 +1245,9 @@ const drawerState = {
   },
   house: {
     initialized: false,
+    loading: false,
+    assetPromise: null,
+    svgSources: null,
     activeTarget: null,
     selected: {
       floors: new Set(),
@@ -1296,6 +1299,8 @@ const CALENDAR_MODE_TARGET_LABELS = {
 };
 
 const HOUSE_SELECTION_KEYS = ["floors", "rooms", "tatami", "cars", "trees", "windows"];
+const SVG_NS = "http://www.w3.org/2000/svg";
+const HOUSE_FLOOR_ORDER = [3, 2, 1];
 
 const HOUSE_TARGET_LABELS = {
   floors: "floor(s)",
@@ -2144,6 +2149,18 @@ function dispatchCalendarAnswer(selection) {
 function registerHouseSelectable(element, type, { stopPropagation = false } = {}) {
   if (!element || !HOUSE_SELECTION_KEYS.includes(type)) return;
   const houseState = drawerState.house;
+  if (!element.classList.contains("house-selectable")) {
+    element.classList.add("house-selectable");
+  }
+  if (!element.hasAttribute("tabindex")) {
+    element.setAttribute("tabindex", "0");
+  }
+  if (!element.hasAttribute("role")) {
+    element.setAttribute("role", "button");
+  }
+  if (element.namespaceURI === SVG_NS) {
+    element.setAttribute("focusable", "true");
+  }
   element.dataset.selectionType = type;
   if (!element.dataset.selectionId) {
     element.dataset.selectionId = `${type}-${houseState.elements[type].length + 1}`;
@@ -2262,9 +2279,150 @@ function prepareHouseDrawerForRequest() {
   renderHouseView(counterObj);
 }
 
+function fetchSvgAsset(path) {
+  return fetch(path).then(response => {
+    if (!response.ok) {
+      throw new Error(`Failed to load SVG at ${path}: ${response.status} ${response.statusText}`);
+    }
+    return response.text();
+  });
+}
+
+function createSvgElementFromMarkup(markup) {
+  if (!markup) return null;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(markup, "image/svg+xml");
+    const root = doc.documentElement;
+    if (!root || root.nodeName.toLowerCase() === "parsererror") {
+      return null;
+    }
+    const svgNode = root.nodeName.toLowerCase() === "svg" ? root : doc.querySelector("svg");
+    if (!svgNode) return null;
+    const imported = document.importNode(svgNode, true);
+    imported.removeAttribute("width");
+    imported.removeAttribute("height");
+    imported.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    imported.classList.add("house-svg");
+    imported.setAttribute("focusable", "false");
+    imported.setAttribute("aria-hidden", "true");
+    return imported;
+  } catch (error) {
+    console.error("[House drawer] Could not parse SVG markup:", error);
+    return null;
+  }
+}
+
+function getFloorLabel(floorNumber) {
+  switch (floorNumber) {
+    case 1:
+      return "Ground floor";
+    case 2:
+      return "Second floor";
+    case 3:
+      return "Third floor";
+    default:
+      return `Floor ${floorNumber}`;
+  }
+}
+
+function ensureHouseElementLabel(element, label) {
+  if (!element) return;
+  if (label) {
+    element.setAttribute("aria-label", label);
+  }
+}
+
+function registerFloorPlanElements(svgEl, floorNumber, { includeOutdoor = false } = {}) {
+  if (!svgEl) return;
+  const roomGroups = svgEl.querySelectorAll(".Room_Grouped");
+  roomGroups.forEach((group, groupIndex) => {
+    const roomRect = group.querySelector(".Room");
+    if (roomRect) {
+      ensureHouseElementLabel(roomRect, `Room ${groupIndex + 1} on ${getFloorLabel(floorNumber).toLowerCase()}`);
+      roomRect.dataset.selectionId = `floor-${floorNumber}-room-${groupIndex + 1}`;
+      registerHouseSelectable(roomRect, "rooms");
+    }
+    const tatamiRects = group.querySelectorAll(".Tatami");
+    tatamiRects.forEach((tatamiRect, tatamiIndex) => {
+      ensureHouseElementLabel(
+        tatamiRect,
+        `Tatami ${tatamiIndex + 1} in room ${groupIndex + 1} on ${getFloorLabel(floorNumber).toLowerCase()}`
+      );
+      tatamiRect.dataset.selectionId = `floor-${floorNumber}-room-${groupIndex + 1}-tatami-${tatamiIndex + 1}`;
+      registerHouseSelectable(tatamiRect, "tatami", { stopPropagation: true });
+    });
+  });
+
+  if (includeOutdoor) {
+    const parkingRects = svgEl.querySelectorAll(".ParkingSpot rect");
+    parkingRects.forEach((spotRect, index) => {
+      ensureHouseElementLabel(spotRect, `Parking spot ${index + 1}`);
+      spotRect.dataset.selectionId = `car-${index + 1}`;
+      registerHouseSelectable(spotRect, "cars");
+    });
+
+    const treeElements = svgEl.querySelectorAll(".Tree");
+    treeElements.forEach((treeEl, index) => {
+      ensureHouseElementLabel(treeEl, `Tree ${index + 1}`);
+      treeEl.dataset.selectionId = `tree-${index + 1}`;
+      registerHouseSelectable(treeEl, "trees");
+    });
+  }
+}
+
+function createSideViewWindows(svgEl, floorRect, floorNumber) {
+  if (!svgEl || !floorRect) return;
+  const bbox = floorRect.getBBox ? floorRect.getBBox() : null;
+  if (!bbox || !Number.isFinite(bbox.width) || !Number.isFinite(bbox.height) || bbox.width <= 0 || bbox.height <= 0) {
+    return;
+  }
+  const windowCount = 2;
+  const windowWidth = bbox.width * 0.24;
+  const windowHeight = bbox.height * 0.55;
+  const gap = (bbox.width - windowCount * windowWidth) / (windowCount + 1);
+  const baseY = bbox.y + (bbox.height - windowHeight) / 2;
+
+  for (let i = 0; i < windowCount; i += 1) {
+    const x = bbox.x + gap * (i + 1) + windowWidth * i;
+    const windowRect = document.createElementNS(SVG_NS, "rect");
+    windowRect.setAttribute("x", x.toFixed(2));
+    windowRect.setAttribute("y", baseY.toFixed(2));
+    windowRect.setAttribute("width", windowWidth.toFixed(2));
+    windowRect.setAttribute("height", windowHeight.toFixed(2));
+    const radius = Math.min(windowWidth, windowHeight) * 0.2;
+    windowRect.setAttribute("rx", radius.toFixed(2));
+    windowRect.setAttribute("ry", radius.toFixed(2));
+    windowRect.classList.add("house-window");
+    windowRect.dataset.selectionId = `floor-${floorNumber}-window-${i + 1}`;
+    ensureHouseElementLabel(windowRect, `Window ${i + 1} on ${getFloorLabel(floorNumber).toLowerCase()}`);
+    floorRect.parentNode.insertBefore(windowRect, floorRect.nextSibling);
+    registerHouseSelectable(windowRect, "windows");
+  }
+}
+
+function registerSideViewElements(svgEl) {
+  if (!svgEl) return;
+  const floorEntries = Array.from(svgEl.querySelectorAll(".Floor_Sideview")).map(rect => ({
+    rect,
+    y: rect.getBBox ? rect.getBBox().y : 0
+  }));
+  if (!floorEntries.length) return;
+  floorEntries
+    .sort((a, b) => a.y - b.y)
+    .forEach((entry, index) => {
+      const floorNumber = HOUSE_FLOOR_ORDER[index] || HOUSE_FLOOR_ORDER[HOUSE_FLOOR_ORDER.length - 1] - index;
+      ensureHouseElementLabel(entry.rect, getFloorLabel(floorNumber));
+      entry.rect.dataset.selectionId = `side-floor-${floorNumber}`;
+      entry.rect.dataset.floorNumber = String(floorNumber);
+      registerHouseSelectable(entry.rect, "floors");
+      createSideViewWindows(svgEl, entry.rect, floorNumber);
+    });
+}
+
 function initHouseDrawer() {
   const houseState = drawerState.house;
-  if (houseState.initialized) return;
+  if (houseState.initialized || houseState.loading) return;
   if (!houseDrawerEl) return;
 
   HOUSE_SELECTION_KEYS.forEach(key => {
@@ -2276,137 +2434,93 @@ function initHouseDrawer() {
     }
   });
 
-  if (houseFloorPlanEl) {
-    houseFloorPlanEl.innerHTML = "";
-    for (let floor = 3; floor >= 1; floor--) {
-      const level = document.createElement("div");
-      level.className = "house-floor-plan__level";
+  if (!houseState.assetPromise) {
+    houseState.assetPromise = Promise.all([
+      fetchSvgAsset("data/assets/SVGs/Floor_GroundFloor.svg"),
+      fetchSvgAsset("data/assets/SVGs/Floor.svg"),
+      fetchSvgAsset("data/assets/SVGs/Sideview.svg")
+    ]).then(([groundMarkup, floorMarkup, sideMarkup]) => {
+      houseState.svgSources = {
+        ground: groundMarkup,
+        floor: floorMarkup,
+        side: sideMarkup
+      };
+      return houseState.svgSources;
+    });
+  }
 
-      const label = document.createElement("div");
-      label.className = "house-floor-plan__label";
-      label.innerHTML = `<span>Floor ${floor}</span><span>📐</span>`;
-      level.appendChild(label);
+  houseState.loading = true;
 
-      const roomsGrid = document.createElement("div");
-      roomsGrid.className = "house-floor-plan__rooms";
+  houseState.assetPromise
+    .then(svgSources => {
+      if (!svgSources) return;
 
-      for (let room = 1; room <= 4; room++) {
-        const roomWrapper = document.createElement("div");
-        roomWrapper.className = "house-room";
+      if (houseFloorPlanEl) {
+        houseFloorPlanEl.innerHTML = "";
+        const stack = document.createElement("div");
+        stack.className = "house-floor-stack";
 
-        const roomButton = document.createElement("button");
-        roomButton.type = "button";
-        roomButton.className = "house-toggle house-room-toggle";
-        roomButton.textContent = `Room ${room}`;
-        roomButton.dataset.selectionId = `floor-${floor}-room-${room}`;
-        roomButton.setAttribute("aria-label", `Room ${room} on floor ${floor}`);
-        registerHouseSelectable(roomButton, "rooms");
-        roomWrapper.appendChild(roomButton);
+        HOUSE_FLOOR_ORDER.forEach(floorNumber => {
+          const floorCard = document.createElement("article");
+          floorCard.className = "house-floor";
+          floorCard.dataset.floorNumber = String(floorNumber);
 
-        const tatamiGrid = document.createElement("div");
-        tatamiGrid.className = "house-tatami-grid";
-        for (let mat = 1; mat <= 4; mat++) {
-          const tatami = document.createElement("button");
-          tatami.type = "button";
-          tatami.className = "house-tatami";
-          tatami.dataset.selectionId = `floor-${floor}-room-${room}-tatami-${mat}`;
-          tatami.setAttribute("aria-label", `Tatami ${mat} in room ${room} floor ${floor}`);
-          registerHouseSelectable(tatami, "tatami", { stopPropagation: true });
-          tatamiGrid.appendChild(tatami);
+          const label = document.createElement("p");
+          label.className = "house-floor__label";
+          label.textContent = getFloorLabel(floorNumber);
+          floorCard.appendChild(label);
+
+          const markup = floorNumber === 1 ? svgSources.ground : svgSources.floor;
+          const svg = createSvgElementFromMarkup(markup);
+          if (svg) {
+            svg.dataset.floorNumber = String(floorNumber);
+            floorCard.appendChild(svg);
+            registerFloorPlanElements(svg, floorNumber, { includeOutdoor: floorNumber === 1 });
+          }
+
+          stack.appendChild(floorCard);
+        });
+
+        houseFloorPlanEl.appendChild(stack);
+      }
+
+      if (houseSideViewEl) {
+        houseSideViewEl.innerHTML = "";
+        const card = document.createElement("article");
+        card.className = "house-side-card";
+
+        const label = document.createElement("p");
+        label.className = "house-side-card__label";
+        label.textContent = "Side view";
+        card.appendChild(label);
+
+        const sideSvg = createSvgElementFromMarkup(svgSources.side);
+        if (sideSvg) {
+          card.appendChild(sideSvg);
+          registerSideViewElements(sideSvg);
         }
-        roomWrapper.appendChild(tatamiGrid);
-        roomsGrid.appendChild(roomWrapper);
+
+        houseSideViewEl.appendChild(card);
       }
 
-      level.appendChild(roomsGrid);
-      houseFloorPlanEl.appendChild(level);
-    }
-  }
-
-  if (houseSideViewEl) {
-    houseSideViewEl.innerHTML = "";
-    const levelsWrapper = document.createElement("div");
-    levelsWrapper.className = "house-side-levels";
-    for (let floor = 3; floor >= 1; floor--) {
-      const level = document.createElement("div");
-      level.className = "house-side-level";
-
-      const floorButton = document.createElement("button");
-      floorButton.type = "button";
-      floorButton.className = "house-toggle house-floor-toggle";
-      floorButton.textContent = `Floor ${floor}`;
-      floorButton.dataset.selectionId = `side-floor-${floor}`;
-      floorButton.setAttribute("aria-label", `Select floor ${floor}`);
-      registerHouseSelectable(floorButton, "floors");
-      level.appendChild(floorButton);
-
-      const windowRow = document.createElement("div");
-      windowRow.className = "house-window-row";
-      for (let windowIndex = 1; windowIndex <= 2; windowIndex++) {
-        const windowButton = document.createElement("button");
-        windowButton.type = "button";
-        windowButton.className = "house-window";
-        windowButton.textContent = "🪟";
-        windowButton.dataset.selectionId = `floor-${floor}-window-${windowIndex}`;
-        windowButton.setAttribute("aria-label", `Window ${windowIndex} on floor ${floor}`);
-        registerHouseSelectable(windowButton, "windows");
-        windowRow.appendChild(windowButton);
+      if (houseOutdoorEl) {
+        houseOutdoorEl.innerHTML = "";
+        houseOutdoorEl.hidden = true;
+        houseOutdoorEl.setAttribute("aria-hidden", "true");
       }
-      level.appendChild(windowRow);
-      levelsWrapper.appendChild(level);
-    }
-    houseSideViewEl.appendChild(levelsWrapper);
-  }
 
-  if (houseOutdoorEl) {
-    houseOutdoorEl.innerHTML = "";
-
-    const carSection = document.createElement("div");
-    carSection.className = "house-outdoor-section";
-    const carLabel = document.createElement("div");
-    carLabel.className = "house-outdoor-label";
-    carLabel.textContent = "Car spaces";
-    carSection.appendChild(carLabel);
-    const carGrid = document.createElement("div");
-    carGrid.className = "house-outdoor-grid";
-    for (let slot = 1; slot <= 3; slot++) {
-      const carButton = document.createElement("button");
-      carButton.type = "button";
-      carButton.className = "house-car";
-      carButton.textContent = "🚗";
-      carButton.dataset.selectionId = `car-${slot}`;
-      carButton.setAttribute("aria-label", `Car space ${slot}`);
-      registerHouseSelectable(carButton, "cars");
-      carGrid.appendChild(carButton);
-    }
-    carSection.appendChild(carGrid);
-    houseOutdoorEl.appendChild(carSection);
-
-    const treeSection = document.createElement("div");
-    treeSection.className = "house-outdoor-section";
-    const treeLabel = document.createElement("div");
-    treeLabel.className = "house-outdoor-label";
-    treeLabel.textContent = "Trees";
-    treeSection.appendChild(treeLabel);
-    const treeGrid = document.createElement("div");
-    treeGrid.className = "house-outdoor-grid";
-    for (let index = 1; index <= 3; index++) {
-      const treeButton = document.createElement("button");
-      treeButton.type = "button";
-      treeButton.className = "house-tree";
-      treeButton.textContent = "🌳";
-      treeButton.dataset.selectionId = `tree-${index}`;
-      treeButton.setAttribute("aria-label", `Tree ${index}`);
-      registerHouseSelectable(treeButton, "trees");
-      treeGrid.appendChild(treeButton);
-    }
-    treeSection.appendChild(treeGrid);
-    houseOutdoorEl.appendChild(treeSection);
-  }
-
-  houseState.initialized = true;
-  resetHouseSelections();
-  renderHouseView(currentRequest ? currentRequest.counterObj : null);
+      houseState.initialized = true;
+      resetHouseSelections();
+      renderHouseView(currentRequest ? currentRequest.counterObj : null);
+    })
+    .catch(error => {
+      console.error("[House drawer] Failed to load house graphics:", error);
+      houseState.svgSources = null;
+      houseState.assetPromise = null;
+    })
+    .finally(() => {
+      houseState.loading = false;
+    });
 }
 
 function emitHouseAnswer() {
