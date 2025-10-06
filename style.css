@@ -401,6 +401,98 @@ button.primary:focus-visible {
   gap: 16px;
 }
 
+.counter-modal {
+  width: min(640px, 100%);
+  text-align: left;
+  gap: 20px;
+  max-height: 90vh;
+}
+
+.counter-modal__header p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.counter-summary {
+  font-weight: 600;
+  color: var(--accent-dark);
+  margin: -4px 0 4px;
+}
+
+.counter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+  overflow-y: auto;
+  max-height: 50vh;
+}
+
+.counter-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(107, 91, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(107, 91, 255, 0.16);
+}
+
+.counter-row__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.counter-row__header label {
+  flex: 1;
+  cursor: pointer;
+}
+
+.counter-row__header input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+}
+
+.counter-row__label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.counter-row__label strong {
+  font-size: 1.05rem;
+  color: var(--neutral);
+}
+
+.counter-row__label span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.counter-row__stats {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+  color: var(--neutral);
+}
+
+.counter-row__stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.counter-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 .modal-content h2 {
   margin: 0;
   font-size: 1.4rem;
@@ -445,5 +537,10 @@ input[type="checkbox"] {
 
   button {
     width: 100%;
+  }
+
+  .counter-modal__actions {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

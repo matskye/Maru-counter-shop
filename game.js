@@ -26,11 +26,313 @@ const challengeScoreSpan = document.getElementById("challengeScore");
 const streakCountSpan = document.getElementById("streakCount");
 const COUNTER_HINT_HTML = '<span class="drop-hint">Drag or click items to add</span>';
 const SCALE_EPSILON = 0.005;
+const counterModal = document.getElementById("counterPage");
+const counterList = document.getElementById("counterList");
+const counterSummaryDiv = document.getElementById("counterSummary");
+const openCounterPageBtn = document.getElementById("openCounterPage");
+const closeCounterPageBtn = document.getElementById("closeCounterPage");
+const selectAllCountersBtn = document.getElementById("selectAllCounters");
 
 let hintVisible = false;
+let counterStats = loadCounterStats();
+let enabledCounters = loadEnabledCounters();
 
 const HINT_SHOW_LABEL = "💡 Show hint";
 const HINT_HIDE_LABEL = "🙈 Hide hint";
+
+let reopenSettingsAfterCounter = false;
+
+function safeParseJSON(value, fallback) {
+  if (!value) return fallback;
+  try {
+    const parsed = JSON.parse(value);
+    return parsed;
+  } catch (err) {
+    return fallback;
+  }
+}
+
+function loadCounterStats() {
+  const parsed = safeParseJSON(localStorage.getItem("counterStats"), {});
+  if (!parsed || typeof parsed !== "object") {
+    return {};
+  }
+  const stats = {};
+  Object.entries(parsed).forEach(([key, value]) => {
+    if (!value || typeof value !== "object") {
+      stats[key] = { correct: 0, incorrect: 0 };
+      return;
+    }
+    const correct = Number.isFinite(value.correct) ? value.correct : 0;
+    const incorrect = Number.isFinite(value.incorrect) ? value.incorrect : 0;
+    stats[key] = { correct, incorrect };
+  });
+  return stats;
+}
+
+function saveCounterStats() {
+  localStorage.setItem("counterStats", JSON.stringify(counterStats));
+}
+
+function loadEnabledCounters() {
+  const parsed = safeParseJSON(localStorage.getItem("enabledCounters"), null);
+  if (!Array.isArray(parsed)) {
+    return null;
+  }
+  return parsed.filter(item => typeof item === "string");
+}
+
+function saveEnabledCounters() {
+  if (enabledCounters === null) {
+    localStorage.removeItem("enabledCounters");
+    return;
+  }
+  if (!Array.isArray(enabledCounters)) return;
+  localStorage.setItem("enabledCounters", JSON.stringify(enabledCounters));
+}
+
+function ensureCounterStats() {
+  if (!gameData || !Array.isArray(gameData.counters)) return;
+  const availableKeys = new Set(gameData.counters.map(counter => counter.counter));
+  const nextStats = {};
+  Object.entries(counterStats).forEach(([key, value]) => {
+    if (!availableKeys.has(key)) return;
+    if (!value || typeof value !== "object") {
+      nextStats[key] = { correct: 0, incorrect: 0 };
+      return;
+    }
+    const correct = Number.isFinite(value.correct) ? value.correct : 0;
+    const incorrect = Number.isFinite(value.incorrect) ? value.incorrect : 0;
+    nextStats[key] = { correct, incorrect };
+  });
+  availableKeys.forEach(key => {
+    if (!nextStats[key]) {
+      nextStats[key] = { correct: 0, incorrect: 0 };
+    }
+  });
+  counterStats = nextStats;
+  saveCounterStats();
+}
+
+function ensureEnabledCounters() {
+  if (!gameData || !Array.isArray(gameData.counters)) return;
+  if (enabledCounters === null) return;
+  const availableKeys = gameData.counters.map(counter => counter.counter);
+  const previous = Array.isArray(enabledCounters) ? enabledCounters : [];
+  const next = Array.from(new Set(previous.filter(key => availableKeys.includes(key))));
+  if (!next.length) {
+    enabledCounters = null;
+    saveEnabledCounters();
+    return;
+  }
+  const hasChanged = previous.length !== next.length || next.some((key, index) => previous[index] !== key);
+  enabledCounters = next;
+  if (hasChanged) {
+    saveEnabledCounters();
+  }
+}
+
+function getActiveCounters() {
+  if (!gameData || !Array.isArray(gameData.counters)) return [];
+  if (!Array.isArray(enabledCounters) || enabledCounters.length === 0) {
+    return gameData.counters;
+  }
+  const enabledSet = new Set(enabledCounters);
+  const filtered = gameData.counters.filter(counter => enabledSet.has(counter.counter));
+  return filtered.length ? filtered : gameData.counters;
+}
+
+function getCounterStats(counterKey) {
+  if (!counterKey) return { correct: 0, incorrect: 0 };
+  if (!counterStats[counterKey]) {
+    counterStats[counterKey] = { correct: 0, incorrect: 0 };
+  }
+  return counterStats[counterKey];
+}
+
+function calculateAccuracy(correct, incorrect) {
+  const total = correct + incorrect;
+  if (!total) return null;
+  return Math.round((correct / total) * 100);
+}
+
+function isCounterModalOpen() {
+  return Boolean(counterModal && counterModal.style.display === "flex");
+}
+
+function updateCounterSummary() {
+  if (!counterSummaryDiv) return;
+  if (!gameData || !Array.isArray(gameData.counters)) {
+    counterSummaryDiv.textContent = "Loading counters…";
+    return;
+  }
+  const total = gameData.counters.length;
+  if (enabledCounters === null) {
+    counterSummaryDiv.textContent = `All ${total} counters are selected for practice.`;
+    return;
+  }
+  const selectedCount = enabledCounters.length;
+  if (!selectedCount) {
+    counterSummaryDiv.textContent = "Select at least one counter to keep practicing.";
+    return;
+  }
+  if (selectedCount === total) {
+    counterSummaryDiv.textContent = `All ${total} counters are selected for practice.`;
+    return;
+  }
+  counterSummaryDiv.textContent = `${selectedCount} of ${total} counters selected for practice.`;
+}
+
+function renderCounterPreferences() {
+  if (!counterList) return;
+  counterList.innerHTML = "";
+  if (!gameData || !Array.isArray(gameData.counters)) {
+    const loading = document.createElement("div");
+    loading.textContent = "Counters are loading…";
+    loading.className = "counter-row";
+    loading.setAttribute("role", "listitem");
+    counterList.appendChild(loading);
+    updateCounterSummary();
+    return;
+  }
+
+  ensureCounterStats();
+  ensureEnabledCounters();
+
+  const treatAllSelected = enabledCounters === null;
+  const enabledSet = new Set(Array.isArray(enabledCounters) ? enabledCounters : []);
+  const counters = [...gameData.counters];
+  counters.sort((a, b) => a.counter.localeCompare(b.counter, "ja"));
+
+  counters.forEach(counter => {
+    const key = counter.counter;
+    const stats = getCounterStats(key);
+    const accuracy = calculateAccuracy(stats.correct, stats.incorrect);
+
+    const row = document.createElement("div");
+    row.className = "counter-row";
+    row.setAttribute("role", "listitem");
+
+    const header = document.createElement("div");
+    header.className = "counter-row__header";
+
+    const labelWrapper = document.createElement("div");
+    labelWrapper.className = "counter-row__label";
+
+    const title = document.createElement("strong");
+    title.textContent = `${counter.counter} ・ ${counter.reading}`;
+    labelWrapper.appendChild(title);
+
+    const category = document.createElement("span");
+    category.textContent = counter.category;
+    labelWrapper.appendChild(category);
+
+    const toggleId = `counterToggle-${key}`;
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = toggleId;
+    checkbox.checked = treatAllSelected ? true : enabledSet.has(key);
+    checkbox.title = "Include this counter in practice";
+    checkbox.addEventListener("change", () => {
+      toggleCounterSelection(key, checkbox.checked, checkbox);
+    });
+
+    const label = document.createElement("label");
+    label.setAttribute("for", toggleId);
+    label.appendChild(labelWrapper);
+
+    header.appendChild(label);
+    header.appendChild(checkbox);
+    row.appendChild(header);
+
+    const statsRow = document.createElement("div");
+    statsRow.className = "counter-row__stats";
+
+    const correctSpan = document.createElement("span");
+    correctSpan.textContent = `✅ ${stats.correct}`;
+    statsRow.appendChild(correctSpan);
+
+    const incorrectSpan = document.createElement("span");
+    incorrectSpan.textContent = `❌ ${stats.incorrect}`;
+    statsRow.appendChild(incorrectSpan);
+
+    const accuracySpan = document.createElement("span");
+    accuracySpan.textContent = accuracy === null ? "Accuracy: —" : `Accuracy: ${accuracy}%`;
+    statsRow.appendChild(accuracySpan);
+
+    row.appendChild(statsRow);
+    counterList.appendChild(row);
+  });
+
+  updateCounterSummary();
+}
+
+function toggleCounterSelection(counterKey, shouldEnable, checkboxElement) {
+  if (!gameData || !Array.isArray(gameData.counters)) return;
+  const allKeys = gameData.counters.map(counter => counter.counter);
+  const current = new Set(
+    enabledCounters === null
+      ? allKeys
+      : Array.isArray(enabledCounters)
+        ? enabledCounters
+        : []
+  );
+
+  if (!shouldEnable) {
+    if (current.has(counterKey) && current.size === 1) {
+      if (checkboxElement) {
+        checkboxElement.checked = true;
+      }
+      if (counterSummaryDiv) {
+        counterSummaryDiv.textContent = "At least one counter must remain selected.";
+        window.setTimeout(updateCounterSummary, 1600);
+      }
+      return;
+    }
+    current.delete(counterKey);
+  } else {
+    current.add(counterKey);
+  }
+
+  if (current.size === allKeys.length) {
+    enabledCounters = null;
+  } else {
+    enabledCounters = allKeys.filter(key => current.has(key));
+  }
+
+  saveEnabledCounters();
+  renderCounterPreferences();
+}
+
+function recordCounterResult(counterObj, wasCorrect) {
+  if (!counterObj) return;
+  const key = counterObj.counter;
+  const stats = getCounterStats(key);
+  if (wasCorrect) {
+    stats.correct += 1;
+  } else {
+    stats.incorrect += 1;
+  }
+  saveCounterStats();
+  if (isCounterModalOpen()) {
+    renderCounterPreferences();
+  }
+}
+
+function openCounterPreferences() {
+  if (!counterModal) return;
+  counterModal.style.display = "flex";
+  renderCounterPreferences();
+}
+
+function closeCounterPreferences() {
+  if (!counterModal) return;
+  counterModal.style.display = "none";
+  if (reopenSettingsAfterCounter && settingsModal) {
+    settingsModal.style.display = "flex";
+    reopenSettingsAfterCounter = false;
+  }
+}
 
 function applyScaleToFit() {
   const shell = document.querySelector(".app-shell");
@@ -157,6 +459,12 @@ fetch("data/counters.json")
   .then(res => res.json())
   .then(data => {
     gameData = data;
+    ensureCounterStats();
+    ensureEnabledCounters();
+    updateCounterSummary();
+    if (isCounterModalOpen()) {
+      renderCounterPreferences();
+    }
     if (!currentRequest) {
       newCustomer();
     }
@@ -259,7 +567,9 @@ function getCounterReading(counterObj, number) {
 
 // Random request
 function randomRequest() {
-  const counters = gameData.counters;
+  if (!gameData || !Array.isArray(gameData.counters)) return null;
+  const counters = getActiveCounters();
+  if (!counters.length) return null;
   const counterObj = counters[Math.floor(Math.random() * counters.length)];
   const number = Math.ceil(Math.random() * 5); // up to 5 items for demo
   const item = counterObj.items[Math.floor(Math.random() * counterObj.items.length)];
@@ -268,7 +578,9 @@ function randomRequest() {
 
 function newCustomer() {
   if (!gameData || !gameData.counters) return;
-  currentRequest = randomRequest();
+  const nextRequest = randomRequest();
+  if (!nextRequest) return;
+  currentRequest = nextRequest;
   updateCustomerText();
   clearCounter();
   reactionDiv.innerHTML = "";
@@ -286,6 +598,10 @@ function newCustomer() {
 }
 
 function updateCustomerText() {
+  if (!currentRequest) {
+    customerDiv.textContent = "「---」";
+    return;
+  }
   const { counterObj, number } = currentRequest;
   const reading = getCounterReading(counterObj, number);
 
@@ -338,7 +654,7 @@ function renderShelf(items) {
 }
 
 function populateShelfForRequest(request) {
-  if (!gameData) return;
+  if (!gameData || !request) return;
 
   const allItems = [];
   gameData.counters.forEach(counter => {
@@ -456,6 +772,8 @@ document.getElementById("doneBtn").addEventListener("click", () => {
 
   const wasCorrect = correctNumber && correctCategory;
 
+  recordCounterResult(currentRequest.counterObj, wasCorrect);
+
   if (wasCorrect) {
     reactionDiv.innerHTML = `<img src="data/assets/ui/maru_ok.png" alt="OK" height="80">`;
     if (feedbackDiv) {
@@ -537,11 +855,38 @@ settingsBtn.addEventListener("click", () => {
   settingsModal.style.display = "flex";
   furiganaCheckbox.checked = showFurigana;
   voiceCheckbox.checked = voiceEnabled;
+  reopenSettingsAfterCounter = false;
 });
 
 closeSettings.addEventListener("click", () => {
   settingsModal.style.display = "none";
+  reopenSettingsAfterCounter = false;
 });
+
+if (openCounterPageBtn) {
+  openCounterPageBtn.addEventListener("click", () => {
+    reopenSettingsAfterCounter = Boolean(settingsModal && settingsModal.style.display !== "none");
+    if (settingsModal) {
+      settingsModal.style.display = "none";
+    }
+    openCounterPreferences();
+  });
+}
+
+if (closeCounterPageBtn) {
+  closeCounterPageBtn.addEventListener("click", () => {
+    closeCounterPreferences();
+  });
+}
+
+if (selectAllCountersBtn) {
+  selectAllCountersBtn.addEventListener("click", () => {
+    if (!gameData || !Array.isArray(gameData.counters)) return;
+    enabledCounters = null;
+    saveEnabledCounters();
+    renderCounterPreferences();
+  });
+}
 
 furiganaCheckbox.addEventListener("change", () => {
   showFurigana = furiganaCheckbox.checked;
@@ -562,6 +907,10 @@ voiceCheckbox.addEventListener("change", () => {
 window.addEventListener("click", (event) => {
   if (event.target === settingsModal) {
     settingsModal.style.display = "none";
+  }
+  if (event.target === counterModal) {
+    reopenSettingsAfterCounter = false;
+    closeCounterPreferences();
   }
 });
 
@@ -584,3 +933,4 @@ window.addEventListener('resize', syncCounterItemSize);
 
 updateReplayButtonState();
 updateCounterHint();
+updateCounterSummary();
