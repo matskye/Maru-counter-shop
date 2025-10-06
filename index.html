@@ -13,6 +13,24 @@
     </header>
 
     <main id="game" class="game-panel">
+      <div class="drawer-launchers" role="group" aria-label="Counter tools">
+        <button
+          type="button"
+          class="drawer-launcher"
+          data-drawer-toggle="clock"
+          aria-controls="clockDrawer"
+          aria-expanded="false"
+          title="Open clock counter"
+        >🕒</button>
+        <button
+          type="button"
+          class="drawer-launcher"
+          data-drawer-toggle="calendar"
+          aria-controls="calendarDrawer"
+          aria-expanded="false"
+          title="Open calendar counter"
+        >📅</button>
+      </div>
       <section class="customer-card">
         <div id="customer" class="speech-bubble">「---」</div>
         <button id="replayVoiceBtn" class="ghost inline">🔁 Replay audio</button>
@@ -102,6 +120,49 @@
       </div>
     </div>
   </div>
+
+  <div id="drawerOverlay" class="drawer-overlay" hidden></div>
+  <aside id="drawerContainer" class="drawer-container" aria-hidden="true">
+    <div id="clockDrawer" class="drawer-panel clock-drawer" data-drawer="clock" hidden>
+      <header class="drawer-header">
+        <h2 class="drawer-title">Clock counter</h2>
+        <p class="drawer-subtitle">Drag each hand to set the time requested.</p>
+      </header>
+      <div class="clock-face-wrapper">
+        <div class="clock-face" id="clockFace" role="presentation">
+          <div id="clockMarkers" class="clock-markers" aria-hidden="true"></div>
+          <div class="clock-hand hour-hand" data-hand="hours" aria-label="Hour hand" role="slider" aria-valuemin="0" aria-valuemax="11" aria-valuenow="0"></div>
+          <div class="clock-hand minute-hand" data-hand="minutes" aria-label="Minute hand" role="slider" aria-valuemin="0" aria-valuemax="59" aria-valuenow="0"></div>
+          <div class="clock-hand second-hand" data-hand="seconds" aria-label="Second hand" role="slider" aria-valuemin="0" aria-valuemax="59" aria-valuenow="0"></div>
+          <div class="clock-center" aria-hidden="true"></div>
+        </div>
+        <div id="clockValue" class="clock-value" aria-live="polite">00:00:00</div>
+      </div>
+      <div class="drawer-actions">
+        <button id="clockDoneBtn" type="button" class="primary">✅ Done</button>
+      </div>
+    </div>
+
+    <div id="calendarDrawer" class="drawer-panel calendar-drawer" data-drawer="calendar" hidden>
+      <header class="drawer-header">
+        <h2 class="drawer-title">Calendar counter</h2>
+      </header>
+      <div class="calendar-meta">
+        <div class="calendar-info">
+          <p id="calendarModeLabel" class="drawer-subtitle"></p>
+          <span id="calendarTarget" class="calendar-target"></span>
+        </div>
+        <div class="calendar-controls">
+          <button id="calendarTearBtn" type="button" class="ghost">🗓️ Tear off page</button>
+          <span id="calendarSelectionCount" class="calendar-count" aria-live="polite">Marked: 0</span>
+        </div>
+      </div>
+      <div id="calendarGrid" class="calendar-grid" aria-live="polite"></div>
+      <div class="drawer-actions">
+        <button id="calendarDoneBtn" type="button" class="primary">✅ Done</button>
+      </div>
+    </div>
+  </aside>
 
   <script src="game.js"></script>
 </body>

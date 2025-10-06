@@ -32,6 +32,24 @@ const counterSummaryDiv = document.getElementById("counterSummary");
 const openCounterPageBtn = document.getElementById("openCounterPage");
 const closeCounterPageBtn = document.getElementById("closeCounterPage");
 const selectAllCountersBtn = document.getElementById("selectAllCounters");
+const drawerOverlay = document.getElementById("drawerOverlay");
+const drawerContainer = document.getElementById("drawerContainer");
+const drawerPanels = {
+  clock: document.getElementById("clockDrawer"),
+  calendar: document.getElementById("calendarDrawer")
+};
+const drawerLaunchers = document.querySelectorAll("[data-drawer-toggle]");
+const clockFaceEl = document.getElementById("clockFace");
+const clockMarkersEl = document.getElementById("clockMarkers");
+const clockValueEl = document.getElementById("clockValue");
+const clockDoneBtn = document.getElementById("clockDoneBtn");
+const calendarDrawerEl = document.getElementById("calendarDrawer");
+const calendarGridEl = document.getElementById("calendarGrid");
+const calendarModeLabel = document.getElementById("calendarModeLabel");
+const calendarTarget = document.getElementById("calendarTarget");
+const calendarSelectionCount = document.getElementById("calendarSelectionCount");
+const calendarDoneBtn = document.getElementById("calendarDoneBtn");
+const calendarTearBtn = document.getElementById("calendarTearBtn");
 
 let hintVisible = false;
 let counterStats = loadCounterStats();
@@ -962,6 +980,691 @@ function syncCounterItemSize() {
     item.style.width = `${size}px`;
     item.style.height = `${size}px`;
   });
+}
+
+const drawerState = {
+  currentType: null,
+  clock: {
+    initialized: false,
+    activeHand: null,
+    activePointerId: null,
+    values: { hours: 0, minutes: 0, seconds: 0 },
+    config: {
+      hours: { steps: 12, element: null, degPerStep: 360 / 12 },
+      minutes: { steps: 60, element: null, degPerStep: 360 / 60 },
+      seconds: { steps: 60, element: null, degPerStep: 360 / 60 }
+    }
+  },
+  calendar: {
+    initialized: false,
+    mode: "days",
+    selectedDays: new Set(),
+    selectedWeeks: new Set(),
+    selectedMonths: new Set(),
+    yearTorn: false,
+    weekDragActive: false,
+    weekDragPointerId: null,
+    weekDragIntent: true,
+    listenersAttached: false,
+    lastCount: 0,
+    elements: {
+      months: [],
+      weeks: [],
+      days: [],
+      monthMap: new Map(),
+      weekMap: new Map(),
+      dayMap: new Map()
+    }
+  }
+};
+
+const CLOCK_HAND_KEYS = ["hours", "minutes", "seconds"];
+const CALENDAR_MONTH_LABELS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec"
+];
+
+const CALENDAR_MODE_DESCRIPTIONS = {
+  days: "Click individual days to cross them out.",
+  weeks: "Drag across a row to mark full weeks.",
+  months: "Click any month card to highlight it.",
+  years: "Tear off the page when you're done."
+};
+
+const CALENDAR_MODE_TARGET_LABELS = {
+  days: "day(s)",
+  weeks: "week(s)",
+  months: "month(s)",
+  years: "year(s)"
+};
+
+function normalizeCalendarKey(value) {
+  if (!value) return "";
+  return value
+    .toString()
+    .trim()
+    .replace(/\s+/g, "")
+    .normalize("NFKC")
+    .toLowerCase();
+}
+
+const CALENDAR_MODE_LOOKUP = (() => {
+  const pairs = [
+    ["日", "days"],
+    ["日間", "days"],
+    ["日目", "days"],
+    ["日数", "days"],
+    ["にち", "days"],
+    ["ニチ", "days"],
+    ["ひ", "days"],
+    ["週", "weeks"],
+    ["週間", "weeks"],
+    ["週刊", "weeks"],
+    ["しゅう", "weeks"],
+    ["しゅうかん", "weeks"],
+    ["シュウ", "weeks"],
+    ["月", "months"],
+    ["ヶ月", "months"],
+    ["か月", "months"],
+    ["カ月", "months"],
+    ["かげつ", "months"],
+    ["がつ", "months"],
+    ["年", "years"],
+    ["年間", "years"],
+    ["ねん", "years"],
+    ["ネン", "years"]
+  ];
+  const lookup = new Map();
+  pairs.forEach(([key, mode]) => {
+    lookup.set(normalizeCalendarKey(key), mode);
+  });
+  return lookup;
+})();
+
+function setupDrawerLaunchers() {
+  if (drawerLaunchers && drawerLaunchers.length) {
+    drawerLaunchers.forEach(button => {
+      button.addEventListener("click", () => {
+        const type = button.getAttribute("data-drawer-toggle");
+        if (!type) return;
+        openDrawer(type);
+      });
+    });
+  }
+
+  if (drawerOverlay) {
+    drawerOverlay.addEventListener("click", () => {
+      closeDrawer();
+    });
+  }
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" || event.key === "Esc") {
+      closeDrawer();
+    }
+  });
+}
+
+function updateLauncherState(activeType) {
+  if (!drawerLaunchers || !drawerLaunchers.length) return;
+  drawerLaunchers.forEach(button => {
+    const type = button.getAttribute("data-drawer-toggle");
+    const isActive = Boolean(activeType && type === activeType);
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-expanded", isActive ? "true" : "false");
+  });
+}
+
+function openDrawer(type) {
+  if (!drawerContainer) return;
+  const normalizedType = type === "clock" || type === "calendar" ? type : null;
+  if (!normalizedType || !drawerPanels[normalizedType]) return;
+
+  const isActive = drawerContainer.classList.contains("is-active");
+  if (drawerState.currentType === normalizedType && isActive) {
+    closeDrawer();
+    return;
+  }
+
+  drawerState.currentType = normalizedType;
+
+  Object.entries(drawerPanels).forEach(([key, panel]) => {
+    if (!panel) return;
+    const shouldShow = key === normalizedType;
+    panel.hidden = !shouldShow;
+    panel.setAttribute("aria-hidden", shouldShow ? "false" : "true");
+  });
+
+  drawerContainer.dataset.drawer = normalizedType;
+  drawerContainer.setAttribute("aria-hidden", "false");
+  updateLauncherState(normalizedType);
+
+  if (!isActive) {
+    drawerContainer.classList.add("is-open");
+    requestAnimationFrame(() => {
+      drawerContainer.classList.add("is-active");
+    });
+    if (drawerOverlay) {
+      drawerOverlay.hidden = false;
+      requestAnimationFrame(() => {
+        drawerOverlay.classList.add("is-visible");
+      });
+    }
+  }
+
+  if (normalizedType === "clock") {
+    initClockDrawer();
+    resetClockHands();
+  } else if (normalizedType === "calendar") {
+    initCalendarDrawer();
+    refreshCalendarMode();
+  }
+}
+
+function closeDrawer() {
+  if (!drawerContainer || !drawerContainer.classList.contains("is-active")) {
+    updateLauncherState(null);
+    return;
+  }
+
+  drawerContainer.classList.remove("is-active");
+  drawerContainer.setAttribute("aria-hidden", "true");
+  drawerContainer.dataset.drawer = "";
+  updateLauncherState(null);
+
+  const handleDrawerTransitionEnd = () => {
+    drawerContainer.classList.remove("is-open");
+    Object.values(drawerPanels).forEach(panel => {
+      if (!panel) return;
+      panel.hidden = true;
+      panel.setAttribute("aria-hidden", "true");
+    });
+  };
+
+  drawerContainer.addEventListener("transitionend", handleDrawerTransitionEnd, { once: true });
+  drawerState.currentType = null;
+
+  if (drawerOverlay) {
+    drawerOverlay.classList.remove("is-visible");
+    const handleOverlayTransitionEnd = () => {
+      drawerOverlay.hidden = true;
+    };
+    drawerOverlay.addEventListener("transitionend", handleOverlayTransitionEnd, { once: true });
+  }
+
+  if (drawerState.clock.activeHand) {
+    handleClockHandPointerEnd(drawerState.clock.activeHand);
+  }
+  drawerState.clock.activeHand = null;
+  drawerState.clock.activePointerId = null;
+  drawerState.calendar.weekDragActive = false;
+  drawerState.calendar.weekDragPointerId = null;
+}
+
+function initClockDrawer() {
+  const clockState = drawerState.clock;
+  if (clockState.initialized) return;
+  if (!clockFaceEl) return;
+
+  if (clockMarkersEl && !clockMarkersEl.childElementCount) {
+    const fragment = document.createDocumentFragment();
+    for (let i = 0; i < 12; i++) {
+      const marker = document.createElement("span");
+      marker.className = "clock-marker";
+      marker.style.setProperty("--marker-rotation", `${i * 30}deg`);
+      marker.textContent = i === 0 ? "12" : String(i);
+      fragment.appendChild(marker);
+    }
+    clockMarkersEl.appendChild(fragment);
+  }
+
+  CLOCK_HAND_KEYS.forEach(handKey => {
+    const config = clockState.config[handKey];
+    if (!config) return;
+    const element = clockFaceEl.querySelector(`[data-hand="${handKey}"]`);
+    if (!element) return;
+    config.element = element;
+    element.dataset.value = "0";
+    element.style.setProperty("--rotation", "0deg");
+    element.addEventListener("pointerdown", event => handleClockHandPointerDown(handKey, event));
+    element.addEventListener("pointermove", event => handleClockHandPointerMove(handKey, event));
+    element.addEventListener("pointerup", () => handleClockHandPointerEnd(handKey));
+    element.addEventListener("pointercancel", () => handleClockHandPointerEnd(handKey));
+    element.addEventListener("lostpointercapture", () => handleClockHandPointerEnd(handKey));
+  });
+
+  clockState.initialized = true;
+  updateClockValue();
+}
+
+function handleClockHandPointerDown(handKey, event) {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  const clockState = drawerState.clock;
+  const config = clockState.config[handKey];
+  if (!config || !config.element) return;
+  event.preventDefault();
+  clockState.activeHand = handKey;
+  clockState.activePointerId = event.pointerId;
+  config.element.classList.add("is-active");
+  config.element.setPointerCapture(event.pointerId);
+  updateClockHandFromEvent(handKey, event);
+}
+
+function handleClockHandPointerMove(handKey, event) {
+  const clockState = drawerState.clock;
+  if (clockState.activeHand !== handKey || clockState.activePointerId !== event.pointerId) return;
+  updateClockHandFromEvent(handKey, event);
+}
+
+function handleClockHandPointerEnd(handKey) {
+  if (!handKey) return;
+  const clockState = drawerState.clock;
+  const config = clockState.config[handKey];
+  if (config && config.element) {
+    config.element.classList.remove("is-active");
+  }
+  if (clockState.activeHand === handKey) {
+    clockState.activeHand = null;
+    clockState.activePointerId = null;
+  }
+}
+
+function updateClockHandFromEvent(handKey, event) {
+  const config = drawerState.clock.config[handKey];
+  if (!config || !config.element || !clockFaceEl) return;
+  const rect = clockFaceEl.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+  const dx = event.clientX - centerX;
+  const dy = event.clientY - centerY;
+  const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+  const adjusted = (angle + 450) % 360;
+  const value = Math.round(adjusted / config.degPerStep) % config.steps;
+  updateClockHand(handKey, value);
+}
+
+function updateClockHand(handKey, value) {
+  const clockState = drawerState.clock;
+  const config = clockState.config[handKey];
+  if (!config || !config.element) return;
+  const normalized = ((value % config.steps) + config.steps) % config.steps;
+  clockState.values[handKey] = normalized;
+  config.element.dataset.value = String(normalized);
+  config.element.style.setProperty("--rotation", `${normalized * config.degPerStep}deg`);
+  config.element.setAttribute("aria-valuenow", String(normalized));
+  const ariaLabel =
+    handKey === "hours"
+      ? `${normalized} hour${normalized === 1 ? "" : "s"}`
+      : `${normalized} ${handKey.slice(0, -1)}${normalized === 1 ? "" : "s"}`;
+  config.element.setAttribute("aria-valuetext", ariaLabel);
+  updateClockValue();
+}
+
+function resetClockHands() {
+  CLOCK_HAND_KEYS.forEach(handKey => {
+    updateClockHand(handKey, 0);
+  });
+}
+
+function updateClockValue() {
+  if (!clockValueEl) return;
+  const { hours, minutes, seconds } = drawerState.clock.values;
+  const pad = value => String(value).padStart(2, "0");
+  clockValueEl.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+}
+
+function getClockSelectedTime() {
+  const { hours, minutes, seconds } = drawerState.clock.values;
+  return { hours, minutes, seconds };
+}
+
+function emitClockAnswer() {
+  const selectedTime = getClockSelectedTime();
+  dispatchClockAnswer(selectedTime);
+  closeDrawer();
+}
+
+function dispatchClockAnswer(selectedTime) {
+  if (typeof window.checkClockAnswer === "function") {
+    window.checkClockAnswer(selectedTime);
+  } else {
+    console.info("[Clock drawer] Selected time:", selectedTime);
+  }
+}
+
+function initCalendarDrawer() {
+  const calendarState = drawerState.calendar;
+  if (calendarState.initialized) return;
+  if (!calendarGridEl) return;
+
+  calendarGridEl.innerHTML = "";
+  calendarState.elements.months = [];
+  calendarState.elements.weeks = [];
+  calendarState.elements.days = [];
+  calendarState.elements.monthMap.clear();
+  calendarState.elements.weekMap.clear();
+  calendarState.elements.dayMap.clear();
+
+  CALENDAR_MONTH_LABELS.forEach((label, monthIndex) => {
+    const monthEl = document.createElement("div");
+    monthEl.className = "calendar-month";
+    monthEl.dataset.month = String(monthIndex);
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "calendar-month__name";
+    nameEl.textContent = label;
+    monthEl.appendChild(nameEl);
+
+    for (let weekIndex = 0; weekIndex < 4; weekIndex++) {
+      const weekEl = document.createElement("div");
+      weekEl.className = "calendar-week";
+      const weekId = `${monthIndex}:${weekIndex}`;
+      weekEl.dataset.weekId = weekId;
+      weekEl.addEventListener("pointerdown", handleCalendarWeekPointerDown);
+      weekEl.addEventListener("pointerenter", handleCalendarWeekPointerEnter);
+
+      for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+        const dayEl = document.createElement("div");
+        dayEl.className = "calendar-day";
+        const dayId = `${monthIndex}:${weekIndex}:${dayIndex}`;
+        dayEl.dataset.dayId = dayId;
+        dayEl.textContent = String(weekIndex * 7 + dayIndex + 1).padStart(2, "0");
+        dayEl.addEventListener("click", handleCalendarDayClick);
+        weekEl.appendChild(dayEl);
+        calendarState.elements.days.push(dayEl);
+        calendarState.elements.dayMap.set(dayId, dayEl);
+      }
+
+      monthEl.appendChild(weekEl);
+      calendarState.elements.weeks.push(weekEl);
+      calendarState.elements.weekMap.set(weekId, weekEl);
+    }
+
+    monthEl.addEventListener("click", handleCalendarMonthClick);
+    calendarGridEl.appendChild(monthEl);
+    calendarState.elements.months.push(monthEl);
+    calendarState.elements.monthMap.set(String(monthIndex), monthEl);
+  });
+
+  if (!calendarState.listenersAttached) {
+    document.addEventListener("pointerup", handleCalendarWeekPointerEnd, true);
+    document.addEventListener("pointercancel", handleCalendarWeekPointerEnd, true);
+    calendarState.listenersAttached = true;
+  }
+
+  calendarState.initialized = true;
+}
+
+function handleCalendarDayClick(event) {
+  if (drawerState.calendar.mode !== "days") return;
+  const dayEl = event.currentTarget;
+  const dayId = dayEl.dataset.dayId;
+  if (!dayId) return;
+  const isSelected = drawerState.calendar.selectedDays.has(dayId);
+  if (isSelected) {
+    drawerState.calendar.selectedDays.delete(dayId);
+  } else {
+    drawerState.calendar.selectedDays.add(dayId);
+  }
+  dayEl.classList.toggle("is-selected", !isSelected);
+  updateCalendarSummary();
+}
+
+function handleCalendarMonthClick(event) {
+  if (drawerState.calendar.mode !== "months") return;
+  const monthEl = event.currentTarget;
+  const monthIndex = Number(monthEl.dataset.month);
+  if (!Number.isFinite(monthIndex)) return;
+  const isSelected = drawerState.calendar.selectedMonths.has(monthIndex);
+  if (isSelected) {
+    drawerState.calendar.selectedMonths.delete(monthIndex);
+  } else {
+    drawerState.calendar.selectedMonths.add(monthIndex);
+  }
+  monthEl.classList.toggle("is-selected", !isSelected);
+  updateCalendarSummary();
+}
+
+function handleCalendarWeekPointerDown(event) {
+  if (drawerState.calendar.mode !== "weeks") return;
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+  const weekEl = event.currentTarget;
+  const weekId = weekEl.dataset.weekId;
+  if (!weekId) return;
+  event.preventDefault();
+  const shouldSelect = !drawerState.calendar.selectedWeeks.has(weekId);
+  drawerState.calendar.weekDragActive = true;
+  drawerState.calendar.weekDragPointerId = event.pointerId;
+  drawerState.calendar.weekDragIntent = shouldSelect;
+  setWeekSelection(weekId, shouldSelect);
+  updateCalendarSummary();
+}
+
+function handleCalendarWeekPointerEnter(event) {
+  if (drawerState.calendar.mode !== "weeks") return;
+  if (!drawerState.calendar.weekDragActive) return;
+  if (drawerState.calendar.weekDragPointerId !== event.pointerId) return;
+  const weekEl = event.currentTarget;
+  const weekId = weekEl.dataset.weekId;
+  if (!weekId) return;
+  setWeekSelection(weekId, drawerState.calendar.weekDragIntent);
+  updateCalendarSummary();
+}
+
+function handleCalendarWeekPointerEnd(event) {
+  if (!drawerState.calendar.weekDragActive) return;
+  if (drawerState.calendar.weekDragPointerId !== event.pointerId) return;
+  drawerState.calendar.weekDragActive = false;
+  drawerState.calendar.weekDragPointerId = null;
+}
+
+function setWeekSelection(weekId, shouldSelect) {
+  const weekEl = drawerState.calendar.elements.weekMap.get(weekId);
+  if (!weekEl) return;
+  if (shouldSelect) {
+    drawerState.calendar.selectedWeeks.add(weekId);
+  } else {
+    drawerState.calendar.selectedWeeks.delete(weekId);
+  }
+  weekEl.classList.toggle("is-selected", shouldSelect);
+  weekEl.querySelectorAll(".calendar-day").forEach(dayEl => {
+    dayEl.classList.toggle("is-selected", shouldSelect);
+  });
+}
+
+function determineCalendarMode() {
+  const defaultMode = "days";
+  if (!currentRequest || !currentRequest.counterObj) {
+    return defaultMode;
+  }
+  const { counterObj } = currentRequest;
+  const candidates = [counterObj.counter, counterObj.reading];
+  for (const candidate of candidates) {
+    const mode = CALENDAR_MODE_LOOKUP.get(normalizeCalendarKey(candidate));
+    if (mode) return mode;
+  }
+  const category = (counterObj.category || "").toLowerCase();
+  if (category.includes("week")) return "weeks";
+  if (category.includes("month")) return "months";
+  if (category.includes("year")) return "years";
+  if (category.includes("day")) return "days";
+  return defaultMode;
+}
+
+function refreshCalendarMode() {
+  setCalendarMode(determineCalendarMode());
+}
+
+function setCalendarMode(mode) {
+  const calendarState = drawerState.calendar;
+  calendarState.mode = mode;
+  calendarState.selectedDays.clear();
+  calendarState.selectedWeeks.clear();
+  calendarState.selectedMonths.clear();
+  calendarState.yearTorn = false;
+  calendarState.weekDragActive = false;
+  calendarState.weekDragPointerId = null;
+  calendarState.lastCount = 0;
+
+  calendarState.elements.days.forEach(dayEl => dayEl.classList.remove("is-selected"));
+  calendarState.elements.weeks.forEach(weekEl => weekEl.classList.remove("is-selected"));
+  calendarState.elements.months.forEach(monthEl => monthEl.classList.remove("is-selected"));
+
+  if (calendarGridEl) {
+    calendarGridEl.classList.remove("is-torn");
+  }
+
+  if (calendarDrawerEl) {
+    calendarDrawerEl.classList.remove(
+      "calendar-drawer--mode-days",
+      "calendar-drawer--mode-weeks",
+      "calendar-drawer--mode-months",
+      "calendar-drawer--mode-years"
+    );
+    calendarDrawerEl.classList.add(`calendar-drawer--mode-${mode}`);
+  }
+
+  if (calendarTearBtn) {
+    calendarTearBtn.hidden = mode !== "years";
+    calendarTearBtn.textContent = "🗓️ Tear off page";
+  }
+
+  updateCalendarModeDetails();
+  updateCalendarSummary();
+}
+
+function updateCalendarModeDetails() {
+  const mode = drawerState.calendar.mode;
+  if (calendarModeLabel) {
+    calendarModeLabel.textContent = CALENDAR_MODE_DESCRIPTIONS[mode] || "";
+  }
+  if (calendarTarget) {
+    if (currentRequest && Number.isFinite(currentRequest.number)) {
+      const label = CALENDAR_MODE_TARGET_LABELS[mode] || "item(s)";
+      const counterText = currentRequest.counterObj && currentRequest.counterObj.counter
+        ? ` 「${currentRequest.counterObj.counter}」`
+        : "";
+      calendarTarget.textContent = `Target: ${currentRequest.number} ${label}${counterText}`;
+    } else {
+      calendarTarget.textContent = "";
+    }
+  }
+}
+
+function updateCalendarSummary() {
+  const calendarState = drawerState.calendar;
+  let count = 0;
+  if (calendarState.mode === "days") {
+    count = calendarState.selectedDays.size;
+  } else if (calendarState.mode === "weeks") {
+    count = calendarState.selectedWeeks.size;
+  } else if (calendarState.mode === "months") {
+    count = calendarState.selectedMonths.size;
+  } else if (calendarState.mode === "years") {
+    count = calendarState.yearTorn ? 1 : 0;
+  }
+  calendarState.lastCount = count;
+  if (calendarSelectionCount) {
+    calendarSelectionCount.textContent = `Marked: ${count}`;
+  }
+}
+
+function toggleCalendarTear() {
+  if (drawerState.calendar.mode !== "years") return;
+  drawerState.calendar.yearTorn = !drawerState.calendar.yearTorn;
+  if (calendarGridEl) {
+    calendarGridEl.classList.toggle("is-torn", drawerState.calendar.yearTorn);
+  }
+  if (calendarTearBtn) {
+    calendarTearBtn.textContent = drawerState.calendar.yearTorn ? "↩️ Undo tear" : "🗓️ Tear off page";
+  }
+  updateCalendarSummary();
+}
+
+function parseCalendarDayId(id) {
+  const [month, week, day] = id.split(":").map(value => Number(value));
+  return {
+    month: Number.isFinite(month) ? month : 0,
+    week: Number.isFinite(week) ? week : 0,
+    day: Number.isFinite(day) ? day : 0
+  };
+}
+
+function parseCalendarWeekId(id) {
+  const [month, week] = id.split(":").map(value => Number(value));
+  return {
+    month: Number.isFinite(month) ? month : 0,
+    week: Number.isFinite(week) ? week : 0
+  };
+}
+
+function getCalendarSelection() {
+  const calendarState = drawerState.calendar;
+  const mode = calendarState.mode;
+  const selection = {
+    mode,
+    count: calendarState.lastCount,
+    target: currentRequest ? currentRequest.number : null,
+    counter: currentRequest && currentRequest.counterObj ? currentRequest.counterObj.counter : null,
+    days: [],
+    weeks: [],
+    months: [],
+    yearTorn: calendarState.yearTorn
+  };
+
+  if (mode === "days") {
+    selection.days = Array.from(calendarState.selectedDays).map(parseCalendarDayId);
+    selection.count = calendarState.selectedDays.size;
+  } else if (mode === "weeks") {
+    selection.weeks = Array.from(calendarState.selectedWeeks).map(parseCalendarWeekId);
+    selection.count = calendarState.selectedWeeks.size;
+  } else if (mode === "months") {
+    selection.months = Array.from(calendarState.selectedMonths);
+    selection.count = calendarState.selectedMonths.size;
+  } else if (mode === "years") {
+    selection.count = calendarState.yearTorn ? 1 : 0;
+  }
+
+  return selection;
+}
+
+function emitCalendarAnswer() {
+  const selection = getCalendarSelection();
+  dispatchCalendarAnswer(selection);
+  closeDrawer();
+}
+
+function dispatchCalendarAnswer(selection) {
+  if (typeof window.checkCalendarAnswer === "function") {
+    window.checkCalendarAnswer(selection);
+  } else {
+    console.info("[Calendar drawer] Selected period:", selection);
+  }
+}
+
+setupDrawerLaunchers();
+
+if (clockDoneBtn) {
+  clockDoneBtn.addEventListener("click", emitClockAnswer);
+}
+
+if (calendarDoneBtn) {
+  calendarDoneBtn.addEventListener("click", emitCalendarAnswer);
+}
+
+if (calendarTearBtn) {
+  calendarTearBtn.addEventListener("click", toggleCalendarTear);
 }
 
 window.addEventListener('resize', syncCounterItemSize);
