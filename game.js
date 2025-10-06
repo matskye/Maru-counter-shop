@@ -404,8 +404,14 @@ function toggleCounterSelection(counterKey, shouldEnable, checkboxElement) {
     enabledCounters = allKeys.filter(key => current.has(key));
   }
 
+  const hadRequest = Boolean(currentRequest);
+
   saveEnabledCounters();
   renderCounterPreferences();
+
+  if (!hadRequest && getActiveCounters().length > 0) {
+    newCustomer();
+  }
 }
 
 function recordCounterResult(counterObj, wasCorrect) {
@@ -755,7 +761,25 @@ function randomRequest() {
 function newCustomer() {
   if (!gameData || !gameData.counters) return;
   const nextRequest = randomRequest();
-  if (!nextRequest) return;
+  if (!nextRequest) {
+    currentRequest = null;
+    if (customerDiv) {
+      customerDiv.textContent = "Select at least one counter in settings to keep practicing.";
+    }
+    clearCounter();
+    renderShelf([]);
+    reactionDiv.innerHTML = "";
+    if (feedbackDiv) {
+      feedbackDiv.textContent = "";
+    }
+    updateCounterHint();
+    setHintVisibility(false);
+    updateReplayButtonState();
+    updateModeStatus();
+    updateChallengeStatus();
+    updateStreakStatus();
+    return;
+  }
   currentRequest = nextRequest;
   updateCustomerText();
   clearCounter();
