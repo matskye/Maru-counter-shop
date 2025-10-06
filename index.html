@@ -136,7 +136,16 @@
           <div class="clock-hand second-hand" data-hand="seconds" aria-label="Second hand" role="slider" aria-valuemin="0" aria-valuemax="59" aria-valuenow="0"></div>
           <div class="clock-center" aria-hidden="true"></div>
         </div>
-        <div id="clockValue" class="clock-value" aria-live="polite">00:00:00</div>
+        <input
+          id="clockValue"
+          class="clock-value"
+          type="text"
+          aria-live="polite"
+          aria-label="Selected time"
+          autocomplete="off"
+          spellcheck="false"
+          value="00:00:00"
+        />
       </div>
       <div class="drawer-actions">
         <button id="clockDoneBtn" type="button" class="primary">✅ Done</button>
