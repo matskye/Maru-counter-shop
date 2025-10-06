@@ -82,7 +82,24 @@
         <input type="checkbox" id="voiceCheckbox"> Enable Voice
       </label>
       <br><br>
+      <button id="openCounterPage" class="ghost">Manage counters</button>
+      <br><br>
       <button id="closeSettings">Close</button>
+    </div>
+  </div>
+
+  <div id="counterPage" class="modal">
+    <div class="modal-content counter-modal" role="dialog" aria-modal="true" aria-labelledby="counterPageTitle">
+      <header class="counter-modal__header">
+        <h2 id="counterPageTitle">Counter preferences</h2>
+        <p>Select which counters appear in practice and review your accuracy.</p>
+      </header>
+      <div id="counterSummary" class="counter-summary"></div>
+      <div id="counterList" class="counter-list" role="list"></div>
+      <div class="counter-modal__actions">
+        <button id="selectAllCounters" class="ghost">Select all counters</button>
+        <button id="closeCounterPage">Done</button>
+      </div>
     </div>
   </div>
 
