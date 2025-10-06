@@ -117,14 +117,14 @@ function ensureCounterStats() {
 function ensureEnabledCounters() {
   if (!gameData || !Array.isArray(gameData.counters)) return;
   if (enabledCounters === null) return;
-  const availableKeys = gameData.counters.map(counter => counter.counter);
-  const previous = Array.isArray(enabledCounters) ? enabledCounters : [];
-  const next = Array.from(new Set(previous.filter(key => availableKeys.includes(key))));
-  if (!next.length) {
+  if (!Array.isArray(enabledCounters)) {
     enabledCounters = null;
     saveEnabledCounters();
     return;
   }
+  const availableKeys = gameData.counters.map(counter => counter.counter);
+  const previous = enabledCounters;
+  const next = Array.from(new Set(previous.filter(key => availableKeys.includes(key))));
   const hasChanged = previous.length !== next.length || next.some((key, index) => previous[index] !== key);
   enabledCounters = next;
   if (hasChanged) {
@@ -132,14 +132,42 @@ function ensureEnabledCounters() {
   }
 }
 
+function areAllCountersSelected() {
+  if (!gameData || !Array.isArray(gameData.counters)) return true;
+  if (!gameData.counters.length) return true;
+  if (enabledCounters === null) return true;
+  if (!Array.isArray(enabledCounters)) return true;
+  if (enabledCounters.length !== gameData.counters.length) return false;
+  const enabledSet = new Set(enabledCounters);
+  return gameData.counters.every(counter => enabledSet.has(counter.counter));
+}
+
+function updateSelectAllCountersButton() {
+  if (!selectAllCountersBtn) return;
+  if (!gameData || !Array.isArray(gameData.counters) || !gameData.counters.length) {
+    selectAllCountersBtn.textContent = "Select all counters";
+    selectAllCountersBtn.setAttribute("aria-pressed", "false");
+    return;
+  }
+  const allSelected = areAllCountersSelected();
+  selectAllCountersBtn.textContent = allSelected ? "Deselect all counters" : "Select all counters";
+  selectAllCountersBtn.setAttribute("aria-pressed", allSelected ? "true" : "false");
+}
+
 function getActiveCounters() {
   if (!gameData || !Array.isArray(gameData.counters)) return [];
-  if (!Array.isArray(enabledCounters) || enabledCounters.length === 0) {
+  if (enabledCounters === null) {
+    return gameData.counters;
+  }
+  if (!Array.isArray(enabledCounters)) {
     return gameData.counters;
   }
   const enabledSet = new Set(enabledCounters);
   const filtered = gameData.counters.filter(counter => enabledSet.has(counter.counter));
-  return filtered.length ? filtered : gameData.counters;
+  if (enabledCounters.length > 0 && filtered.length === 0) {
+    return gameData.counters;
+  }
+  return filtered;
 }
 
 function getCounterStats(counterKey) {
@@ -193,6 +221,7 @@ function renderCounterPreferences() {
     loading.setAttribute("role", "listitem");
     counterList.appendChild(loading);
     updateCounterSummary();
+    updateSelectAllCountersButton();
     return;
   }
 
@@ -265,6 +294,7 @@ function renderCounterPreferences() {
   });
 
   updateCounterSummary();
+  updateSelectAllCountersButton();
 }
 
 function toggleCounterSelection(counterKey, shouldEnable, checkboxElement) {
@@ -462,6 +492,7 @@ fetch("data/counters.json")
     ensureCounterStats();
     ensureEnabledCounters();
     updateCounterSummary();
+    updateSelectAllCountersButton();
     if (isCounterModalOpen()) {
       renderCounterPreferences();
     }
@@ -882,7 +913,11 @@ if (closeCounterPageBtn) {
 if (selectAllCountersBtn) {
   selectAllCountersBtn.addEventListener("click", () => {
     if (!gameData || !Array.isArray(gameData.counters)) return;
-    enabledCounters = null;
+    if (areAllCountersSelected()) {
+      enabledCounters = [];
+    } else {
+      enabledCounters = null;
+    }
     saveEnabledCounters();
     renderCounterPreferences();
   });
