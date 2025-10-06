@@ -250,6 +250,120 @@
         { "id": "basketball",   "label_en": "basketball",   "label_ja": "バスケットボール", "image": "data/assets/items/basketball/basketball.png" },
         { "id": "tennis_ball",  "label_en": "tennis ball",  "label_ja": "テニスボール",    "image": "data/assets/items/tennis_ball/tennis_ball.png" }
       ]
+    },
+    {
+      "counter": "秒",
+      "reading": "びょう",
+      "irregular": { "default": "{n}びょう" },
+      "category": "time – seconds",
+      "practice": {
+        "type": "clock",
+        "hand": "seconds",
+        "min": 1,
+        "max": 59
+      },
+      "items": []
+    },
+    {
+      "counter": "分",
+      "reading": "ふん",
+      "irregular": {
+        "1": "いっぷん",
+        "3": "さんぷん",
+        "4": "よんぷん",
+        "6": "ろっぷん",
+        "8": "はっぷん",
+        "10": "じゅっぷん",
+        "default": "{n}ふん"
+      },
+      "category": "time – minutes",
+      "practice": {
+        "type": "clock",
+        "hand": "minutes",
+        "min": 1,
+        "max": 59
+      },
+      "items": []
+    },
+    {
+      "counter": "時間",
+      "reading": "じかん",
+      "irregular": {
+        "4": "よじかん",
+        "default": "{n}じかん"
+      },
+      "category": "time – hours",
+      "practice": {
+        "type": "clock",
+        "hand": "hours",
+        "min": 1,
+        "max": 12
+      },
+      "items": []
+    },
+    {
+      "counter": "日間",
+      "reading": "にちかん",
+      "irregular": {
+        "1": "いちにち",
+        "2": "ふつかかん",
+        "3": "みっかかん",
+        "4": "よっかかん",
+        "5": "いつかかん",
+        "6": "むいかかん",
+        "7": "なのかかん",
+        "8": "ようかかん",
+        "9": "ここのかかん",
+        "10": "とおかかん",
+        "default": "{n}にちかん"
+      },
+      "category": "time – days",
+      "practice": {
+        "type": "calendar",
+        "mode": "days",
+        "min": 1,
+        "max": 28
+      },
+      "items": []
+    },
+    {
+      "counter": "週間",
+      "reading": "しゅうかん",
+      "irregular": {
+        "1": "いっしゅうかん",
+        "6": "ろくしゅうかん",
+        "8": "はっしゅうかん",
+        "10": "じゅっしゅうかん",
+        "default": "{n}しゅうかん"
+      },
+      "category": "time – weeks",
+      "practice": {
+        "type": "calendar",
+        "mode": "weeks",
+        "min": 1,
+        "max": 4
+      },
+      "items": []
+    },
+    {
+      "counter": "ヶ月",
+      "reading": "かげつ",
+      "irregular": {
+        "1": "いっかげつ",
+        "3": "さんかげつ",
+        "6": "ろっかげつ",
+        "8": "はっかげつ",
+        "10": "じゅっかげつ",
+        "default": "{n}かげつ"
+      },
+      "category": "time – months",
+      "practice": {
+        "type": "calendar",
+        "mode": "months",
+        "min": 1,
+        "max": 12
+      },
+      "items": []
     }
   ]
 }

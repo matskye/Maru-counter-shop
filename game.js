@@ -60,6 +60,50 @@ const HINT_HIDE_LABEL = "🙈 Hide hint";
 
 let reopenSettingsAfterCounter = false;
 
+const CLOCK_HAND_LABELS = {
+  hours: "hour hand",
+  minutes: "minute hand",
+  seconds: "second hand"
+};
+
+function getCounterPractice(counterObj) {
+  if (!counterObj || typeof counterObj !== "object") return null;
+  if (!counterObj.practice || typeof counterObj.practice !== "object") return null;
+  return counterObj.practice;
+}
+
+function isClockCounter(counterObj) {
+  const practice = getCounterPractice(counterObj);
+  return Boolean(practice && practice.type === "clock");
+}
+
+function isCalendarCounter(counterObj) {
+  const practice = getCounterPractice(counterObj);
+  return Boolean(practice && practice.type === "calendar");
+}
+
+function randomInt(min, max) {
+  const lower = Number.isFinite(min) ? Math.floor(min) : 0;
+  const upper = Number.isFinite(max) ? Math.floor(max) : lower;
+  if (upper < lower) return lower;
+  return lower + Math.floor(Math.random() * (upper - lower + 1));
+}
+
+function getClockHandLabel(handKey) {
+  return CLOCK_HAND_LABELS[handKey] || "clock hand";
+}
+
+function formatClockDisplayValue(handKey, value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return value;
+  if (handKey === "hours") {
+    const remainder = ((numeric % 12) + 12) % 12;
+    return remainder === 0 ? 12 : remainder;
+  }
+  const remainder = ((numeric % 60) + 60) % 60;
+  return remainder;
+}
+
 function safeParseJSON(value, fallback) {
   if (!value) return fallback;
   try {
@@ -586,11 +630,28 @@ function updateCounterHint() {
     return;
   }
   const { counterObj } = currentRequest;
-  const examples = counterObj.items
-    .slice(0, 3)
-    .map(item => item.label_en)
-    .join(", ");
-  counterHintDiv.innerHTML = `Counter <strong>「${counterObj.counter}」</strong> is used for <strong>${counterObj.category}</strong>. Try things like ${examples}.`;
+  const practice = getCounterPractice(counterObj);
+  let hintHTML = "";
+
+  if (practice && practice.type === "clock") {
+    const handLabel = getClockHandLabel(practice.hand);
+    const displayValue = formatClockDisplayValue(practice.hand, currentRequest.number);
+    hintHTML = `Use the clock drawer to set the <strong>${handLabel}</strong> to <strong>${displayValue}</strong>.`;
+  } else if (practice && practice.type === "calendar") {
+    const label = formatCalendarLabel(practice.mode, currentRequest.number);
+    hintHTML = `Use the calendar drawer to mark <strong>${currentRequest.number} ${label}</strong>.`;
+  } else {
+    const examples = Array.isArray(counterObj.items)
+      ? counterObj.items
+          .slice(0, 3)
+          .map(item => item && item.label_en)
+          .filter(Boolean)
+      : [];
+    const examplesText = examples.length ? ` Try things like ${examples.join(", ")}.` : "";
+    hintHTML = `Counter <strong>「${counterObj.counter}」</strong> is used for <strong>${counterObj.category}</strong>.${examplesText}`;
+  }
+
+  counterHintDiv.innerHTML = hintHTML;
   updateHintButtonState();
   if (!hintVisible) {
     counterHintDiv.hidden = true;
@@ -620,6 +681,43 @@ function randomRequest() {
   const counters = getActiveCounters();
   if (!counters.length) return null;
   const counterObj = counters[Math.floor(Math.random() * counters.length)];
+  const practice = getCounterPractice(counterObj);
+
+  if (practice && practice.type === "clock") {
+    const min = Number.isFinite(practice.min) ? practice.min : 1;
+    const max = Number.isFinite(practice.max) ? practice.max : min;
+    const value = randomInt(min, max);
+    const target = { hours: 0, minutes: 0, seconds: 0 };
+    if (practice.hand === "hours") {
+      target.hours = ((value % 12) + 12) % 12;
+    } else if (practice.hand === "minutes") {
+      target.minutes = ((value % 60) + 60) % 60;
+    } else if (practice.hand === "seconds") {
+      target.seconds = ((value % 60) + 60) % 60;
+    }
+    return {
+      counterObj,
+      number: value,
+      item: null,
+      clockTarget: target
+    };
+  }
+
+  if (practice && practice.type === "calendar") {
+    const min = Number.isFinite(practice.min) ? practice.min : 1;
+    const max = Number.isFinite(practice.max) ? practice.max : min;
+    const value = randomInt(min, max);
+    return {
+      counterObj,
+      number: value,
+      item: null,
+      calendarTarget: {
+        mode: practice.mode || "days",
+        count: value
+      }
+    };
+  }
+
   const number = Math.ceil(Math.random() * 5); // up to 5 items for demo
   const item = counterObj.items[Math.floor(Math.random() * counterObj.items.length)];
   return { counterObj, number, item };
@@ -644,6 +742,14 @@ function newCustomer() {
   updateModeStatus();
   updateChallengeStatus();
   updateStreakStatus();
+
+  if (drawerState.currentType === "clock") {
+    initClockDrawer();
+    resetClockHands();
+  } else if (drawerState.currentType === "calendar") {
+    initCalendarDrawer();
+    refreshCalendarMode();
+  }
 }
 
 function updateCustomerText() {
@@ -705,6 +811,17 @@ function renderShelf(items) {
 function populateShelfForRequest(request) {
   if (!gameData || !request) return;
 
+  const practice = getCounterPractice(request.counterObj);
+  if (practice && (practice.type === "clock" || practice.type === "calendar")) {
+    renderShelf([]);
+    return;
+  }
+
+  if (!request.item || !Array.isArray(request.counterObj.items) || !request.counterObj.items.length) {
+    renderShelf([]);
+    return;
+  }
+
   const allItems = [];
   gameData.counters.forEach(counter => {
     counter.items.forEach(item => {
@@ -751,8 +868,25 @@ counterDiv.addEventListener("drop", e => {
   addItemToCounter(item, counterObj);
 });
 
+function getCounterDropHintHTML() {
+  if (!currentRequest || !currentRequest.counterObj) {
+    return COUNTER_HINT_HTML;
+  }
+  const practice = getCounterPractice(currentRequest.counterObj);
+  if (practice && practice.type === "clock") {
+    const handLabel = getClockHandLabel(practice.hand);
+    const displayValue = formatClockDisplayValue(practice.hand, currentRequest.number);
+    return `<span class="drop-hint">Use the clock drawer to set the ${handLabel} to ${displayValue}.</span>`;
+  }
+  if (practice && practice.type === "calendar") {
+    const label = formatCalendarLabel(practice.mode, currentRequest.number);
+    return `<span class="drop-hint">Use the calendar drawer to mark ${currentRequest.number} ${label}.</span>`;
+  }
+  return COUNTER_HINT_HTML;
+}
+
 function clearCounter() {
-  counterDiv.innerHTML = COUNTER_HINT_HTML;
+  counterDiv.innerHTML = getCounterDropHintHTML();
   counterDiv.classList.remove("has-items");
 }
 
@@ -810,50 +944,13 @@ function addItemToCounter(item, counterObj) {
   syncCounterItemSize();
 }
 
-// Done button
-document.getElementById("doneBtn").addEventListener("click", () => {
-  if (!currentRequest) return;
-
-  const items = [...counterDiv.querySelectorAll(".item")];
-  const totalCount = items.reduce((sum, el) => sum + parseInt(el.dataset.count || "1", 10), 0);
-  const correctNumber = totalCount === currentRequest.number;
-  const correctCategory = items.every(p => p.dataset.counter === currentRequest.counterObj.counter);
-
-  const wasCorrect = correctNumber && correctCategory;
-
-  recordCounterResult(currentRequest.counterObj, wasCorrect);
-
-  if (wasCorrect) {
-    reactionDiv.innerHTML = `<img src="data/assets/ui/maru_ok.png" alt="OK" height="80">`;
-    if (feedbackDiv) {
-      feedbackDiv.innerHTML = `<strong>Nice!</strong> 「${currentRequest.number}${currentRequest.counterObj.counter}」 is perfect for ${currentRequest.counterObj.category}.`;
-    }
-    correctStreak++;
-    if (challengeMode) challengeScore++;
-  } else {
-    reactionDiv.innerHTML = `<img src="data/assets/ui/maru_wrong.png" alt="Wrong" height="80">`;
-    const messages = [];
-    if (!correctNumber) {
-      messages.push(`You need ${currentRequest.number} in total.`);
-    }
-    if (!correctCategory) {
-      messages.push(`Choose items that use 「${currentRequest.counterObj.counter}」 (${currentRequest.counterObj.category}).`);
-    }
-    if (feedbackDiv) {
-      feedbackDiv.innerHTML = `<strong>Almost!</strong> ${messages.join(" ")}`;
-    }
-    clearCounter();
-    correctStreak = 0;
-  }
-
-  updateStreakStatus();
-
+function proceedToNextRound() {
   if (challengeMode) {
     challengeRounds++;
     updateChallengeStatus();
     if (challengeRounds >= MAX_CHALLENGE_ROUNDS) {
       setTimeout(() => {
-        alert(`Challenge over! Score: ${challengeScore}/10`);
+        alert(`Challenge over! Score: ${challengeScore}/${MAX_CHALLENGE_ROUNDS}`);
         challengeMode = false;
         challengeRounds = 0;
         challengeScore = 0;
@@ -862,13 +959,79 @@ document.getElementById("doneBtn").addEventListener("click", () => {
         updateChallengeStatus();
         updateStreakStatus();
       }, 500);
-    } else {
-      setTimeout(newCustomer, 1600);
+      return;
     }
-  } else {
     setTimeout(newCustomer, 1600);
+    return;
   }
-});
+  setTimeout(newCustomer, 1600);
+}
+
+function handleAnswerFeedback(wasCorrect, { successHTML, failureHTML, clearCounterOnFailure = true } = {}) {
+  if (wasCorrect) {
+    reactionDiv.innerHTML = `<img src="data/assets/ui/maru_ok.png" alt="OK" height="80">`;
+    if (feedbackDiv) {
+      feedbackDiv.innerHTML = successHTML || "<strong>Nice!</strong> Great job!";
+    }
+    correctStreak++;
+    if (challengeMode) challengeScore++;
+  } else {
+    reactionDiv.innerHTML = `<img src="data/assets/ui/maru_wrong.png" alt="Wrong" height="80">`;
+    if (feedbackDiv) {
+      feedbackDiv.innerHTML = failureHTML || "<strong>Almost!</strong> Keep practicing!";
+    }
+    if (clearCounterOnFailure) {
+      clearCounter();
+    }
+    correctStreak = 0;
+  }
+
+  updateStreakStatus();
+  proceedToNextRound();
+}
+
+// Done button
+const doneBtn = document.getElementById("doneBtn");
+if (doneBtn) {
+  doneBtn.addEventListener("click", () => {
+    if (!currentRequest) return;
+
+    const { counterObj } = currentRequest;
+    if (isClockCounter(counterObj)) {
+      openDrawer("clock");
+      return;
+    }
+    if (isCalendarCounter(counterObj)) {
+      openDrawer("calendar");
+      return;
+    }
+
+    const items = [...counterDiv.querySelectorAll(".item")];
+    const totalCount = items.reduce((sum, el) => sum + parseInt(el.dataset.count || "1", 10), 0);
+    const correctNumber = totalCount === currentRequest.number;
+    const correctCategory = items.every(p => p.dataset.counter === counterObj.counter);
+
+    const wasCorrect = correctNumber && correctCategory;
+
+    recordCounterResult(counterObj, wasCorrect);
+
+    const successHTML = `<strong>Nice!</strong> 「${currentRequest.number}${counterObj.counter}」 is perfect for ${counterObj.category}.`;
+    const failureMessages = [];
+    if (!correctNumber) {
+      failureMessages.push(`You need ${currentRequest.number} in total.`);
+    }
+    if (!correctCategory) {
+      failureMessages.push(`Choose items that use 「${counterObj.counter}」 (${counterObj.category}).`);
+    }
+    const failureHTML = `<strong>Almost!</strong> ${failureMessages.join(" ")}`;
+
+    handleAnswerFeedback(wasCorrect, {
+      successHTML,
+      failureHTML,
+      clearCounterOnFailure: true
+    });
+  });
+}
 
 // Practice / Challenge buttons
 document.getElementById("startPractice").addEventListener("click", () => {
@@ -1047,6 +1210,14 @@ const CALENDAR_MODE_TARGET_LABELS = {
   months: "month(s)",
   years: "year(s)"
 };
+
+function formatCalendarLabel(mode, count) {
+  const base = CALENDAR_MODE_TARGET_LABELS[mode] || "item(s)";
+  if (!base.includes("(s)")) {
+    return base;
+  }
+  return base.replace("(s)", count === 1 ? "" : "s");
+}
 
 function normalizeCalendarKey(value) {
   if (!value) return "";
@@ -1652,6 +1823,118 @@ function dispatchCalendarAnswer(selection) {
     console.info("[Calendar drawer] Selected period:", selection);
   }
 }
+
+function computeClockTargetFromPractice(practice, number) {
+  const target = { hours: 0, minutes: 0, seconds: 0 };
+  if (!practice) return target;
+  if (practice.hand === "hours") {
+    target.hours = ((Number(number) % 12) + 12) % 12;
+  } else if (practice.hand === "minutes") {
+    target.minutes = ((Number(number) % 60) + 60) % 60;
+  } else if (practice.hand === "seconds") {
+    target.seconds = ((Number(number) % 60) + 60) % 60;
+  }
+  return target;
+}
+
+function handleClockPracticeAnswer(selectedTime) {
+  if (!currentRequest || !currentRequest.counterObj) return;
+  const { counterObj } = currentRequest;
+  if (!isClockCounter(counterObj)) {
+    console.info("[Clock drawer] Selected time:", selectedTime);
+    return;
+  }
+
+  const practice = getCounterPractice(counterObj);
+  const target = currentRequest.clockTarget || computeClockTargetFromPractice(practice, currentRequest.number);
+  currentRequest.clockTarget = target;
+
+  const normalizedSelection = {};
+  CLOCK_HAND_KEYS.forEach(hand => {
+    const value = selectedTime && Number(selectedTime[hand]);
+    normalizedSelection[hand] = Number.isFinite(value) ? value : 0;
+  });
+
+  const wasCorrect = CLOCK_HAND_KEYS.every(hand => {
+    const expected = Number(target[hand]);
+    return normalizedSelection[hand] === (Number.isFinite(expected) ? expected : 0);
+  });
+
+  recordCounterResult(counterObj, wasCorrect);
+
+  const handKey = practice ? practice.hand : "seconds";
+  const handLabel = getClockHandLabel(handKey);
+  const displayValue = formatClockDisplayValue(handKey, currentRequest.number);
+  const expectedValue = Number(target[handKey]) || 0;
+  const selectedValue = normalizedSelection[handKey];
+  const selectedDisplay = formatClockDisplayValue(handKey, selectedValue);
+
+  const failureParts = [];
+  if (selectedValue !== expectedValue) {
+    failureParts.push(`Set the ${handLabel} to ${displayValue} (you chose ${selectedDisplay}).`);
+  }
+  const otherHandsWrong = CLOCK_HAND_KEYS.some(hand => {
+    if (hand === handKey) return false;
+    const expected = Number(target[hand]) || 0;
+    return normalizedSelection[hand] !== expected;
+  });
+  if (otherHandsWrong) {
+    failureParts.push("Reset the other hands to 0.");
+  }
+
+  const successHTML = `<strong>Nice!</strong> Set the ${handLabel} to ${displayValue}.`;
+  const failureHTML = `<strong>Almost!</strong> ${failureParts.join(" ") || `Set the ${handLabel} to ${displayValue}.`}`;
+
+  handleAnswerFeedback(wasCorrect, {
+    successHTML,
+    failureHTML,
+    clearCounterOnFailure: false
+  });
+}
+
+function handleCalendarPracticeAnswer(selection) {
+  if (!currentRequest || !currentRequest.counterObj) return;
+  const { counterObj } = currentRequest;
+  if (!isCalendarCounter(counterObj)) {
+    console.info("[Calendar drawer] Selected period:", selection);
+    return;
+  }
+
+  const practice = getCounterPractice(counterObj);
+  const expectedMode = practice && practice.mode ? practice.mode : determineCalendarMode();
+  const expectedCount = Number(currentRequest.number) || 0;
+  const selectedMode = selection && selection.mode;
+  const selectedCount = Number(selection && selection.count);
+
+  const wasCorrect = selectedMode === expectedMode && selectedCount === expectedCount;
+
+  recordCounterResult(counterObj, wasCorrect);
+
+  const label = formatCalendarLabel(expectedMode, expectedCount);
+  const successHTML = `<strong>Nice!</strong> You marked ${expectedCount} ${label}.`;
+
+  const failureParts = [];
+  if (selectedMode !== expectedMode) {
+    const modeLabel = formatCalendarLabel(expectedMode, expectedCount === 1 ? 1 : 2);
+    failureParts.push(`Use the ${modeLabel} view for this counter.`);
+  }
+  if (selectedCount !== expectedCount) {
+    const sanitizedCount = Number.isFinite(selectedCount) ? selectedCount : 0;
+    const selectedLabel = formatCalendarLabel(expectedMode, sanitizedCount);
+    failureParts.push(`Mark ${expectedCount} ${label} (you chose ${sanitizedCount} ${selectedLabel}).`);
+  }
+
+  const failureHTML = `<strong>Almost!</strong> ${failureParts.join(" ") || `Mark ${expectedCount} ${label}.`}`;
+
+  handleAnswerFeedback(wasCorrect, {
+    successHTML,
+    failureHTML,
+    clearCounterOnFailure: false
+  });
+}
+
+window.checkClockAnswer = handleClockPracticeAnswer;
+window.checkCalendarAnswer = handleCalendarPracticeAnswer;
 
 setupDrawerLaunchers();
 
