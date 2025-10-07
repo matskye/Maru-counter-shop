@@ -2618,7 +2618,13 @@ function registerFloorPlanElements(svgEl, floorNumber, { includeOutdoor = false 
   if (!svgEl) return;
   const roomGroups = svgEl.querySelectorAll(".Room_Grouped");
   roomGroups.forEach((group, groupIndex) => {
-    const roomRect = group.querySelector(".Room");
+    let roomRect = group.querySelector(".Room");
+    if (!roomRect) {
+      roomRect = group.querySelector("rect");
+      if (roomRect) {
+        roomRect.classList.add("Room");
+      }
+    }
     if (roomRect) {
       ensureHouseElementLabel(roomRect, `Room ${groupIndex + 1} on ${getFloorLabel(floorNumber).toLowerCase()}`);
       roomRect.dataset.selectionId = `floor-${floorNumber}-room-${groupIndex + 1}`;
