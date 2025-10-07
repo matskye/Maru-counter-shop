@@ -2381,7 +2381,7 @@ function dispatchCalendarAnswer(selection) {
   }
 }
 
-function registerHouseSelectable(element, type, { stopPropagation = false } = {}) {
+function registerHouseSelectable(element, type, { stopPropagation = false, onActivate = null } = {}) {
   if (!element || !HOUSE_SELECTION_KEYS.includes(type)) return;
   const houseState = drawerState.house;
   if (!element.classList.contains("house-selectable")) {
@@ -2401,11 +2401,18 @@ function registerHouseSelectable(element, type, { stopPropagation = false } = {}
     element.dataset.selectionId = `${type}-${houseState.elements[type].length + 1}`;
   }
   element.setAttribute("aria-pressed", "false");
+  const activateElement = event => {
+    if (typeof onActivate === "function") {
+      onActivate(event, element);
+    } else {
+      toggleSelection(element);
+    }
+  };
   const activate = event => {
     if (stopPropagation) {
       event.stopPropagation();
     }
-    toggleSelection(element);
+    activateElement(event);
   };
   element.addEventListener("click", activate);
   element.addEventListener("keydown", event => {
@@ -2414,7 +2421,7 @@ function registerHouseSelectable(element, type, { stopPropagation = false } = {}
       if (stopPropagation) {
         event.stopPropagation();
       }
-      toggleSelection(element);
+      activateElement(event);
     }
   });
   houseState.elements[type].push(element);
@@ -2441,6 +2448,27 @@ function toggleSelection(element, forceState) {
   element.setAttribute("aria-pressed", shouldSelect ? "true" : "false");
   updateHouseSelectionSummary();
   return shouldSelect;
+}
+
+function incrementHouseSelection(type) {
+  if (!HOUSE_SELECTION_KEYS.includes(type)) return false;
+  const houseState = drawerState.house;
+  const elements = houseState.elements[type];
+  if (!Array.isArray(elements) || elements.length === 0) {
+    return false;
+  }
+  const selectedSet = houseState.selected[type] instanceof Set ? houseState.selected[type] : null;
+  const nextElement = elements.find(element => {
+    if (!element) return false;
+    const id = element.dataset ? element.dataset.selectionId : null;
+    if (!id) return false;
+    return !selectedSet || !selectedSet.has(id);
+  });
+  if (!nextElement) {
+    return false;
+  }
+  toggleSelection(nextElement, true);
+  return true;
 }
 
 function resetHouseSelections() {
@@ -2477,13 +2505,31 @@ function updateHouseSelectionSummary() {
   HOUSE_SELECTION_KEYS.forEach(key => {
     const item = document.createElement("div");
     item.className = "house-summary-item";
+    item.dataset.selectionType = key;
+    item.setAttribute("role", "button");
+    item.setAttribute("tabindex", "0");
     if (key === activeTarget) {
       item.classList.add("is-target");
     }
+    const title = getHouseTargetTitle(key);
+    const normalizedTitle = typeof title === "string" ? title.toLowerCase() : "items";
     const label = document.createElement("span");
-    label.textContent = getHouseTargetTitle(key);
+    label.textContent = title;
     const count = document.createElement("strong");
     count.textContent = snapshot[key];
+    const ariaLabel = `Increase ${normalizedTitle} selection (currently ${snapshot[key]})`;
+    item.setAttribute("aria-label", ariaLabel);
+    item.title = `Click to add more ${normalizedTitle}`;
+    const increment = () => {
+      incrementHouseSelection(key);
+    };
+    item.addEventListener("click", increment);
+    item.addEventListener("keydown", event => {
+      if (event.key === "Enter" || event.key === " " || event.key === "Spacebar") {
+        event.preventDefault();
+        increment();
+      }
+    });
     item.append(label, count);
     fragment.appendChild(item);
   });
@@ -2585,7 +2631,17 @@ function registerFloorPlanElements(svgEl, floorNumber, { includeOutdoor = false 
         `Tatami ${tatamiIndex + 1} in room ${groupIndex + 1} on ${getFloorLabel(floorNumber).toLowerCase()}`
       );
       tatamiRect.dataset.selectionId = `floor-${floorNumber}-room-${groupIndex + 1}-tatami-${tatamiIndex + 1}`;
-      registerHouseSelectable(tatamiRect, "tatami", { stopPropagation: true });
+      registerHouseSelectable(tatamiRect, "tatami", {
+        stopPropagation: true,
+        onActivate: (event, element) => {
+          const activeTarget = drawerState.house.activeTarget;
+          if (activeTarget === "rooms" && roomRect) {
+            toggleSelection(roomRect);
+          } else {
+            toggleSelection(element);
+          }
+        }
+      });
     });
   });
 
