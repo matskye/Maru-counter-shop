@@ -813,6 +813,22 @@ input[type="checkbox"] {
   background: rgba(255, 255, 255, 0.82);
   color: var(--muted);
   font-size: 0.95rem;
+  user-select: none;
+}
+
+.house-summary-item[role="button"] {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.house-summary-item[role="button"]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(107, 91, 255, 0.18);
+}
+
+.house-summary-item[role="button"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(107, 91, 255, 0.45);
 }
 
 .house-summary-item strong {
