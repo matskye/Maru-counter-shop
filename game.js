@@ -505,6 +505,13 @@ function updateHintButtonState() {
 }
 
 let japaneseVoice = null;
+let fallbackVoiceEnabled = localStorage.getItem("fallbackVoiceEnabled") !== "false";
+let lastVoiceEngine = ("speechSynthesis" in window) ? "browser" : "none";
+const FALLBACK_TTS_ENDPOINT = "https://translate.googleapis.com/translate_tts";
+const FALLBACK_CACHE_LIMIT = 20;
+const fallbackAudioCache = new Map();
+let fallbackAudioElement = null;
+let fallbackAudioController = null;
 
 const JAPANESE_NUMBER_READINGS = {
   0: "れい",
@@ -582,17 +589,199 @@ fetch("data/counters.json")
   });
 
 // Speak Japanese if voice enabled
+function shouldUseFallbackVoice() {
+  return Boolean(
+    fallbackVoiceEnabled &&
+    typeof fetch === "function" &&
+    typeof Audio !== "undefined" &&
+    typeof URL !== "undefined" &&
+    typeof URL.createObjectURL === "function"
+  );
+}
+
+if (lastVoiceEngine === "none" && shouldUseFallbackVoice()) {
+  lastVoiceEngine = "fallback";
+}
+
+function setLastVoiceEngine(engine) {
+  if (lastVoiceEngine === engine) return;
+  lastVoiceEngine = engine;
+  updateReplayButtonState();
+}
+
+function enforceFallbackCacheLimit() {
+  while (fallbackAudioCache.size > FALLBACK_CACHE_LIMIT) {
+    const oldestKey = fallbackAudioCache.keys().next().value;
+    if (!oldestKey) break;
+    const objectUrl = fallbackAudioCache.get(oldestKey);
+    fallbackAudioCache.delete(oldestKey);
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
+}
+
+async function getFallbackAudioUrl(text) {
+  const trimmed = (text || "").trim();
+  if (!trimmed) return null;
+  if (fallbackAudioCache.has(trimmed)) {
+    return fallbackAudioCache.get(trimmed);
+  }
+  if (!shouldUseFallbackVoice()) return null;
+
+  if (fallbackAudioController && typeof fallbackAudioController.abort === "function") {
+    try {
+      fallbackAudioController.abort();
+    } catch (err) {
+      // Ignore abort errors.
+    }
+  }
+
+  const supportsAbort = typeof AbortController === "function";
+  const controller = supportsAbort ? new AbortController() : null;
+  fallbackAudioController = controller;
+
+  const url = new URL(FALLBACK_TTS_ENDPOINT);
+  url.searchParams.set("ie", "UTF-8");
+  url.searchParams.set("client", "tw-ob");
+  url.searchParams.set("tl", "ja");
+  url.searchParams.set("q", trimmed);
+
+  try {
+    const response = await fetch(
+      url.toString(),
+      controller ? { signal: controller.signal } : undefined
+    );
+    if (!response.ok) {
+      throw new Error(`Fallback TTS request failed: ${response.status}`);
+    }
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    fallbackAudioCache.set(trimmed, objectUrl);
+    enforceFallbackCacheLimit();
+    return objectUrl;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      return null;
+    }
+    console.warn("Unable to fetch fallback TTS audio", error);
+    return null;
+  } finally {
+    if (fallbackAudioController === controller) {
+      fallbackAudioController = null;
+    }
+  }
+}
+
+async function playFallbackAudio(text) {
+  if (!shouldUseFallbackVoice()) {
+    setLastVoiceEngine(("speechSynthesis" in window) ? "browser" : "none");
+    return;
+  }
+
+  const source = await getFallbackAudioUrl(text);
+  if (!source) {
+    return;
+  }
+
+  if (!fallbackAudioElement) {
+    fallbackAudioElement = new Audio();
+  }
+
+  try {
+    fallbackAudioElement.pause();
+    fallbackAudioElement.currentTime = 0;
+  } catch (err) {
+    // Ignore reset errors.
+  }
+
+  fallbackAudioElement.src = source;
+  try {
+    setLastVoiceEngine("fallback");
+    await fallbackAudioElement.play();
+  } catch (error) {
+    console.warn("Unable to play fallback TTS audio", error);
+  }
+}
+
+window.addEventListener("beforeunload", () => {
+  if (fallbackAudioController) {
+    if (typeof fallbackAudioController.abort === "function") {
+      try {
+        fallbackAudioController.abort();
+      } catch (err) {
+        // Ignore abort errors on unload.
+      }
+    }
+  }
+  fallbackAudioCache.forEach(objectUrl => {
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+    }
+  });
+  fallbackAudioCache.clear();
+});
+
 function speakJapanese(text) {
   if (!voiceEnabled) return;
-  if ('speechSynthesis' in window) {
-    const utter = new SpeechSynthesisUtterance(text);
-    if (japaneseVoice) {
-      utter.voice = japaneseVoice;
+
+  const phrase = typeof text === "string" ? text.trim() : "";
+  if (!phrase) return;
+
+  let fallbackTriggered = false;
+  const triggerFallback = () => {
+    if (fallbackTriggered) return;
+    fallbackTriggered = true;
+    if (shouldUseFallbackVoice()) {
+      void playFallbackAudio(phrase);
+    } else {
+      setLastVoiceEngine(("speechSynthesis" in window) ? "browser" : "none");
     }
-    utter.lang = 'ja-JP';
-    window.speechSynthesis.cancel();
-    speechSynthesis.speak(utter);
+  };
+
+  if ("speechSynthesis" in window) {
+    try {
+      if (typeof SpeechSynthesisUtterance !== "function") {
+        throw new Error("SpeechSynthesisUtterance is not available");
+      }
+      const utter = new SpeechSynthesisUtterance(phrase);
+      if (japaneseVoice) {
+        utter.voice = japaneseVoice;
+      }
+      utter.lang = "ja-JP";
+      let fallbackTimeout = null;
+      const clearFallbackTimeout = () => {
+        if (fallbackTimeout !== null) {
+          clearTimeout(fallbackTimeout);
+          fallbackTimeout = null;
+        }
+      };
+      fallbackTimeout = window.setTimeout(() => {
+        fallbackTimeout = null;
+        triggerFallback();
+      }, 1200);
+      utter.onstart = () => {
+        clearFallbackTimeout();
+        setLastVoiceEngine("browser");
+      };
+      utter.onerror = () => {
+        clearFallbackTimeout();
+        triggerFallback();
+      };
+      utter.onend = () => {
+        clearFallbackTimeout();
+      };
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utter);
+      return;
+    } catch (error) {
+      console.warn("Speech synthesis failed, attempting fallback", error);
+      triggerFallback();
+      return;
+    }
   }
+
+  triggerFallback();
 }
 
 function getPromptSpeechText(request) {
@@ -603,12 +792,29 @@ function getPromptSpeechText(request) {
 
 function updateReplayButtonState() {
   if (!replayVoiceBtn) return;
-  const supported = 'speechSynthesis' in window;
+  const webSpeechSupported = 'speechSynthesis' in window;
+  const fallbackAvailable = shouldUseFallbackVoice();
   const hasRequest = Boolean(currentRequest);
-  replayVoiceBtn.disabled = !(voiceEnabled && supported && hasRequest);
-  replayVoiceBtn.title = replayVoiceBtn.disabled
-    ? "Enable voice in settings to listen to Maru's request again."
-    : "Hear Maru repeat the current request.";
+  const voiceAvailable = voiceEnabled && (webSpeechSupported || fallbackAvailable);
+
+  replayVoiceBtn.disabled = !(voiceAvailable && hasRequest);
+
+  let title;
+  if (!voiceEnabled) {
+    title = "Enable voice in settings to listen to Maru's request again.";
+  } else if (!voiceAvailable) {
+    title = "Voice playback isn't available in this browser.";
+  } else if (lastVoiceEngine === "fallback" && fallbackAvailable) {
+    title = "Stream audio using the fallback voice service.";
+  } else if (webSpeechSupported) {
+    title = "Hear Maru repeat the current request.";
+  } else if (fallbackAvailable) {
+    title = "Stream audio using the fallback voice service.";
+  } else {
+    title = "Voice playback isn't available in this browser.";
+  }
+
+  replayVoiceBtn.title = title;
 }
 
 function updateModeStatus() {
@@ -1122,12 +1328,16 @@ const settingsBtn = document.getElementById("settingsBtn");
 const settingsModal = document.getElementById("settingsModal");
 const furiganaCheckbox = document.getElementById("furiganaCheckbox");
 const voiceCheckbox = document.getElementById("voiceCheckbox");
+const fallbackVoiceCheckbox = document.getElementById("fallbackVoiceCheckbox");
 const closeSettings = document.getElementById("closeSettings");
 
 settingsBtn.addEventListener("click", () => {
   settingsModal.style.display = "flex";
   furiganaCheckbox.checked = showFurigana;
   voiceCheckbox.checked = voiceEnabled;
+  if (fallbackVoiceCheckbox) {
+    fallbackVoiceCheckbox.checked = fallbackVoiceEnabled;
+  }
   reopenSettingsAfterCounter = false;
 });
 
@@ -1175,11 +1385,36 @@ furiganaCheckbox.addEventListener("change", () => {
 voiceCheckbox.addEventListener("change", () => {
   voiceEnabled = voiceCheckbox.checked;
   localStorage.setItem("voiceEnabled", voiceEnabled);
+  if (!voiceEnabled && fallbackAudioElement) {
+    try {
+      fallbackAudioElement.pause();
+    } catch (err) {
+      // Ignore pause errors.
+    }
+  }
   if (voiceEnabled && currentRequest) {
     speakJapanese(getPromptSpeechText(currentRequest));
   }
   updateReplayButtonState();
 });
+
+if (fallbackVoiceCheckbox) {
+  fallbackVoiceCheckbox.addEventListener("change", () => {
+    fallbackVoiceEnabled = fallbackVoiceCheckbox.checked;
+    localStorage.setItem("fallbackVoiceEnabled", fallbackVoiceEnabled);
+    if (!fallbackVoiceEnabled && fallbackAudioElement) {
+      try {
+        fallbackAudioElement.pause();
+      } catch (err) {
+        // Ignore pause errors.
+      }
+      setLastVoiceEngine(("speechSynthesis" in window) ? "browser" : "none");
+    } else if (fallbackVoiceEnabled && !('speechSynthesis' in window)) {
+      setLastVoiceEngine("fallback");
+    }
+    updateReplayButtonState();
+  });
+}
 
 window.addEventListener("click", (event) => {
   if (event.target === settingsModal) {

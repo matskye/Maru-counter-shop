@@ -507,6 +507,30 @@ button.primary:focus-visible {
   justify-content: center;
 }
 
+.modal-content .settings-inline {
+  justify-content: center;
+}
+
+.modal-content .settings-option {
+  color: var(--neutral);
+  justify-content: flex-start;
+  align-items: flex-start;
+  text-align: left;
+  gap: 12px;
+}
+
+.settings-option > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-option .settings-hint {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
 input[type="checkbox"] {
   width: 18px;
   height: 18px;
