@@ -6,6 +6,10 @@ import {
   buildShift, gradeCard, counterStars, roundForCard, updateDayStreak,
   isForced, roundReadings, maxNumber, bigNumbers, specialNumbers
 } from "./logic.js";
+import {
+  DECORATIONS, PERFECT_BONUS, answerReward, emptyGame, normalizeGame, addYen, rankInfo, buyDecoration,
+  recordShiftDay, lastSevenDays, stampList, awardStamps
+} from "./rewards.js";
 
 const CHALLENGE_ROUNDS = 10;
 const SHELF_SIZE = 8;
@@ -44,7 +48,14 @@ const els = {
   counterSummary: $("counterSummary"), counterList: $("counterList"), selectAllBtn: $("selectAllCounters"),
   resultsImg: $("resultsImg"), resultsTitle: $("resultsTitle"), resultsScore: $("resultsScore"),
   resultsBest: $("resultsBest"), resultsReview: $("resultsReview"),
-  summaryTitle: $("summaryTitle"), summaryScore: $("summaryScore"), summaryLines: $("summaryLines")
+  summaryTitle: $("summaryTitle"), summaryScore: $("summaryScore"), summaryLines: $("summaryLines"),
+  rankIcon: $("rankIcon"), rankName: $("rankName"), rankEn: $("rankEn"), yenBalance: $("yenBalance"),
+  rankBar: $("rankBar"), rankNote: $("rankNote"), shopDecos: $("shopDecos"), weekStrip: $("weekStrip"),
+  openDecorBtn: $("openDecorBtn"), openStampsBtn: $("openStampsBtn"), stampCount: $("stampCount"),
+  yenStatus: $("yenStatus"), shiftYen: $("shiftYen"),
+  decorDialog: $("decorDialog"), decorBalance: $("decorBalance"), decorList: $("decorList"),
+  stampsDialog: $("stampsDialog"), stampsSummary: $("stampsSummary"), stampList: $("stampList"),
+  toast: $("toast"), confetti: $("confetti")
 };
 
 /* ---------- Storage ---------- */
@@ -99,7 +110,7 @@ function loadSettings() {
 const state = {
   data: null,
   stats: {},
-  progress: emptyProgress(), // lesson path + spaced repetition
+  progress: freshProgress(), // lesson path + spaced repetition + rewards
   enabled: null, // counters ticked for free practice; null = all
   settings: loadSettings(),
   best: store.get("maruBest", {}) || {},
@@ -117,6 +128,12 @@ const state = {
   lastCounterKey: null,
   advanceTimer: null
 };
+
+function freshProgress() {
+  return { ...emptyProgress(), game: emptyGame() };
+}
+
+const yen = amount => `¥${amount.toLocaleString("en-US")}`;
 
 const saveSettings = () => store.set("maruSettings", state.settings);
 const saveStats = () => store.set("counterStats", state.stats);
@@ -286,9 +303,10 @@ function renderHome() {
   els.learnedCount.textContent = `${progress.unlocked.length}/${data.counters.length}`;
   els.dueCount.textContent = String(due.length);
 
-  els.startShiftBtn.disabled = false;
-  els.freePracticeBtn.disabled = false;
-  els.homeChallengeBtn.disabled = false;
+  [els.startShiftBtn, els.freePracticeBtn, els.homeChallengeBtn, els.openDecorBtn, els.openStampsBtn].forEach(btn => {
+    btn.disabled = false;
+  });
+  renderShopBanner();
   els.startShiftBtn.textContent = firstTime ? "▶ Start your first shift" : "▶ Start a shift";
 
   if (firstTime) {
@@ -347,6 +365,109 @@ function chapters(counters) {
   return [...groups.entries()];
 }
 
+/* ---------- Shop rank, decorations, stamps ---------- */
+
+function rankBarNode(earned) {
+  const info = rankInfo(earned);
+  return h("div", { class: "bar" }, h("div", { style: `width:${Math.round(info.fraction * 100)}%` }));
+}
+
+function renderShopBanner() {
+  const game = state.progress.game;
+  const info = rankInfo(game.earned);
+  els.rankIcon.textContent = info.rank.icon;
+  els.rankName.replaceChildren(info.rank.ja === info.rank.kana ? info.rank.ja : ruby(info.rank.ja, info.rank.kana));
+  els.rankEn.textContent = info.rank.en;
+  els.yenBalance.textContent = `💴 ${yen(game.yen)}`;
+  const percent = Math.round(info.fraction * 100);
+  els.rankBar.style.width = `${percent}%`;
+  els.rankBar.parentElement.setAttribute("aria-valuenow", String(percent));
+  els.rankNote.replaceChildren(...(info.next
+    ? [`${yen(info.toGo)} more in takings to become a `, ja(info.next.ja), ` (${info.next.en.toLowerCase()}).`]
+    : ["The best shop in Japan. Maru is very proud!"]));
+  const owned = DECORATIONS.filter(d => game.owned.includes(d.id));
+  els.shopDecos.replaceChildren(...(owned.length
+    ? owned.map(d => h("span", { class: "emoji", title: `${d.ja} (${d.en})` }, d.emoji))
+    : [h("span", { class: "empty" }, "The shop front is bare. Earn yen in shifts and decorate it!")]));
+
+  els.weekStrip.replaceChildren(...lastSevenDays(game.history, new Date()).map(day =>
+    h("div", { class: `day${day.played ? " played" : ""}${day.isToday ? " today" : ""}`, title: day.date },
+      h("span", { lang: "ja" }, day.weekday), h("span", { class: "mark" }, day.played ? "✓" : ""))));
+
+  const stamps = stampList(state.data);
+  els.stampCount.textContent = `${stamps.filter(s => game.stamps[s.id]).length}/${stamps.length}`;
+}
+
+function stampNode(stamp, date) {
+  return h("div", { class: `stamp${date ? " earned" : ""}`, title: date ? `Earned ${date}` : stamp.how },
+    h("span", { class: "stamp-mark" }, h("span", { class: "emoji" }, date ? stamp.icon : "？")),
+    h("strong", {}, stamp.title),
+    h("small", {}, date ? stamp.how : stamp.how));
+}
+
+/** Check the stamp card; returns the newly earned stamps. */
+function collectStamps() {
+  const [today] = todayAndYesterday();
+  const fresh = awardStamps(state.data, state.progress, currentDayStreak(), today);
+  if (fresh.length) saveProgress();
+  return fresh;
+}
+
+function openStamps() {
+  const game = state.progress.game;
+  const stamps = stampList(state.data);
+  const earned = stamps.filter(s => game.stamps[s.id]).length;
+  els.stampsSummary.textContent = `${earned} of ${stamps.length} stamps collected. Each one marks something you did or learned.`;
+  els.stampList.replaceChildren(...stamps.map(stamp => stampNode(stamp, game.stamps[stamp.id])));
+  els.stampsDialog.showModal();
+  els.stampList.scrollTop = 0;
+}
+
+function renderDecor() {
+  const game = state.progress.game;
+  els.decorBalance.textContent = yen(game.yen);
+  els.decorList.replaceChildren(...DECORATIONS.map(item => {
+    const owned = game.owned.includes(item.id);
+    const affordable = game.yen >= item.price;
+    return h("div", { class: `decor-item${owned ? " owned" : ""}` },
+      h("span", { class: "emoji" }, item.emoji),
+      h("div", { class: "decor-name" }, h("strong", { lang: "ja" }, item.ja === item.kana ? item.ja : ruby(item.ja, item.kana)), h("small", {}, item.en)),
+      owned
+        ? h("span", { class: "level mastered" }, "✓ In the shop")
+        : h("button", {
+          class: "small", type: "button", disabled: !affordable,
+          title: affordable ? "" : `${yen(item.price - game.yen)} short`,
+          onclick: () => {
+            if (!buyDecoration(game, item.id)) return;
+            saveProgress();
+            playTone("fanfare");
+            const fresh = collectStamps();
+            renderDecor();
+            renderShopBanner();
+            toast(fresh.length ? `💮 New stamp: ${fresh.map(s => s.title).join(", ")}` : `${item.emoji} ${item.en} added to the shop!`);
+          }
+        }, yen(item.price)));
+  }));
+}
+
+let toastTimer = null;
+function toast(message) {
+  els.toast.textContent = message;
+  els.toast.hidden = false;
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => { els.toast.hidden = true; }, 3200);
+}
+
+function celebrate() {
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const bits = ["🎉", "✨", "🌸", "💴", "⭐", "🎊"];
+  els.confetti.replaceChildren(...Array.from({ length: 28 }, (_, i) => h("span", {
+    class: "emoji",
+    style: `left:${Math.random() * 100}%;animation-delay:${Math.random() * 0.5}s;animation-duration:${1.6 + Math.random() * 1.2}s;font-size:${1.1 + Math.random() * 1.1}rem`
+  }, bits[i % bits.length])));
+  window.setTimeout(() => els.confetti.replaceChildren(), 3400);
+}
+
 /* ---------- Day streak ---------- */
 
 function dateString(date) {
@@ -373,7 +494,10 @@ function startShift() {
   const steps = buildShift({ data: state.data, progress: state.progress, now: Date.now() });
   state.challenge = null;
   state.streak = 0;
-  state.shift = { steps, asked: 0, firstTry: { correct: 0, total: 0 }, newCounters: [], requeues: new Map() };
+  state.shift = {
+    steps, asked: 0, firstTry: { correct: 0, total: 0 }, newCounters: [], requeues: new Map(),
+    earned: 0, rankIndex: rankInfo(state.progress.game.earned).index
+  };
   showPlay();
   nextShiftStep();
 }
@@ -433,9 +557,18 @@ function gradeShiftAnswer(round, correct) {
   const id = step.cardId;
   gradeCard(state.progress, id, correct, Date.now(), { retry: Boolean(step.retry) });
   shift.asked += 1;
+  let reward = 0;
   if (!step.retry) {
     shift.firstTry.total += 1;
-    if (correct) shift.firstTry.correct += 1;
+    if (correct) {
+      shift.firstTry.correct += 1;
+      // Paid for first tries only; answers in a row are worth more (state.streak already counts this one).
+      const game = state.progress.game;
+      reward = answerReward(state.streak);
+      addYen(game, reward);
+      shift.earned += reward;
+      game.bestCombo = Math.max(game.bestCombo, state.streak);
+    }
   }
   if (!correct) {
     // Ask again a little later in this shift, so it ends on a success.
@@ -457,19 +590,40 @@ function gradeShiftAnswer(round, correct) {
     }
   }
   saveProgress();
+  return reward;
 }
 
 function finishShift() {
   const shift = state.shift;
   const progress = state.progress;
+  const game = progress.game;
   const [today, yesterday] = todayAndYesterday();
   progress.day = updateDayStreak(progress.day, today, yesterday);
   progress.shifts += 1;
-  saveProgress();
+  recordShiftDay(game, today);
 
   const { correct, total } = shift.firstTry;
+  const perfect = total > 0 && correct === total;
+  if (perfect) {
+    game.perfectShifts += 1;
+    addYen(game, PERFECT_BONUS);
+    shift.earned += PERFECT_BONUS;
+  }
+  const rank = rankInfo(game.earned);
+  const stamps = awardStamps(state.data, progress, progress.day.streak, today);
+  saveProgress();
+
   const now = Date.now();
   const lines = [];
+  lines.push(h("p", { class: "takings" }, `💴 ${yen(shift.earned)} in takings`, perfect ? ` (includes a ${yen(PERFECT_BONUS)} perfect-shift bonus)` : ""));
+  if (rank.index > shift.rankIndex) {
+    lines.push(h("p", { class: "rank-up" }, `${rank.rank.icon} The shop has grown into a `, ja(rank.rank.ja), ` (${rank.rank.en.toLowerCase()})!`));
+  } else if (rank.next) {
+    lines.push(rankBarNode(game.earned), h("p", { class: "note" }, `${yen(rank.toGo)} to go until `, ja(rank.next.ja)));
+  }
+  if (stamps.length) {
+    lines.push(h("div", { class: "stamp-list compact" }, stamps.map(stamp => stampNode(stamp, today))));
+  }
   if (shift.newCounters.length) {
     lines.push(h("p", {}, "📖 New: ", ja(shift.newCounters.join("・"))));
   }
@@ -482,7 +636,8 @@ function finishShift() {
   if (!dueNow && moreToLearn) lines.push(h("p", {}, "There is more to learn whenever you are ready."));
   if (!moreToLearn && !dueNow) lines.push(h("p", {}, "You have met every counter in the shop. Keep up the reviews to make them stick!"));
 
-  els.summaryTitle.textContent = total && correct === total ? "Perfect shift!" : "Shift complete!";
+  els.summaryTitle.textContent = perfect ? "Perfect shift!" : "Shift complete!";
+  if (perfect || stamps.length || rank.index > shift.rankIndex) celebrate();
   els.summaryScore.textContent = total ? `${correct} / ${total}` : "";
   els.summaryLines.replaceChildren(total ? h("p", { class: "note" }, "right first time") : null, ...lines);
   state.shift = null;
@@ -614,7 +769,9 @@ function renderStatus() {
   els.shiftProgress.hidden = !shift;
   els.modeSwitch.hidden = Boolean(shift);
   els.challengeBtn.hidden = Boolean(shift);
+  els.yenStatus.hidden = !shift;
   if (shift) {
+    els.shiftYen.textContent = yen(shift.earned);
     const remaining = shift.steps.filter(s => s.kind === "card").length;
     const current = state.phase === "asking" ? 1 : 0;
     const total = shift.asked + current + remaining;
@@ -1035,7 +1192,11 @@ function finishRound(correct, lines) {
   }
 
   if (state.shift) {
-    gradeShiftAnswer(round, correct);
+    const reward = gradeShiftAnswer(round, correct);
+    if (reward && lines[0]) {
+      lines[0].append(h("span", { class: "yen-pop" }, `+${yen(reward)}`),
+        state.streak >= 3 ? h("span", { class: "combo" }, `${state.streak} in a row!`) : null);
+    }
   } else {
     if (!correct) {
       // A slip in free practice sends that card back for review in the next shift.
@@ -1358,7 +1519,7 @@ function bindEvents() {
     if (!state.data) return;
     if (!window.confirm("Reset everything you have learned: lessons, reviews, scores and streaks? Your settings are kept.")) return;
     state.stats = normalizeStats({}, state.data.counters.map(c => c.counter));
-    state.progress = emptyProgress();
+    state.progress = freshProgress();
     state.best = {};
     state.streak = 0;
     state.reviewQueue = [];
@@ -1390,6 +1551,15 @@ function bindEvents() {
     else startFreePractice();
   });
 
+  // Decorations and stamps
+  els.openDecorBtn.addEventListener("click", () => {
+    renderDecor();
+    els.decorDialog.showModal();
+  });
+  $("closeDecorBtn").addEventListener("click", () => els.decorDialog.close());
+  els.openStampsBtn.addEventListener("click", openStamps);
+  $("closeStampsBtn").addEventListener("click", () => els.stampsDialog.close());
+
   // Shift summary
   $("summaryAgainBtn").addEventListener("click", () => els.summaryDialog.close("again"));
   $("summaryHomeBtn").addEventListener("click", () => els.summaryDialog.close("home"));
@@ -1401,7 +1571,7 @@ function bindEvents() {
   });
 
   // Click on the backdrop closes a dialog.
-  [els.settingsDialog, els.guideDialog].forEach(dialog => dialog.addEventListener("click", event => {
+  [els.settingsDialog, els.guideDialog, els.decorDialog, els.stampsDialog].forEach(dialog => dialog.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
   }));
 
@@ -1452,7 +1622,10 @@ async function init() {
   }
   const keys = state.data.counters.map(c => c.counter);
   state.stats = normalizeStats(store.get("counterStats", {}), keys);
-  state.progress = normalizeProgress(store.get("maruProgress", null), state.data);
+  const savedProgress = store.get("maruProgress", null);
+  state.progress = normalizeProgress(savedProgress, state.data);
+  state.progress.game = normalizeGame(savedProgress && savedProgress.game);
+  collectStamps(); // anything already earned before the stamp card existed
   const savedEnabled = store.get("enabledCounters", null);
   if (Array.isArray(savedEnabled)) {
     const valid = keys.filter(k => savedEnabled.includes(k));

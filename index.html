@@ -35,10 +35,28 @@
         </div>
       </section>
 
+      <section class="shop-banner" aria-label="Your shop">
+        <div class="shop-rank">
+          <span id="rankIcon" class="emoji rank-icon">⛺</span>
+          <div class="rank-text">
+            <strong id="rankName" lang="ja">屋台</strong>
+            <small id="rankEn">Street stall</small>
+          </div>
+          <span id="yenBalance" class="yen-chip" title="Yen to spend on decorations">💴 ¥0</span>
+        </div>
+        <div class="bar" role="progressbar" aria-label="Progress to the next shop rank" aria-valuemin="0" aria-valuemax="100"><div id="rankBar"></div></div>
+        <p id="rankNote" class="note"></p>
+        <div id="shopDecos" class="shop-decos" aria-label="Shop decorations"></div>
+      </section>
+
       <section class="home-stats" aria-label="Your progress">
         <div class="stat"><strong id="dayStreak">0</strong><span>🔥 day streak</span></div>
         <div class="stat"><strong id="learnedCount">0</strong><span>⭐ counters started</span></div>
         <div class="stat"><strong id="dueCount">0</strong><span>📚 reviews ready</span></div>
+      </section>
+
+      <section class="week" aria-label="This week">
+        <div id="weekStrip" class="week-strip"></div>
       </section>
 
       <section class="home-actions">
@@ -47,6 +65,8 @@
         <div class="home-secondary">
           <button id="freePracticeBtn" class="ghost" type="button" disabled title="Endless practice with the counters ticked under 📖 Counters">🎯 Free practice</button>
           <button id="homeChallengeBtn" class="ghost" type="button" disabled title="Ten rounds, no hints">🏁 Challenge</button>
+          <button id="openDecorBtn" class="ghost" type="button" disabled title="Spend your takings on the shop front">🛍️ Decorate</button>
+          <button id="openStampsBtn" class="ghost" type="button" disabled title="Your stamp card">💮 Stamps <span id="stampCount"></span></button>
         </div>
       </section>
 
@@ -70,6 +90,7 @@
         </div>
         <div class="status-bar" aria-live="polite">
           <div class="status-chip" id="streakStatus" title="Correct answers in a row (best ever in brackets)">🔥 <span id="streakCount">0</span><span class="chip-sub" id="bestStreak"></span></div>
+          <div class="status-chip yen-status" id="yenStatus" title="Takings this shift" hidden>💴 <span id="shiftYen">¥0</span></div>
           <div class="status-chip challenge-chip" id="challengeStatus" hidden>
             Round <span id="challengeRound">1</span>/<span id="challengeTotal">10</span> · Score <span id="challengeScore">0</span>
           </div>
@@ -152,6 +173,7 @@
           <li><strong>🛒 Serve:</strong> a customer orders with a number and a counter, like <span lang="ja">「3本ください」</span>. Put that many matching items on the counter (click, tap or drag), then press <em>Done!</em></li>
           <li><strong>👂 Order:</strong> the customer names the item and says how many with a native number, like <span lang="ja">「りんごをみっつください」</span>. Put exactly that on the counter.</li>
           <li><strong>🧾 Count:</strong> items are on the counter. Pick (or type) the right way to say how many there are. Watch for sound changes such as <span lang="ja">さん<strong>ぼ</strong>ん</span> and <span lang="ja">いっ<strong>ぽ</strong>ん</span>.</li>
+          <li><strong>💴 Yen</strong> come from answering right first time in a shift, with a bonus for answers in a row and for a perfect shift. Takings grow the shop's rank and buy decorations; the <strong>💮 stamp card</strong> marks your milestones.</li>
           <li><strong>🎯 Free practice</strong> and <strong>🏁 Challenge</strong> (ten rounds, no hints) are for extra drilling with any counters you like, ticked under <em>📖 Counters</em>.</li>
           <li>Keyboard: <kbd>Enter</kbd> = Done / Next, <kbd>1</kbd>–<kbd>4</kbd> = pick an answer, <kbd>R</kbd> = replay audio, <kbd>H</kbd> = hint.</li>
         </ul>
@@ -235,6 +257,33 @@
       <button id="summaryHomeBtn" type="button">Back to the shop</button>
     </div>
   </dialog>
+
+  <!-- Decorations -->
+  <dialog id="decorDialog" class="dialog wide" aria-labelledby="decorTitle">
+    <header class="dialog-header">
+      <h2 id="decorTitle">Decorate the shop</h2>
+      <p>Spend the yen you earn in shifts. You have <strong id="decorBalance">¥0</strong>.</p>
+    </header>
+    <div id="decorList" class="decor-list"></div>
+    <div class="dialog-actions">
+      <button id="closeDecorBtn" type="button">Done</button>
+    </div>
+  </dialog>
+
+  <!-- Stamp card -->
+  <dialog id="stampsDialog" class="dialog wide" aria-labelledby="stampsTitle">
+    <header class="dialog-header">
+      <h2 id="stampsTitle">Stamp card</h2>
+      <p id="stampsSummary"></p>
+    </header>
+    <div id="stampList" class="stamp-list"></div>
+    <div class="dialog-actions">
+      <button id="closeStampsBtn" type="button">Done</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <div id="confetti" class="confetti" aria-hidden="true"></div>
 
   <script type="module" src="js/app.js"></script>
 </body>

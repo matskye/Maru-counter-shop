@@ -25,6 +25,14 @@ A browser game for practicing **Japanese counters** (助数詞) with Maru the re
 - A shift mixes the reviews that are due with a little new material. If you already know something the first time you see it, it skips ahead and Maru moves on faster.
 - The home screen shows what is ready for review, your day streak, and 0–3 stars per counter.
 
+Rewards are tied to learning rather than to time spent:
+
+- **Yen**: every first-try correct answer in a shift earns ¥100, rising to ¥200 for answers in a row, plus ¥500 for a perfect shift. Free practice earns nothing, so there is no reason to grind.
+- **Shop rank**: lifetime takings grow the shop from a 屋台 (street stall) through seven ranks to 日本一の店.
+- **Decorations**: yen buys things for the shop front (lanterns, wind chimes, a torii gate…).
+- **Stamp card**: 32 stamps for milestones such as a week-long streak, a perfect shift, finishing a chapter or three stars on a counter.
+- **This week**: a seven-day strip on the home screen shows which days you played.
+
 Customers ask three kinds of questions:
 
 | Task | What you do | What it trains |
@@ -59,6 +67,7 @@ Then open <http://localhost:8000>. It also works as-is on GitHub Pages.
 index.html          page structure
 style.css           styles
 js/logic.js         game rules: readings, questions, answer checking, lesson plan and spaced repetition (no DOM)
+js/rewards.js       yen, shop ranks, decorations and the stamp card (no DOM)
 js/app.js           UI, storage, speech
 data/counters.json  counters, readings and items
 data/assets/        images
