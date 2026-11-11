@@ -1,0 +1,12 @@
+{
+  "name": "maru-counter-shop",
+  "version": "2.0.0",
+  "private": true,
+  "description": "A browser game for practicing Japanese counters",
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test": "node --test"
+  },
+  "license": "MIT"
+}
