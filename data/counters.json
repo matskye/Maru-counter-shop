@@ -1,5 +1,5 @@
 {
-  "meta": { "version": 4 },
+  "meta": { "version": 5 },
   "counters": [
     {
       "counter": "個",
@@ -20,13 +20,13 @@
         "10": ["じゅっこ", "じっこ"]
       },
       "items": [
-        {"id": "apple", "label_en": "apple", "label_ja": "りんご", "kana": "りんご", "image": "data/assets/items/apple/apple.png"},
-        {"id": "egg", "label_en": "egg", "label_ja": "卵", "kana": "たまご", "image": "data/assets/items/egg/egg.png"},
-        {"id": "orange", "label_en": "orange", "label_ja": "オレンジ", "kana": "オレンジ", "image": "data/assets/items/orange/orange.png"},
-        {"id": "soccer_ball", "label_en": "soccer ball", "label_ja": "サッカーボール", "kana": "サッカーボール", "image": "data/assets/items/soccer_ball/soccer_ball.png"},
-        {"id": "basketball", "label_en": "basketball", "label_ja": "バスケットボール", "kana": "バスケットボール", "image": "data/assets/items/basket_ball/basket_ball.png"},
-        {"id": "tennis_ball", "label_en": "tennis ball", "label_ja": "テニスボール", "kana": "テニスボール", "image": "data/assets/items/tennis_ball/tennis_ball.png"},
-        {"id": "hat", "label_en": "hat", "label_ja": "帽子", "kana": "ぼうし", "image": "data/assets/items/hat/hat.png"}
+        {"id": "apple", "label_en": "apple", "label_ja": "りんご", "kana": "りんご", "image": "data/assets/items/apple/apple.png", "also": ["つ"]},
+        {"id": "egg", "label_en": "egg", "label_ja": "卵", "kana": "たまご", "image": "data/assets/items/egg/egg.png", "also": ["つ"]},
+        {"id": "orange", "label_en": "orange", "label_ja": "オレンジ", "kana": "オレンジ", "image": "data/assets/items/orange/orange.png", "also": ["つ"]},
+        {"id": "soccer_ball", "label_en": "soccer ball", "label_ja": "サッカーボール", "kana": "サッカーボール", "image": "data/assets/items/soccer_ball/soccer_ball.png", "also": ["つ"]},
+        {"id": "basketball", "label_en": "basketball", "label_ja": "バスケットボール", "kana": "バスケットボール", "image": "data/assets/items/basket_ball/basket_ball.png", "also": ["つ"]},
+        {"id": "tennis_ball", "label_en": "tennis ball", "label_ja": "テニスボール", "kana": "テニスボール", "image": "data/assets/items/tennis_ball/tennis_ball.png", "also": ["つ"]},
+        {"id": "hat", "label_en": "hat", "label_ja": "帽子", "kana": "ぼうし", "image": "data/assets/items/hat/hat.png", "also": ["つ"]}
       ]
     },
     {
@@ -78,6 +78,51 @@
       ]
     },
     {
+      "counter": "人",
+      "reading": "にん",
+      "category": "people",
+      "note": "1 and 2 use native readings: ひとり, ふたり. Watch out for 4: よにん, not よんにん.",
+      "confusable": ["匹", "頭"],
+      "readings": {
+        "1": ["ひとり"],
+        "2": ["ふたり"],
+        "3": ["さんにん"],
+        "4": ["よにん"],
+        "5": ["ごにん"],
+        "6": ["ろくにん"],
+        "7": ["ななにん", "しちにん"],
+        "8": ["はちにん"],
+        "9": ["きゅうにん", "くにん"],
+        "10": ["じゅうにん"]
+      },
+      "items": [
+        {"id": "person", "label_en": "customer", "label_ja": "お客さん", "kana": "おきゃくさん", "image": "data/assets/items/person/person.png"}
+      ]
+    },
+    {
+      "counter": "つ",
+      "reading": "つ",
+      "category": "almost anything (general counter)",
+      "note": "The native Japanese numbers. They work for most things that are not people or animals, but only up to ten, and 10 is just とお.",
+      "confusable": [],
+      "generic": true,
+      "notFor": ["人", "匹", "頭", "羽"],
+      "readings": {
+        "1": ["ひとつ"],
+        "2": ["ふたつ"],
+        "3": ["みっつ"],
+        "4": ["よっつ"],
+        "5": ["いつつ"],
+        "6": ["むっつ"],
+        "7": ["ななつ"],
+        "8": ["やっつ"],
+        "9": ["ここのつ"],
+        "10": ["とお"]
+      },
+      "items": [
+      ]
+    },
+    {
       "counter": "冊",
       "reading": "さつ",
       "category": "books and bound volumes",
@@ -126,28 +171,6 @@
       ]
     },
     {
-      "counter": "人",
-      "reading": "にん",
-      "category": "people",
-      "note": "1 and 2 use native readings: ひとり, ふたり. Watch out for 4: よにん, not よんにん.",
-      "confusable": ["匹", "頭"],
-      "readings": {
-        "1": ["ひとり"],
-        "2": ["ふたり"],
-        "3": ["さんにん"],
-        "4": ["よにん"],
-        "5": ["ごにん"],
-        "6": ["ろくにん"],
-        "7": ["しちにん", "ななにん"],
-        "8": ["はちにん"],
-        "9": ["きゅうにん", "くにん"],
-        "10": ["じゅうにん"]
-      },
-      "items": [
-        {"id": "person", "label_en": "customer", "label_ja": "お客さん", "kana": "おきゃくさん", "image": "data/assets/items/person/person.png"}
-      ]
-    },
-    {
       "counter": "匹",
       "reading": "ひき",
       "category": "small animals",
@@ -169,6 +192,30 @@
         {"id": "cat", "label_en": "cat", "label_ja": "猫", "kana": "ねこ", "image": "data/assets/items/cat/cat.png"},
         {"id": "dog", "label_en": "dog", "label_ja": "犬", "kana": "いぬ", "image": "data/assets/items/dog/dog.png"},
         {"id": "fish", "label_en": "fish", "label_ja": "魚", "kana": "さかな", "image": "data/assets/items/fish/fish.png"}
+      ]
+    },
+    {
+      "counter": "杯",
+      "reading": "はい",
+      "category": "cupfuls and glassfuls",
+      "note": "Drinks in cups or glasses, bowls of rice or ramen. The reading shifts between はい, ばい and ぱい.",
+      "confusable": ["缶", "本"],
+      "readings": {
+        "1": ["いっぱい"],
+        "2": ["にはい"],
+        "3": ["さんばい"],
+        "4": ["よんはい"],
+        "5": ["ごはい"],
+        "6": ["ろっぱい"],
+        "7": ["ななはい", "しちはい"],
+        "8": ["はっぱい", "はちはい"],
+        "9": ["きゅうはい"],
+        "10": ["じゅっぱい", "じっぱい"]
+      },
+      "items": [
+        {"id": "tea_cup", "label_en": "cup of tea", "label_ja": "お茶", "kana": "おちゃ", "image": "data/assets/items/tea_cup/tea_cup.png"},
+        {"id": "coffee_cup", "label_en": "cup of coffee", "label_ja": "コーヒー", "kana": "コーヒー", "image": "data/assets/items/coffee_cup/coffee_cup.png"},
+        {"id": "beer_glass", "label_en": "glass of beer", "label_ja": "ビール", "kana": "ビール", "image": "data/assets/items/beer_glass/beer_glass.png"}
       ]
     },
     {
@@ -220,51 +267,27 @@
       ]
     },
     {
-      "counter": "杯",
-      "reading": "はい",
-      "category": "cupfuls and glassfuls",
-      "note": "Drinks in cups or glasses, bowls of rice or ramen. The reading shifts between はい, ばい and ぱい.",
-      "confusable": ["缶", "本"],
+      "counter": "足",
+      "reading": "そく",
+      "category": "pairs of footwear",
+      "note": "Shoes, socks, sandals: one 足 is one pair.",
+      "confusable": ["着", "枚"],
       "readings": {
-        "1": ["いっぱい"],
-        "2": ["にはい"],
-        "3": ["さんばい"],
-        "4": ["よんはい"],
-        "5": ["ごはい"],
-        "6": ["ろっぱい"],
-        "7": ["ななはい", "しちはい"],
-        "8": ["はっぱい", "はちはい"],
-        "9": ["きゅうはい"],
-        "10": ["じゅっぱい", "じっぱい"]
+        "1": ["いっそく"],
+        "2": ["にそく"],
+        "3": ["さんぞく", "さんそく"],
+        "4": ["よんそく"],
+        "5": ["ごそく"],
+        "6": ["ろくそく"],
+        "7": ["ななそく", "しちそく"],
+        "8": ["はっそく", "はちそく"],
+        "9": ["きゅうそく"],
+        "10": ["じゅっそく", "じっそく"]
       },
       "items": [
-        {"id": "tea_cup", "label_en": "cup of tea", "label_ja": "お茶", "kana": "おちゃ", "image": "data/assets/items/tea_cup/tea_cup.png"},
-        {"id": "coffee_cup", "label_en": "cup of coffee", "label_ja": "コーヒー", "kana": "コーヒー", "image": "data/assets/items/coffee_cup/coffee_cup.png"},
-        {"id": "beer_glass", "label_en": "glass of beer", "label_ja": "ビール", "kana": "ビール", "image": "data/assets/items/beer_glass/beer_glass.png"}
-      ]
-    },
-    {
-      "counter": "缶",
-      "reading": "かん",
-      "category": "cans",
-      "note": "Canned food and drinks. Canned drinks are also often counted with 本.",
-      "confusable": ["杯", "本"],
-      "readings": {
-        "1": ["いっかん"],
-        "2": ["にかん"],
-        "3": ["さんかん"],
-        "4": ["よんかん"],
-        "5": ["ごかん"],
-        "6": ["ろっかん"],
-        "7": ["ななかん", "しちかん"],
-        "8": ["はっかん", "はちかん"],
-        "9": ["きゅうかん"],
-        "10": ["じゅっかん", "じっかん"]
-      },
-      "items": [
-        {"id": "soda_can", "label_en": "can of soda", "label_ja": "缶ジュース", "kana": "かんジュース", "image": "data/assets/items/soda_can/soda_can.png", "also": ["本", "個"]},
-        {"id": "coffee_can", "label_en": "canned coffee", "label_ja": "缶コーヒー", "kana": "かんコーヒー", "image": "data/assets/items/coffee_can/coffee_can.png", "also": ["本", "個"]},
-        {"id": "soup_can", "label_en": "can of soup", "label_ja": "スープ缶", "kana": "スープかん", "image": "data/assets/items/soup_can/soup_can.png", "also": ["個"]}
+        {"id": "shoes", "label_en": "pair of shoes", "label_ja": "靴", "kana": "くつ", "image": "data/assets/items/shoes/shoes.png"},
+        {"id": "socks", "label_en": "pair of socks", "label_ja": "靴下", "kana": "くつした", "image": "data/assets/items/socks/socks.png"},
+        {"id": "sandals", "label_en": "pair of sandals", "label_ja": "サンダル", "kana": "サンダル", "image": "data/assets/items/sandals/sandals.png"}
       ]
     },
     {
@@ -290,27 +313,27 @@
       ]
     },
     {
-      "counter": "足",
-      "reading": "そく",
-      "category": "pairs of footwear",
-      "note": "Shoes, socks, sandals: one 足 is one pair.",
-      "confusable": ["着", "枚"],
+      "counter": "缶",
+      "reading": "かん",
+      "category": "cans",
+      "note": "Canned food and drinks. Canned drinks are also often counted with 本.",
+      "confusable": ["杯", "本"],
       "readings": {
-        "1": ["いっそく"],
-        "2": ["にそく"],
-        "3": ["さんぞく", "さんそく"],
-        "4": ["よんそく"],
-        "5": ["ごそく"],
-        "6": ["ろくそく"],
-        "7": ["ななそく", "しちそく"],
-        "8": ["はっそく", "はちそく"],
-        "9": ["きゅうそく"],
-        "10": ["じゅっそく", "じっそく"]
+        "1": ["いっかん"],
+        "2": ["にかん"],
+        "3": ["さんかん"],
+        "4": ["よんかん"],
+        "5": ["ごかん"],
+        "6": ["ろっかん"],
+        "7": ["ななかん", "しちかん"],
+        "8": ["はっかん", "はちかん"],
+        "9": ["きゅうかん"],
+        "10": ["じゅっかん", "じっかん"]
       },
       "items": [
-        {"id": "shoes", "label_en": "pair of shoes", "label_ja": "靴", "kana": "くつ", "image": "data/assets/items/shoes/shoes.png"},
-        {"id": "socks", "label_en": "pair of socks", "label_ja": "靴下", "kana": "くつした", "image": "data/assets/items/socks/socks.png"},
-        {"id": "sandals", "label_en": "pair of sandals", "label_ja": "サンダル", "kana": "サンダル", "image": "data/assets/items/sandals/sandals.png"}
+        {"id": "soda_can", "label_en": "can of soda", "label_ja": "缶ジュース", "kana": "かんジュース", "image": "data/assets/items/soda_can/soda_can.png", "also": ["本", "個", "つ"]},
+        {"id": "coffee_can", "label_en": "canned coffee", "label_ja": "缶コーヒー", "kana": "かんコーヒー", "image": "data/assets/items/coffee_can/coffee_can.png", "also": ["本", "個", "つ"]},
+        {"id": "soup_can", "label_en": "can of soup", "label_ja": "スープ缶", "kana": "スープかん", "image": "data/assets/items/soup_can/soup_can.png", "also": ["個", "つ"]}
       ]
     },
     {
@@ -359,6 +382,28 @@
       ]
     },
     {
+      "counter": "切れ",
+      "reading": "きれ",
+      "category": "slices and cut pieces",
+      "note": "Slices of pizza, cake, bread or fish. 1 and 2 use native readings: ひときれ, ふたきれ.",
+      "confusable": ["枚", "個"],
+      "readings": {
+        "1": ["ひときれ"],
+        "2": ["ふたきれ"],
+        "3": ["さんきれ", "みきれ"],
+        "4": ["よんきれ", "よきれ"],
+        "5": ["ごきれ"],
+        "6": ["ろっきれ", "ろくきれ"],
+        "7": ["ななきれ", "しちきれ"],
+        "8": ["はっきれ", "はちきれ"],
+        "9": ["きゅうきれ"],
+        "10": ["じゅっきれ", "じっきれ"]
+      },
+      "items": [
+        {"id": "pizza_slice", "label_en": "slice of pizza", "label_ja": "ピザ", "kana": "ピザ", "image": "data/assets/items/pizza_slice/pizza_slice.png", "also": ["つ"]}
+      ]
+    },
+    {
       "counter": "袋",
       "reading": "ふくろ",
       "category": "bags and bagfuls",
@@ -377,8 +422,8 @@
         "10": ["じゅっぷくろ", "じっぷくろ", "じゅうふくろ"]
       },
       "items": [
-        {"id": "grocery_bag", "label_en": "shopping bag", "label_ja": "買い物袋", "kana": "かいものぶくろ", "image": "data/assets/items/grocery_bag/grocery_bag.png", "also": ["個"]},
-        {"id": "trash_bag", "label_en": "garbage bag", "label_ja": "ゴミ袋", "kana": "ゴミぶくろ", "image": "data/assets/items/trash_bag/trash_bag.png", "also": ["個"]}
+        {"id": "grocery_bag", "label_en": "shopping bag", "label_ja": "買い物袋", "kana": "かいものぶくろ", "image": "data/assets/items/grocery_bag/grocery_bag.png", "also": ["個", "つ"]},
+        {"id": "trash_bag", "label_en": "garbage bag", "label_ja": "ゴミ袋", "kana": "ゴミぶくろ", "image": "data/assets/items/trash_bag/trash_bag.png", "also": ["個", "つ"]}
       ]
     }
   ]

@@ -1,37 +1,49 @@
 import {
-  prepareData, naiveReading, primaryReading, readingsFor, isIrregular, acceptedReadingsForItem,
+  prepareData, naiveReading, primaryReading, readingsFor, isIrregular, acceptedReadingsForItem, amountText,
   itemAccepts, pickRound, buildShelf, checkServe, buildChoices, romajiToHiragana, normalizeTypedAnswer,
-  checkTypedAnswer, normalizeStats, recordResult, accuracy, masteryLevel
+  checkTypedAnswer, normalizeStats, recordResult, accuracy,
+  cardIds, cardForRound, emptyProgress, normalizeProgress, lockedCounters, nextNewCard, dueCards, nextDueTime,
+  buildShift, gradeCard, counterStars, roundForCard, updateDayStreak
 } from "./logic.js";
 
 const CHALLENGE_ROUNDS = 10;
 const SHELF_SIZE = 8;
 const AUTO_ADVANCE_MS = 1700;
 const REVIEW_DELAY_ROUNDS = 3;
+const SHIFT_MAX_QUESTIONS = 20;
+const SHIFT_MAX_NEW_COUNTERS = 3;
 const MARU_OK = "data/assets/ui/maru_ok.png";
 const MARU_WRONG = "data/assets/ui/maru_wrong.png";
-const LEVEL_LABELS = { new: "New", learning: "Learning", strong: "Strong", mastered: "Mastered" };
+const CUSTOMERS = ["👵", "👴", "👩", "👨", "🧑", "👧", "👦", "👩‍🍳", "👨‍🎓", "👩‍💼", "🧑‍🎨", "👨‍🔧", "🧕", "👩‍🏫", "🧑‍🌾"];
+const NUMBERS = Array.from({ length: 10 }, (_, i) => i + 1);
 
 const $ = id => document.getElementById(id);
 const els = {
-  modeButtons: [...document.querySelectorAll(".segmented button")],
-  streakCount: $("streakCount"), bestStreak: $("bestStreak"),
+  home: $("home"), game: $("game"), homeBtn: $("homeBtn"),
+  homeMessage: $("homeMessage"), dayStreak: $("dayStreak"), learnedCount: $("learnedCount"), dueCount: $("dueCount"),
+  startShiftBtn: $("startShiftBtn"), shiftPlan: $("shiftPlan"), freePracticeBtn: $("freePracticeBtn"),
+  homeChallengeBtn: $("homeChallengeBtn"), counterGrid: $("counterGrid"),
+  shiftProgress: $("shiftProgress"), shiftLabel: $("shiftLabel"), shiftBar: $("shiftBar"),
+  modeSwitch: $("modeSwitch"), modeButtons: [...document.querySelectorAll(".segmented button")],
+  streakStatus: $("streakStatus"), streakCount: $("streakCount"), bestStreak: $("bestStreak"),
   challengeStatus: $("challengeStatus"), challengeRound: $("challengeRound"),
   challengeTotal: $("challengeTotal"), challengeScore: $("challengeScore"), challengeBtn: $("challengeBtn"),
-  taskLabel: $("taskLabel"), prompt: $("prompt"),
+  lessonArea: $("lessonArea"), lessonCard: $("lessonCard"), lessonDoneBtn: $("lessonDoneBtn"),
+  promptCard: $("promptCard"), taskLabel: $("taskLabel"), speaker: $("speaker"), prompt: $("prompt"),
   replayBtn: $("replayVoiceBtn"), slowBtn: $("slowVoiceBtn"), hintBtn: $("toggleHintBtn"), hint: $("counterHint"),
   serveArea: $("serveArea"), shelf: $("shelf"), tray: $("counter"), trayTotal: $("trayTotal"), clearTrayBtn: $("clearTrayBtn"),
   countArea: $("countArea"), countTray: $("countTray"), countLabel: $("countLabel"), choices: $("choices"),
   typeForm: $("typeForm"), typeInput: $("typeInput"), typePreview: $("typePreview"),
-  result: $("result"), resultImg: $("resultImg"), resultText: $("resultText"),
+  resultRow: $("resultRow"), result: $("result"), resultImg: $("resultImg"), resultText: $("resultText"),
   doneBtn: $("doneBtn"), nextBtn: $("nextBtn"),
-  settingsDialog: $("settingsDialog"), guideDialog: $("guideDialog"), resultsDialog: $("resultsDialog"),
+  settingsDialog: $("settingsDialog"), guideDialog: $("guideDialog"), resultsDialog: $("resultsDialog"), summaryDialog: $("summaryDialog"),
   furigana: $("furiganaCheckbox"), voice: $("voiceCheckbox"), listening: $("listeningCheckbox"), sfx: $("sfxCheckbox"),
   labelSelect: $("labelSelect"), maxNumberSelect: $("maxNumberSelect"), answerStyleSelect: $("answerStyleSelect"),
   voiceNote: $("voiceNote"),
   counterSummary: $("counterSummary"), counterList: $("counterList"), selectAllBtn: $("selectAllCounters"),
   resultsImg: $("resultsImg"), resultsTitle: $("resultsTitle"), resultsScore: $("resultsScore"),
-  resultsBest: $("resultsBest"), resultsReview: $("resultsReview")
+  resultsBest: $("resultsBest"), resultsReview: $("resultsReview"),
+  summaryTitle: $("summaryTitle"), summaryScore: $("summaryScore"), summaryLines: $("summaryLines")
 };
 
 /* ---------- Storage ---------- */
@@ -86,13 +98,16 @@ function loadSettings() {
 const state = {
   data: null,
   stats: {},
-  enabled: null, // null = every counter, otherwise a list of counter keys
+  progress: emptyProgress(), // lesson path + spaced repetition
+  enabled: null, // counters ticked for free practice; null = all
   settings: loadSettings(),
   best: store.get("maruBest", {}) || {},
+  shift: null, // a guided session in progress
   challenge: null, // { round, score, misses } while a challenge is running
   streak: 0,
   round: null,
-  phase: "loading", // loading | asking | answered
+  phase: "loading", // loading | home | lesson | asking | answered
+  lessonStep: null,
   tray: new Map(),
   shelf: [],
   choices: [],
@@ -104,6 +119,7 @@ const state = {
 
 const saveSettings = () => store.set("maruSettings", state.settings);
 const saveStats = () => store.set("counterStats", state.stats);
+const saveProgress = () => store.set("maruProgress", state.progress);
 
 /* ---------- DOM helpers ---------- */
 
@@ -125,6 +141,8 @@ function h(tag, attrs, ...children) {
 
 const ja = (text, cls) => h("span", { lang: "ja", class: cls }, text);
 const ruby = (base, reading, cls) => h("ruby", { lang: "ja", class: cls }, base, h("rt", {}, reading));
+const counterName = counter => h("strong", { lang: "ja" }, `「${counter.counter}」`);
+const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 function itemName(item, { withRuby = state.settings.furigana } = {}) {
   return withRuby && item.label_ja !== item.kana ? ruby(item.label_ja, item.kana) : ja(item.label_ja);
@@ -134,6 +152,10 @@ function tileLabel(item) {
   if (state.settings.labels === "off") return null;
   if (state.settings.labels === "en") return h("span", { class: "item-label" }, item.label_en);
   return h("span", { class: "item-label", lang: "ja" }, itemName(item));
+}
+
+function amountRuby(counter, number) {
+  return h("strong", { lang: "ja" }, ruby(amountText(counter, number), primaryReading(counter, number)));
 }
 
 /* ---------- Sound ---------- */
@@ -159,6 +181,9 @@ const speech = {
     utterance.rate = slow ? 0.55 : 0.95;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(utterance);
+  },
+  stop() {
+    if (this.supported) window.speechSynthesis.cancel();
   }
 };
 
@@ -170,7 +195,7 @@ function playTone(kind) {
   try {
     audioContext = audioContext || new Ctx();
     if (audioContext.state === "suspended") audioContext.resume();
-    const notes = { good: [660, 880], bad: [300, 220], tap: [520] }[kind] || [520];
+    const notes = { good: [660, 880], bad: [300, 220], tap: [520], fanfare: [523, 659, 784, 1047] }[kind] || [520];
     const length = kind === "tap" ? 0.05 : 0.12;
     notes.forEach((freq, i) => {
       const osc = audioContext.createOscillator();
@@ -188,7 +213,7 @@ function playTone(kind) {
   } catch (err) { /* audio is a nicety; never let it break the game */ }
 }
 
-/* ---------- Counter selection ---------- */
+/* ---------- Free-practice counter selection ---------- */
 
 function activeCounters() {
   const all = state.data.counters;
@@ -203,16 +228,257 @@ function saveEnabled() {
   else store.set("enabledCounters", state.enabled);
 }
 
+/* ---------- Screens ---------- */
+
+function showHome() {
+  window.clearTimeout(state.advanceTimer);
+  speech.stop();
+  state.shift = null;
+  state.challenge = null;
+  state.round = null;
+  state.phase = "home";
+  els.game.hidden = true;
+  els.home.hidden = false;
+  els.homeBtn.hidden = true;
+  renderHome();
+  window.scrollTo(0, 0);
+}
+
+function showPlay() {
+  els.home.hidden = true;
+  els.game.hidden = false;
+  els.homeBtn.hidden = false;
+  window.scrollTo(0, 0);
+}
+
+function describeWait(ms) {
+  const hours = ms / 3600000;
+  if (hours < 1) return "in under an hour";
+  if (hours < 20) return `in about ${plural(Math.round(hours), "hour")}`;
+  if (hours < 36) return "tomorrow";
+  return `in ${Math.round(hours / 24)} days`;
+}
+
+function starText(stars) {
+  return "★".repeat(stars) + "☆".repeat(3 - stars);
+}
+
+function renderHome() {
+  if (!state.data) return;
+  const { data, progress } = state;
+  const now = Date.now();
+  const due = dueCards(progress, now);
+  const plan = buildShift({ data, progress, now });
+  const lessons = plan.filter(s => s.kind === "lesson").map(s => s.counterKey);
+  const fresh = plan.filter(s => s.kind === "card" && s.isNew).length;
+  const reviews = plan.filter(s => s.kind === "card" && !s.isNew && !s.early).length;
+  const firstTime = progress.shifts === 0 && !Object.keys(progress.cards).length;
+
+  els.dayStreak.textContent = String(currentDayStreak());
+  els.learnedCount.textContent = `${progress.unlocked.length}/${data.counters.length}`;
+  els.dueCount.textContent = String(due.length);
+
+  els.startShiftBtn.disabled = false;
+  els.freePracticeBtn.disabled = false;
+  els.homeChallengeBtn.disabled = false;
+  els.startShiftBtn.textContent = firstTime ? "▶ Start your first shift" : "▶ Start a shift";
+
+  if (firstTime) {
+    els.homeMessage.textContent = "Welcome! I'm Maru. Work a short shift in my shop each day and I'll teach you the Japanese counters one at a time, then bring each one back just before you forget it.";
+  } else if (due.length) {
+    els.homeMessage.textContent = `Welcome back! ${plural(due.length, "thing")} you learned ${due.length === 1 ? "is" : "are"} ready for review.`;
+  } else if (fresh) {
+    els.homeMessage.textContent = "You're all caught up on reviews, so it's a good time to learn something new.";
+  } else {
+    els.homeMessage.textContent = "You're all caught up! A shift now is extra practice.";
+  }
+
+  const parts = [];
+  if (reviews) parts.push(plural(reviews, "review"));
+  if (fresh) parts.push(`${fresh} new`);
+  const planLine = [parts.length ? `This shift: ${parts.join(" + ")}.` : "This shift: extra practice."];
+  if (lessons.length) planLine.push(" New counter", lessons.length > 1 ? "s" : "", ": ", ja(lessons.join("・")), ".");
+  const wait = nextDueTime(progress, now);
+  if (!reviews && !fresh && wait) planLine.push(` Next reviews ${describeWait(wait - now)}.`);
+  planLine.push(" About 3 minutes.");
+  els.shiftPlan.replaceChildren(...planLine);
+
+  const dueKeys = new Set(due.map(id => id.split(":")[1]));
+  const nextUp = lockedCounters(data, progress)[0];
+  els.counterGrid.replaceChildren(...data.counters.map(counter => {
+    const stars = counterStars(counter, progress);
+    const locked = stars === null;
+    return h("button", {
+      class: `counter-tile${locked ? " locked" : ""}`, type: "button",
+      title: locked ? `${counter.category} (not started yet)` : counter.category,
+      "aria-label": `${counter.counter}, ${counter.category}, ${locked ? "not started" : `${stars} of 3 stars`}`,
+      onclick: () => openGuide(counter.counter)
+    },
+      h("span", { class: "kanji" }, counter.counter),
+      h("span", { class: "kana" }, counter.reading),
+      h("span", { class: "stars" }, locked ? (counter === nextUp ? "next up" : "🔒") : starText(stars)),
+      dueKeys.has(counter.counter) ? h("span", { class: "due-dot", title: "Reviews ready" }) : null
+    );
+  }));
+}
+
+/* ---------- Day streak ---------- */
+
+function dateString(date) {
+  const pad = n => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+function todayAndYesterday() {
+  const now = new Date();
+  const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  return [dateString(now), dateString(yesterday)];
+}
+
+/** The streak as it stands now: it lapses if neither today nor yesterday had a shift. */
+function currentDayStreak() {
+  const [today, yesterday] = todayAndYesterday();
+  const { last, streak } = state.progress.day;
+  return last === today || last === yesterday ? streak : 0;
+}
+
+/* ---------- Shifts (guided sessions) ---------- */
+
+function startShift() {
+  const steps = buildShift({ data: state.data, progress: state.progress, now: Date.now() });
+  state.challenge = null;
+  state.streak = 0;
+  state.shift = { steps, asked: 0, firstTry: { correct: 0, total: 0 }, newCounters: [], requeues: new Map() };
+  showPlay();
+  nextShiftStep();
+}
+
+function nextShiftStep() {
+  window.clearTimeout(state.advanceTimer);
+  const shift = state.shift;
+  const step = shift.steps.shift();
+  if (!step) {
+    finishShift();
+    return;
+  }
+  if (step.kind === "lesson") {
+    showLesson(step);
+    return;
+  }
+  const round = roundForCard(state.data, step.cardId);
+  if (!round) {
+    nextShiftStep();
+    return;
+  }
+  round.step = step;
+  presentRound(round);
+}
+
+function showLesson(step) {
+  const counter = state.data.byKey.get(step.counterKey);
+  state.phase = "lesson";
+  state.lessonStep = step;
+  state.round = null;
+  els.lessonCard.replaceChildren(
+    h("div", { class: "lesson-head" },
+      h("span", { class: "counter-kanji", lang: "ja" }, counter.counter),
+      h("div", {}, h("h2", {}, ja(counter.reading), ` — ${counter.category}`), h("p", {}, counter.note))),
+    counterDetail(counter, { withNote: false })
+  );
+  render();
+  speech.say(counter.reading);
+  els.lessonDoneBtn.focus({ preventScroll: true });
+}
+
+function finishLesson() {
+  if (state.phase !== "lesson" || !state.shift) return;
+  const key = state.lessonStep.counterKey;
+  const progress = state.progress;
+  if (!progress.unlocked.includes(key)) progress.unlocked.push(key);
+  progress.priority = progress.priority.filter(k => k !== key);
+  saveProgress();
+  state.shift.newCounters.push(key);
+  state.lessonStep = null;
+  nextShiftStep();
+}
+
+function gradeShiftAnswer(round, correct) {
+  const shift = state.shift;
+  const step = round.step;
+  const id = step.cardId;
+  gradeCard(state.progress, id, correct, Date.now(), { retry: Boolean(step.retry) });
+  shift.asked += 1;
+  if (!step.retry) {
+    shift.firstTry.total += 1;
+    if (correct) shift.firstTry.correct += 1;
+  }
+  if (!correct) {
+    // Ask again a little later in this shift, so it ends on a success.
+    const tries = shift.requeues.get(id) || 0;
+    if (tries < 2) {
+      shift.requeues.set(id, tries + 1);
+      shift.steps.splice(Math.min(3, shift.steps.length), 0, { kind: "card", cardId: id, retry: true });
+    }
+  } else if (step.isNew && !step.retry) {
+    // Already knew it: keep the pace up by bringing in the next new thing.
+    const queued = shift.steps.filter(s => s.kind === "card").length;
+    const pendingUnlocks = shift.steps.filter(s => s.kind === "lesson").map(s => s.counterKey);
+    const pending = new Set(shift.steps.filter(s => s.kind === "card").map(s => s.cardId));
+    const next = nextNewCard(state.data, state.progress, { pending, pendingUnlocks });
+    const roomForCounter = shift.newCounters.length + pendingUnlocks.length < SHIFT_MAX_NEW_COUNTERS;
+    if (next && shift.asked + queued < SHIFT_MAX_QUESTIONS && (!next.unlock || roomForCounter)) {
+      if (next.unlock) shift.steps.push({ kind: "lesson", counterKey: next.unlock });
+      shift.steps.push({ kind: "card", cardId: next.cardId, isNew: true });
+    }
+  }
+  saveProgress();
+}
+
+function finishShift() {
+  const shift = state.shift;
+  const progress = state.progress;
+  const [today, yesterday] = todayAndYesterday();
+  progress.day = updateDayStreak(progress.day, today, yesterday);
+  progress.shifts += 1;
+  saveProgress();
+
+  const { correct, total } = shift.firstTry;
+  const now = Date.now();
+  const lines = [];
+  if (shift.newCounters.length) {
+    lines.push(h("p", {}, "📖 New: ", ja(shift.newCounters.join("・"))));
+  }
+  lines.push(h("p", {}, `🔥 ${plural(progress.day.streak, "day")} in a row`));
+  const dueNow = dueCards(progress, now).length;
+  const wait = nextDueTime(progress, now);
+  const moreToLearn = Boolean(nextNewCard(state.data, progress));
+  if (dueNow) lines.push(h("p", {}, `📚 ${plural(dueNow, "review")} still waiting. Another shift will clear them.`));
+  else if (wait) lines.push(h("p", {}, `📚 Next reviews ${describeWait(wait - now)}.`));
+  if (!dueNow && moreToLearn) lines.push(h("p", {}, "There is more to learn whenever you are ready."));
+  if (!moreToLearn && !dueNow) lines.push(h("p", {}, "You have met every counter in the shop. Keep up the reviews to make them stick!"));
+
+  els.summaryTitle.textContent = total && correct === total ? "Perfect shift!" : "Shift complete!";
+  els.summaryScore.textContent = total ? `${correct} / ${total}` : "";
+  els.summaryLines.replaceChildren(total ? h("p", { class: "note" }, "right first time") : null, ...lines);
+  state.shift = null;
+  state.round = null;
+  state.phase = "home";
+  playTone("fanfare");
+  els.summaryDialog.showModal();
+}
+
 /* ---------- Rounds ---------- */
 
 function roundSpeech(round, phase) {
   const reading = primaryReading(round.counter, round.number);
+  const item = round.entry.item;
   if (round.mode === "serve") return `${reading}ください。`;
-  return phase === "answered" ? `${round.entry.item.kana}、${reading}ですね。` : round.entry.item.kana;
+  if (round.mode === "order") return `${item.kana}を${reading}ください。`;
+  return phase === "answered" ? `${item.kana}、${reading}ですね。` : item.kana;
 }
 
 function isListeningRound() {
-  return state.round && state.round.mode === "serve" && state.phase === "asking" &&
+  return state.round && state.round.mode !== "count" && state.phase === "asking" &&
     state.settings.listening && state.settings.voice && speech.supported;
 }
 
@@ -220,76 +486,119 @@ function nextFromReviewQueue(mode) {
   if (state.challenge) return null;
   const activeKeys = new Set(activeCounters().map(c => c.counter));
   state.reviewQueue.forEach(entry => { entry.due -= 1; });
+  const fits = entry => mode === "mix" || entry.mode === mode || (entry.mode === "order" && mode === "serve");
   const index = state.reviewQueue.findIndex(entry =>
-    entry.due <= 0 && activeKeys.has(entry.counterKey) && (mode === "mix" || entry.mode === mode) &&
+    entry.due <= 0 && activeKeys.has(entry.counterKey) && fits(entry) &&
     entry.number <= state.settings.maxNumber && entry.counterKey !== state.lastCounterKey
   );
   if (index < 0) return null;
   const [entry] = state.reviewQueue.splice(index, 1);
   const counter = state.data.byKey.get(entry.counterKey);
-  const item = counter.items.find(i => i.id === entry.itemId) || counter.items[0];
-  return { mode: entry.mode, counter, number: entry.number, entry: { item, counter }, isReview: true };
+  const itemEntry = counter.entries.find(e => e.item.id === entry.itemId) || counter.entries[0];
+  return { mode: entry.mode, counter, number: entry.number, entry: itemEntry, isReview: true };
 }
 
+/** Free practice and challenge: pick the next question adaptively. */
 function startRound() {
   if (!state.data) return;
   window.clearTimeout(state.advanceTimer);
   const gameMode = state.settings.gameMode;
-  let round = nextFromReviewQueue(gameMode);
-  if (!round) {
-    const mode = gameMode === "mix" ? (Math.random() < 0.5 ? "serve" : "count") : gameMode;
-    round = pickRound({
-      data: state.data, activeCounters: activeCounters(), stats: state.stats, mode,
-      maxNumber: state.settings.maxNumber, lastCounterKey: state.lastCounterKey
-    });
-  }
-  if (!round) return;
+  const round = nextFromReviewQueue(gameMode) || pickRound({
+    data: state.data, activeCounters: activeCounters(), stats: state.stats, mode: gameMode,
+    maxNumber: state.settings.maxNumber, lastCounterKey: state.lastCounterKey
+  });
+  if (round) presentRound(round);
+}
 
+function presentRound(round) {
+  round.customer = CUSTOMERS[Math.floor(Math.random() * CUSTOMERS.length)];
   state.round = round;
   state.lastCounterKey = round.counter.counter;
   state.phase = "asking";
   state.tray = new Map();
   state.hintVisible = false;
-  state.shelf = round.mode === "serve"
-    ? buildShelf({ data: state.data, round, activeCounters: activeCounters(), size: SHELF_SIZE })
-    : [];
+  state.shelf = round.mode === "count"
+    ? []
+    : buildShelf({ data: state.data, round, activeCounters: state.shift ? unlockedCounters() : activeCounters(), size: SHELF_SIZE });
   state.choices = round.mode === "count" ? buildChoices({ data: state.data, round }) : [];
 
   els.result.hidden = true;
   els.typeInput.value = "";
   els.typePreview.textContent = "";
   render();
+  updateVoiceUi();
   speech.say(roundSpeech(round, "asking"));
   if (round.mode === "count" && state.settings.answerStyle === "type" && !isTouchDevice()) {
     els.typeInput.focus();
   }
 }
 
+function unlockedCounters() {
+  const open = new Set(state.progress.unlocked);
+  const list = state.data.counters.filter(c => open.has(c.counter));
+  return list.length >= 3 ? list : state.data.counters;
+}
+
 const isTouchDevice = () => window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+
+function advance() {
+  window.clearTimeout(state.advanceTimer);
+  if (state.phase !== "answered") return;
+  if (state.shift) {
+    nextShiftStep();
+  } else if (state.challenge && state.challenge.round >= CHALLENGE_ROUNDS) {
+    showChallengeResults();
+  } else {
+    startRound();
+  }
+}
 
 /* ---------- Rendering ---------- */
 
 function render() {
   renderStatus();
+  const lesson = state.phase === "lesson";
+  const round = state.round;
+  els.lessonArea.hidden = !lesson;
+  els.promptCard.hidden = lesson;
+  els.resultRow.hidden = lesson;
+  if (lesson || !round) {
+    els.serveArea.hidden = true;
+    els.countArea.hidden = true;
+    return;
+  }
   renderPrompt();
   renderHint();
-  const round = state.round;
-  if (!round) return;
-  const serve = round.mode === "serve";
-  els.serveArea.hidden = !serve;
-  els.countArea.hidden = serve;
-  if (serve) {
+  const counting = round.mode === "count";
+  els.serveArea.hidden = counting;
+  els.countArea.hidden = !counting;
+  if (counting) {
+    renderCountArea();
+  } else {
     renderShelf();
     renderTray();
-  } else {
-    renderCountArea();
   }
   const asking = state.phase === "asking";
-  els.doneBtn.hidden = !(asking && serve);
+  els.doneBtn.hidden = !(asking && !counting);
   els.nextBtn.hidden = asking;
 }
 
 function renderStatus() {
+  const shift = state.shift;
+  els.shiftProgress.hidden = !shift;
+  els.modeSwitch.hidden = Boolean(shift);
+  els.challengeBtn.hidden = Boolean(shift);
+  if (shift) {
+    const remaining = shift.steps.filter(s => s.kind === "card").length;
+    const current = state.phase === "asking" ? 1 : 0;
+    const total = shift.asked + current + remaining;
+    els.shiftLabel.textContent = state.phase === "lesson"
+      ? "New counter"
+      : `Customer ${Math.min(shift.asked + 1, total)} of ${total}`;
+    const percent = total ? Math.round((shift.asked / total) * 100) : 0;
+    els.shiftBar.style.width = `${percent}%`;
+    els.shiftBar.parentElement.setAttribute("aria-valuenow", String(percent));
+  }
   els.modeButtons.forEach(btn => {
     btn.setAttribute("aria-pressed", String(btn.dataset.mode === state.settings.gameMode));
     btn.disabled = Boolean(state.challenge);
@@ -309,32 +618,48 @@ function renderStatus() {
 
 function renderPrompt() {
   const round = state.round;
-  if (!round) return;
   const { counter, number, entry } = round;
   const reading = primaryReading(counter, number);
   const answered = state.phase === "answered";
-  const amount = `${number}${counter.counter}`;
-  const amountNode = answered || state.settings.furigana ? ruby(amount, reading, answered ? "answer" : "") : amount;
+  const amount = amountText(counter, number);
+  const retry = round.isReview || (round.step && round.step.retry);
   els.prompt.replaceChildren();
 
-  if (round.mode === "serve") {
-    els.taskLabel.textContent = round.isReview
-      ? "One more try at an order you missed. Put the right items on the counter."
-      : "A customer is ordering. Put the right items on the counter.";
-    if (isListeningRound()) {
-      els.prompt.append("「", h("button", {
-        class: "listen-only", type: "button", title: "Play the order again",
-        onclick: () => speech.say(roundSpeech(round, "asking"))
-      }, "🔊 ？？？"), "」");
-    } else {
-      els.prompt.append("「", amountNode, "ください。」");
-    }
-  } else {
-    els.taskLabel.textContent = round.isReview
-      ? "One more try at one you missed. How do you say how many there are?"
-      : "Confirm the customer's items. How do you say how many there are?";
-    const blank = answered ? amountNode : h("span", { class: "blank" }, "？");
+  if (round.mode === "count") {
+    els.speaker.replaceChildren(h("img", { src: MARU_OK, alt: "" }));
+    const useGeneric = counter.generic ? [" Use the general counter ", ja(`「${counter.counter}」`), "."] : [];
+    els.taskLabel.replaceChildren(
+      retry ? "One more try at one you missed. How do you say how many there are?"
+        : "Confirm the customer's items. How do you say how many there are?",
+      ...useGeneric);
+    const blank = answered ? ruby(amount, reading, "answer") : h("span", { class: "blank" }, "？");
     els.prompt.append("「", itemName(entry.item), "、", blank, "ですね。」");
+    return;
+  }
+
+  els.speaker.textContent = round.customer;
+  const listenButton = () => h("button", {
+    class: "listen-only", type: "button", title: "Play the order again",
+    onclick: () => speech.say(roundSpeech(round, "asking"))
+  }, "🔊 ？？？");
+
+  if (round.mode === "serve") {
+    els.taskLabel.textContent = retry
+      ? "One more try at an order you missed. Put the right items on the counter."
+      : "A customer is ordering. Which items are counted this way? Put the right number on the counter.";
+    const amountNode = answered || state.settings.furigana ? ruby(amount, reading, answered ? "answer" : "") : amount;
+    els.prompt.append("「", isListeningRound() ? listenButton() : amountNode, isListeningRound() ? "」" : "ください。」");
+  } else {
+    // "order": the item is named, the amount is given only as a reading.
+    els.taskLabel.textContent = retry
+      ? "One more try at an order you missed. Put exactly what they ask for on the counter."
+      : "A customer is ordering. How many do they want? Put exactly that on the counter.";
+    if (isListeningRound()) {
+      els.prompt.append("「", listenButton(), "」");
+    } else {
+      const amountNode = answered ? ruby(amount, reading, "answer") : ja(reading, "answer");
+      els.prompt.append("「", itemName(entry.item), "を", amountNode, "ください。」");
+    }
   }
 }
 
@@ -349,13 +674,17 @@ function renderHint() {
   els.hintBtn.textContent = visible ? "🙈 Hide hint" : "💡 Hint";
   if (!visible) return;
   const { counter, entry } = round;
-  const name = h("strong", { lang: "ja" }, `「${counter.counter}」`);
   if (round.mode === "serve") {
-    els.hint.replaceChildren(name, ` (${counter.reading}) counts `, h("strong", {}, counter.category), ". ", counter.note);
+    els.hint.replaceChildren(counterName(counter), ` (${counter.reading}) counts `, h("strong", {}, counter.category), ". ", counter.note);
+  } else if (round.mode === "order") {
+    els.hint.replaceChildren(counterName(counter), " from 1 to 10: ",
+      ja(NUMBERS.map(n => primaryReading(counter, n)).join("、")), ".");
+  } else if (counter.generic) {
+    els.hint.replaceChildren(counterName(counter), " uses the native Japanese numbers, which do not sound like いち, に, さん. ", counter.note);
   } else {
     els.hint.replaceChildren(
       itemName(entry.item, { withRuby: true }), ` (${entry.item.label_en}) belongs with `, h("strong", {}, counter.category),
-      ", so use ", name, ` (${counter.reading}). Careful: the reading can change with the number.`
+      ", so use ", counterName(counter), ` (${counter.reading}). Careful: the reading can change with the number.`
     );
   }
 }
@@ -394,9 +723,14 @@ function makeTile(entry, { onClick, draggable = false, count = 0, title }) {
   return tile;
 }
 
+/** Is this shelf/tray item a right answer for the current round? */
+function fitsRound(entry) {
+  const round = state.round;
+  return round.mode === "order" ? entry.item.id === round.entry.item.id : itemAccepts(entry, round.counter.counter);
+}
+
 function renderShelf() {
   const asking = state.phase === "asking";
-  const key = state.round.counter.counter;
   els.shelf.replaceChildren(...state.shelf.map(entry => {
     const tile = makeTile(entry, {
       draggable: asking,
@@ -404,18 +738,17 @@ function renderShelf() {
       onClick: () => addToTray(entry.item.id)
     });
     tile.disabled = !asking;
-    if (!asking && itemAccepts(entry, key)) tile.classList.add("is-right");
+    if (!asking && fitsRound(entry)) tile.classList.add("is-right");
     return tile;
   }));
 }
 
 function renderTray(poppedId) {
   const asking = state.phase === "asking";
-  const key = state.round.counter.counter;
   const entries = [...state.tray.values()];
   const total = entries.reduce((sum, t) => sum + t.count, 0);
   els.tray.classList.toggle("has-items", entries.length > 0);
-  els.trayTotal.textContent = total ? `· ${total} item${total === 1 ? "" : "s"}` : "";
+  els.trayTotal.textContent = total ? `· ${plural(total, "item")}` : "";
   els.clearTrayBtn.hidden = !(asking && total);
   if (!entries.length) {
     els.tray.replaceChildren(h("span", { class: "drop-hint" }, "Click, tap or drag items here"));
@@ -428,14 +761,14 @@ function renderTray(poppedId) {
       onClick: () => removeFromTray(entry.item.id)
     });
     tile.disabled = !asking;
-    if (!asking) tile.classList.add(itemAccepts(entry, key) ? "is-right" : "is-wrong");
+    if (!asking) tile.classList.add(fitsRound(entry) ? "is-right" : "is-wrong");
     if (entry.item.id === poppedId) tile.classList.add("pop");
     return tile;
   }));
 }
 
 function addToTray(itemId) {
-  if (state.phase !== "asking" || !state.round || state.round.mode !== "serve") return;
+  if (state.phase !== "asking" || !state.round || state.round.mode === "count") return;
   const entry = state.shelf.find(e => e.item.id === itemId);
   if (!entry) return;
   const slot = state.tray.get(itemId) || { entry, count: 0 };
@@ -454,6 +787,13 @@ function removeFromTray(itemId) {
   slot.count -= 1;
   if (slot.count <= 0) state.tray.delete(itemId);
   renderTray();
+}
+
+/** The small "3本" tag under a choice: which amount, if any, that reading really means. */
+function choiceTag(choice) {
+  const counter = state.data.byKey.get(choice.counterKey);
+  const number = NUMBERS.find(n => readingsFor(counter, n).includes(choice.reading));
+  return number ? amountText(counter, number) : "✕";
 }
 
 function renderCountArea() {
@@ -479,7 +819,7 @@ function renderCountArea() {
     },
       h("span", { class: "choice-key", "aria-hidden": "true" }, String(index + 1)),
       h("span", {}, choice.reading),
-      h("span", { class: "choice-kanji" }, asking ? "" : `${number}${choice.counterKey}`)
+      h("span", { class: "choice-kanji" }, asking ? "" : choiceTag(choice))
     );
     if (!asking) {
       if (choice.correct) button.classList.add("is-right");
@@ -498,12 +838,8 @@ function readingNote(counter, number) {
     ", not ", ja(naiveReading(counter, number)), ".");
 }
 
-function amountRuby(counter, number) {
-  return h("strong", { lang: "ja" }, ruby(`${number}${counter.counter}`, primaryReading(counter, number)));
-}
-
 function submitServe() {
-  if (state.phase !== "asking" || !state.round || state.round.mode !== "serve") return;
+  if (state.phase !== "asking" || !state.round || state.round.mode === "count") return;
   const round = state.round;
   const tray = [...state.tray.values()];
   if (!tray.length) {
@@ -512,21 +848,29 @@ function submitServe() {
     return;
   }
   const outcome = checkServe(round, tray);
-  const { counter, number } = round;
+  const { counter, number, entry } = round;
+  const ordered = round.mode === "order";
   const lines = [];
   if (outcome.correct) {
     lines.push(h("p", { class: "headline" }, ja("正解！"), " Correct!"));
-    lines.push(h("p", {}, amountRuby(counter, number), " — ", ja(`「${counter.counter}」`), ` counts ${counter.category}.`));
+    lines.push(ordered
+      ? h("p", {}, ja(primaryReading(counter, number)), " = ", amountRuby(counter, number), ".")
+      : h("p", {}, amountRuby(counter, number), " — ", ja(`「${counter.counter}」`), ` counts ${counter.category}.`));
   } else {
     lines.push(h("p", { class: "headline" }, ja("ざんねん…"), " Not quite."));
-    lines.push(h("p", {}, "The order was ", amountRuby(counter, number), " — ", ja(`「${counter.counter}」`), ` counts ${counter.category}.`));
+    lines.push(ordered
+      ? h("p", {}, "The order was ", itemName(entry.item, { withRuby: true }), ` (${entry.item.label_en}) × ${number}: `,
+        ja(primaryReading(counter, number)), " = ", amountRuby(counter, number), ".")
+      : h("p", {}, "The order was ", amountRuby(counter, number), " — ", ja(`「${counter.counter}」`), ` counts ${counter.category}.`));
     if (!outcome.numberOk) lines.push(h("p", {}, `You put ${outcome.total} on the counter.`));
-    outcome.wrongItems.slice(0, 3).forEach(entry => {
-      lines.push(h("p", {}, itemName(entry.item, { withRuby: true }), ` (${entry.item.label_en}) is counted with `,
-        h("strong", { lang: "ja" }, `「${entry.counter.counter}」`), ` (${entry.counter.category}).`));
+    outcome.wrongItems.slice(0, 3).forEach(wrong => {
+      lines.push(ordered
+        ? h("p", {}, itemName(wrong.item, { withRuby: true }), ` (${wrong.item.label_en}) was not part of the order.`)
+        : h("p", {}, itemName(wrong.item, { withRuby: true }), ` (${wrong.item.label_en}) is counted with `,
+          counterName(wrong.counter), ` (${wrong.counter.category}).`));
     });
   }
-  const note = readingNote(counter, number);
+  const note = ordered ? null : readingNote(counter, number);
   if (note) lines.push(note);
   finishRound(outcome.correct, lines);
 }
@@ -537,6 +881,11 @@ function submitChoice(choice) {
   finishCount(choice.correct, choice.reading, choice.counterKey);
 }
 
+function softRetry(lines) {
+  showResult(false, lines, { soft: true });
+  els.typeInput.select();
+}
+
 function submitTyped() {
   if (state.phase !== "asking" || !state.round || state.round.mode !== "count") return;
   const text = els.typeInput.value.trim();
@@ -545,14 +894,34 @@ function submitTyped() {
     return;
   }
   const round = state.round;
-  const accepted = acceptedReadingsForItem(state.data, round.entry, round.number);
+  const { counter, number, entry } = round;
+  const everyReading = acceptedReadingsForItem(state.data, entry, number);
+  const accepted = counter.generic ? readingsFor(counter, number) : everyReading;
   const typed = normalizeTypedAnswer(text);
   const correct = checkTypedAnswer(text, accepted);
+
+  if (!correct) {
+    // Good Japanese, but not the counter this question is practising: let them try again, no penalty.
+    if (counter.generic && checkTypedAnswer(text, everyReading)) {
+      softRetry([h("p", { class: "headline" }, "That works too!"),
+        h("p", {}, "But this question is practising ", counterName(counter), ". Try again with that one.")]);
+      return;
+    }
+    const generic = state.data.counters.find(c => c.generic && !(c.notFor || []).includes(entry.counter.counter) &&
+      checkTypedAnswer(text, readingsFor(c, number)));
+    if (generic) {
+      softRetry([h("p", { class: "headline" }, "You would be understood!"),
+        h("p", {}, counterName(generic), " works for most things, but ", itemName(entry.item, { withRuby: true }),
+          " has a more specific counter. Try again with that one.")]);
+      return;
+    }
+  }
+
   // If the answer is wrong, see whether it is the right reading for some other counter.
   const otherCounter = correct ? null : state.data.counters.find(c =>
-    readingsFor(c, round.number).some(r => typed.includes(r)));
+    readingsFor(c, number).some(r => typed.includes(r)));
   // "nn" can mean ん (typing style) or ん + n… (Hepburn); show whichever reading the player most likely meant.
-  const known = typed.find(t => state.data.counters.some(c => readingsFor(c, round.number).includes(t)));
+  const known = typed.find(t => state.data.counters.some(c => readingsFor(c, number).includes(t)));
   const shown = known || (/nn(?![aiueoy])/i.test(text) ? typed[typed.length - 1] : typed[0]);
   finishCount(correct, shown, otherCounter ? otherCounter.counter : null);
 }
@@ -565,27 +934,33 @@ function finishCount(correct, givenReading, givenCounterKey) {
   if (correct) {
     lines.push(h("p", { class: "headline" }, ja("正解！"), " Correct!"));
     lines.push(h("p", {}, name(), ` × ${number} = `, amountRuby(counter, number)));
-    const others = acceptedReadingsForItem(state.data, entry, number).filter(r => r !== primaryReading(counter, number));
-    if (others.length) lines.push(h("p", {}, "Also accepted: ", ja(others.slice(0, 4).join("、")), "."));
+    const others = acceptedReadingsForItem(state.data, entry, number).filter(r => !readingsFor(counter, number).includes(r));
+    const same = readingsFor(counter, number).slice(1);
+    const also = [...same, ...others];
+    if (also.length) lines.push(h("p", {}, "Other ways to say it: ", ja(also.slice(0, 4).join("、")), "."));
   } else {
     lines.push(h("p", { class: "headline" }, ja("ざんねん…"), " Not quite."));
     lines.push(h("p", {}, "You answered ", ja(givenReading), ". The answer is ", amountRuby(counter, number), "."));
     const given = givenCounterKey ? state.data.byKey.get(givenCounterKey) : null;
     if (given && given.counter !== counter.counter) {
-      lines.push(h("p", {}, h("strong", { lang: "ja" }, `「${given.counter}」`), ` is for ${given.category}; `, name(),
-        " takes ", h("strong", { lang: "ja" }, `「${counter.counter}」`), ` (${counter.category}).`));
-    } else if (given || givenCounterKey === counter.counter) {
-      lines.push(h("p", {}, "Right counter, but the reading is different for this number."));
+      lines.push(h("p", {}, counterName(given), ` is for ${given.category}; `, name(),
+        " takes ", counterName(counter), ` (${counter.category}).`));
+    } else if (given) {
+      const meant = NUMBERS.find(n => readingsFor(counter, n).includes(givenReading));
+      lines.push(h("p", {}, meant && meant !== number
+        ? ["Right counter, but ", ja(givenReading), ` means ${meant}.`]
+        : "Right counter, but the reading is different for this number."));
     }
   }
   const note = readingNote(counter, number);
-  if (note && !correct) lines.push(note);
+  if (note && !correct && !counter.generic) lines.push(note);
   finishRound(correct, lines);
 }
 
 function showResult(correct, lines, { soft = false } = {}) {
   els.result.hidden = false;
-  els.result.classList.toggle("is-wrong", !correct);
+  els.result.classList.toggle("is-wrong", !correct && !soft);
+  els.result.classList.toggle("is-soft", soft);
   els.resultImg.src = correct ? MARU_OK : MARU_WRONG;
   els.resultImg.hidden = soft;
   els.resultText.replaceChildren(...lines);
@@ -609,18 +984,31 @@ function finishRound(correct, lines) {
     }
   } else {
     state.streak = 0;
-    if (!state.challenge) {
-      state.reviewQueue.push({
-        mode: round.mode, counterKey: round.counter.counter, number: round.number,
-        itemId: round.entry.item.id, due: REVIEW_DELAY_ROUNDS
-      });
-      if (state.reviewQueue.length > 8) state.reviewQueue.shift();
-    }
   }
-  if (state.challenge) {
-    state.challenge.round += 1;
-    if (correct) state.challenge.score += 1;
-    else state.challenge.misses.push(round);
+
+  if (state.shift) {
+    gradeShiftAnswer(round, correct);
+  } else {
+    if (!correct) {
+      // A slip in free practice sends that card back for review in the next shift.
+      const cardId = cardForRound(round);
+      if (state.progress.cards[cardId]) {
+        gradeCard(state.progress, cardId, false, Date.now());
+        saveProgress();
+      }
+      if (!state.challenge) {
+        state.reviewQueue.push({
+          mode: round.mode, counterKey: round.counter.counter, number: round.number,
+          itemId: round.entry.item.id, due: REVIEW_DELAY_ROUNDS
+        });
+        if (state.reviewQueue.length > 8) state.reviewQueue.shift();
+      }
+    }
+    if (state.challenge) {
+      state.challenge.round += 1;
+      if (correct) state.challenge.score += 1;
+      else state.challenge.misses.push(round);
+    }
   }
 
   playTone(correct ? "good" : "bad");
@@ -630,35 +1018,30 @@ function finishRound(correct, lines) {
   speech.say(roundSpeech(round, "answered"));
 
   const challengeOver = state.challenge && state.challenge.round >= CHALLENGE_ROUNDS;
-  els.nextBtn.textContent = challengeOver ? "See results ▶" : "Next ▶";
+  const shiftOver = state.shift && !state.shift.steps.length;
+  els.nextBtn.textContent = challengeOver ? "See results ▶" : shiftOver ? "Finish shift ▶" : "Next ▶";
   els.nextBtn.focus({ preventScroll: true });
   if (correct) {
     state.advanceTimer = window.setTimeout(advance, AUTO_ADVANCE_MS);
   }
 }
 
-function advance() {
-  window.clearTimeout(state.advanceTimer);
-  if (state.phase !== "answered") return;
-  if (state.challenge && state.challenge.round >= CHALLENGE_ROUNDS) {
-    showChallengeResults();
-    return;
-  }
+/* ---------- Free practice & challenge ---------- */
+
+function startFreePractice() {
+  state.shift = null;
+  state.challenge = null;
+  state.streak = 0;
+  showPlay();
   startRound();
-  updateVoiceUi();
 }
 
-/* ---------- Challenge ---------- */
-
 function startChallenge() {
+  state.shift = null;
   state.challenge = { round: 0, score: 0, misses: [] };
   state.streak = 0;
   state.reviewQueue = [];
-  startRound();
-}
-
-function endChallenge() {
-  state.challenge = null;
+  showPlay();
   startRound();
 }
 
@@ -682,7 +1065,7 @@ function showChallengeResults() {
     els.resultsReview.replaceChildren(
       h("strong", {}, "Worth reviewing:"),
       h("ul", {}, misses.map(round => h("li", {},
-        round.mode === "count" ? [itemName(round.entry.item, { withRuby: true }), " × ", String(round.number), " → "] : null,
+        round.mode === "serve" ? null : [itemName(round.entry.item, { withRuby: true }), " × ", String(round.number), " → "],
         amountRuby(round.counter, round.number), ` (${round.counter.category})`
       )))
     );
@@ -690,65 +1073,99 @@ function showChallengeResults() {
     els.resultsReview.replaceChildren();
   }
   state.challenge = null;
-  state.phase = "loading";
+  state.phase = "home";
   renderStatus();
   els.resultsDialog.showModal();
 }
 
 /* ---------- Counter guide ---------- */
 
-function renderGuide() {
+/** Reading table and example items: used in the guide and in lessons. */
+function counterDetail(counter, { withNote = true } = {}) {
+  const key = counter.counter;
+  return h("div", { class: "counter-detail" },
+    withNote ? h("p", {}, counter.note) : null,
+    h("div", { class: "reading-grid" }, NUMBERS.map(n => {
+      const readings = readingsFor(counter, n);
+      return h("button", {
+        class: `reading-cell${isIrregular(counter, n) ? " irregular" : ""}`, type: "button", lang: "ja",
+        title: readings.length > 1 ? `Also: ${readings.slice(1).join("、")}` : "Tap to hear",
+        onclick: () => speech.say(readings[0], { force: true })
+      }, h("small", {}, amountText(counter, n)), readings[0]);
+    })),
+    h("div", { class: "guide-items" }, counter.entries.map(({ item }) => {
+      const others = (item.also || []).filter(k => k !== key && !state.data.byKey.get(k).generic);
+      return h("span", {}, h("img", { src: item.image, alt: "", loading: "lazy" }), itemName(item, { withRuby: true }),
+        ` ${item.label_en}`, !counter.generic && others.length ? ja(`（${others.join("・")}も）`) : null);
+    }))
+  );
+}
+
+function renderGuide(openKey) {
   const all = state.data.counters;
+  const progress = state.progress;
   const enabled = Array.isArray(state.enabled) ? new Set(state.enabled) : null;
   const selected = enabled ? all.filter(c => enabled.has(c.counter)).length : all.length;
   els.counterSummary.textContent = selected === 0
-    ? "Nothing selected, so every counter will be used."
-    : selected === all.length ? `All ${all.length} counters selected.` : `${selected} of ${all.length} counters selected.`;
-  els.selectAllBtn.textContent = selected === all.length ? "Deselect all" : "Select all";
+    ? "Nothing ticked, so free practice will use every counter."
+    : selected === all.length ? `All ${all.length} counters ticked for free practice.` : `${selected} of ${all.length} ticked for free practice.`;
+  els.selectAllBtn.textContent = selected === all.length ? "Untick all" : "Tick all";
 
   const openKeys = new Set([...els.counterList.querySelectorAll("details[open]")].map(d => d.dataset.key));
+  if (openKey) openKeys.add(openKey);
+  const upNext = lockedCounters(state.data, progress)[0];
   els.counterList.replaceChildren(...all.map(counter => {
     const key = counter.counter;
     const stat = state.stats[key];
     const acc = accuracy(stat);
-    const level = masteryLevel(stat);
+    const stars = counterStars(counter, progress);
+    const locked = stars === null;
     const isOn = enabled ? enabled.has(key) : true;
 
     const checkbox = h("input", {
-      type: "checkbox", checked: isOn, "aria-label": `Practice ${key}`,
+      type: "checkbox", checked: isOn, "aria-label": `Use ${key} in free practice`, title: "Use in free practice",
       onchange: event => toggleCounter(key, event.target.checked)
     });
+    const detail = counterDetail(counter);
+    if (locked) {
+      detail.append(counter === upNext
+        ? h("p", { class: "learn-next" }, "✓ Maru will teach this one next.")
+        : h("button", {
+          class: "ghost small learn-next", type: "button",
+          onclick: () => {
+            progress.priority = [key, ...progress.priority.filter(k => k !== key)];
+            saveProgress();
+            renderGuide();
+          }
+        }, "Learn this one next"));
+    }
     const details = h("details", { open: openKeys.has(key) },
       h("summary", {},
         h("span", { class: "counter-kanji", lang: "ja" }, key),
         h("span", { class: "counter-meta" },
-          h("strong", { lang: "ja" }, `${counter.reading}`),
+          h("strong", { lang: "ja" }, counter.reading),
           h("span", {}, counter.category)),
         h("span", { class: "counter-progress" },
-          h("span", { class: `level ${level}` }, LEVEL_LABELS[level]),
+          locked ? h("span", { class: "level" }, counter === upNext ? "Next up" : "🔒 Not started")
+            : h("span", { class: `level ${["learning", "learning", "strong", "mastered"][stars]}` }, starText(stars)),
           h("br"),
           h("small", {}, acc === null ? "not practiced yet" : `${Math.round(acc * 100)}% of ${stat.correct + stat.incorrect}`))
       ),
-      h("div", { class: "counter-detail" },
-        h("p", {}, counter.note),
-        h("div", { class: "reading-grid" }, Array.from({ length: 10 }, (_, i) => {
-          const n = i + 1;
-          const readings = readingsFor(counter, n);
-          return h("button", {
-            class: `reading-cell${isIrregular(counter, n) ? " irregular" : ""}`, type: "button", lang: "ja",
-            title: readings.length > 1 ? `Also: ${readings.slice(1).join("、")}` : "Tap to hear",
-            onclick: () => speech.say(readings[0], { force: true })
-          }, h("small", {}, `${n}${key}`), readings[0]);
-        })),
-        h("div", { class: "guide-items" }, counter.items.map(item =>
-          h("span", {}, h("img", { src: item.image, alt: "", loading: "lazy" }), itemName(item, { withRuby: true }),
-            ` ${item.label_en}`, item.also ? ja(`（${item.also.join("・")}も）`) : null)))
-      )
+      detail
     );
     details.dataset.key = key;
     return h("div", { class: `counter-row${isOn ? "" : " is-off"}`, role: "listitem" },
       h("div", { class: "counter-row__head" }, checkbox, details));
   }));
+}
+
+function openGuide(openKey) {
+  if (!state.data) return;
+  renderGuide(openKey);
+  els.guideDialog.showModal();
+  const target = openKey && els.counterList.querySelector(`details[data-key="${openKey}"]`);
+  if (target) target.scrollIntoView({ block: "start" });
+  else els.counterList.scrollTop = 0;
 }
 
 function toggleCounter(key, on) {
@@ -766,9 +1183,13 @@ function closeGuide() {
     state.enabled = null;
     saveEnabled();
   }
-  // If the counter being asked about was just switched off, move on.
+  if (state.phase === "home") {
+    renderHome();
+    return;
+  }
+  // Free practice: if the counter being asked about was just switched off, move on.
   const stillActive = state.round && activeCounters().includes(state.round.counter);
-  if (state.phase === "asking" && !stillActive) startRound();
+  if (state.phase === "asking" && !state.shift && !stillActive) startRound();
 }
 
 /* ---------- Settings ---------- */
@@ -796,13 +1217,19 @@ function changeSetting(key, value, { rerender = true } = {}) {
 /* ---------- Events ---------- */
 
 function bindEvents() {
+  els.homeBtn.addEventListener("click", showHome);
+  els.startShiftBtn.addEventListener("click", startShift);
+  els.freePracticeBtn.addEventListener("click", startFreePractice);
+  els.homeChallengeBtn.addEventListener("click", startChallenge);
+  els.lessonDoneBtn.addEventListener("click", finishLesson);
+
   els.modeButtons.forEach(btn => btn.addEventListener("click", () => {
-    if (state.challenge || btn.dataset.mode === state.settings.gameMode) return;
+    if (state.challenge || state.shift || btn.dataset.mode === state.settings.gameMode) return;
     changeSetting("gameMode", btn.dataset.mode, { rerender: false });
     startRound();
   }));
 
-  els.challengeBtn.addEventListener("click", () => (state.challenge ? endChallenge() : startChallenge()));
+  els.challengeBtn.addEventListener("click", () => (state.challenge ? startFreePractice() : startChallenge()));
   els.doneBtn.addEventListener("click", submitServe);
   els.nextBtn.addEventListener("click", advance);
   els.clearTrayBtn.addEventListener("click", () => {
@@ -849,7 +1276,7 @@ function bindEvents() {
   els.voice.addEventListener("change", () => {
     changeSetting("voice", els.voice.checked);
     if (els.voice.checked && state.round) speech.say(roundSpeech(state.round, state.phase));
-    else if (speech.supported) window.speechSynthesis.cancel();
+    else speech.stop();
   });
   els.listening.addEventListener("change", () => changeSetting("listening", els.listening.checked));
   els.sfx.addEventListener("change", () => changeSetting("sfx", els.sfx.checked));
@@ -857,23 +1284,22 @@ function bindEvents() {
   els.maxNumberSelect.addEventListener("change", () => changeSetting("maxNumber", Number(els.maxNumberSelect.value), { rerender: false }));
   els.answerStyleSelect.addEventListener("change", () => changeSetting("answerStyle", els.answerStyleSelect.value));
   $("resetProgressBtn").addEventListener("click", () => {
-    if (!window.confirm("Reset all progress, best scores and streaks? Your settings are kept.")) return;
+    if (!state.data) return;
+    if (!window.confirm("Reset everything you have learned: lessons, reviews, scores and streaks? Your settings are kept.")) return;
     state.stats = normalizeStats({}, state.data.counters.map(c => c.counter));
+    state.progress = emptyProgress();
     state.best = {};
     state.streak = 0;
     state.reviewQueue = [];
     saveStats();
+    saveProgress();
     store.set("maruBest", state.best);
-    renderStatus();
+    els.settingsDialog.close();
+    showHome();
   });
 
   // Guide
-  $("openGuideBtn").addEventListener("click", () => {
-    if (!state.data) return;
-    renderGuide();
-    els.guideDialog.showModal();
-    els.counterList.scrollTop = 0;
-  });
+  $("openGuideBtn").addEventListener("click", () => openGuide());
   $("closeGuideBtn").addEventListener("click", () => els.guideDialog.close());
   els.guideDialog.addEventListener("close", closeGuide);
   els.selectAllBtn.addEventListener("click", () => {
@@ -883,15 +1309,24 @@ function bindEvents() {
     renderGuide();
   });
 
-  // Results
-  $("resultsAgainBtn").addEventListener("click", () => {
-    els.resultsDialog.close("again");
-  });
+  // Challenge results
+  $("resultsAgainBtn").addEventListener("click", () => els.resultsDialog.close("again"));
   $("resultsPracticeBtn").addEventListener("click", () => els.resultsDialog.close("practice"));
   els.resultsDialog.addEventListener("close", () => {
-    if (els.resultsDialog.returnValue === "again") startChallenge();
-    else startRound();
+    const again = els.resultsDialog.returnValue === "again";
     els.resultsDialog.returnValue = "";
+    if (again) startChallenge();
+    else startFreePractice();
+  });
+
+  // Shift summary
+  $("summaryAgainBtn").addEventListener("click", () => els.summaryDialog.close("again"));
+  $("summaryHomeBtn").addEventListener("click", () => els.summaryDialog.close("home"));
+  els.summaryDialog.addEventListener("close", () => {
+    const again = els.summaryDialog.returnValue === "again";
+    els.summaryDialog.returnValue = "";
+    if (again) startShift();
+    else showHome();
   });
 
   // Click on the backdrop closes a dialog.
@@ -908,7 +1343,7 @@ function bindEvents() {
       if (typing || tag === "BUTTON" || tag === "SUMMARY") return; // let the focused control handle it
       event.preventDefault();
       if (state.phase === "answered") advance();
-      else if (state.round.mode === "serve") submitServe();
+      else if (state.round.mode !== "count") submitServe();
       return;
     }
     if (typing) return;
@@ -920,6 +1355,11 @@ function bindEvents() {
       if (choice) submitChoice(choice);
     }
   });
+
+  // Coming back to the tab after a while: reviews may have come due.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && state.phase === "home") renderHome();
+  });
 }
 
 /* ---------- Start ---------- */
@@ -928,7 +1368,6 @@ async function init() {
   bindEvents();
   speech.init();
   syncSettingsForm();
-  renderStatus();
   updateVoiceUi();
   try {
     const response = await fetch("data/counters.json");
@@ -936,20 +1375,19 @@ async function init() {
     state.data = prepareData(await response.json());
     if (!state.data.counters.length) throw new Error("no counters in data file");
   } catch (err) {
-    els.taskLabel.textContent = "Could not load the counter data. If you opened index.html directly, run a local web server instead (see the README).";
-    els.prompt.textContent = "「ごめんなさい…」";
+    els.homeMessage.textContent = "Could not load the counter data. If you opened index.html directly, run a local web server instead (see the README).";
     console.error(err);
     return;
   }
   const keys = state.data.counters.map(c => c.counter);
   state.stats = normalizeStats(store.get("counterStats", {}), keys);
+  state.progress = normalizeProgress(store.get("maruProgress", null), state.data);
   const savedEnabled = store.get("enabledCounters", null);
   if (Array.isArray(savedEnabled)) {
     const valid = keys.filter(k => savedEnabled.includes(k));
     state.enabled = valid.length && valid.length < keys.length ? valid : null;
   }
-  startRound();
-  updateVoiceUi();
+  showHome();
 }
 
 init();
