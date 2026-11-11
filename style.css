@@ -97,6 +97,7 @@ button {
   box-shadow: 0 12px 25px -14px rgba(107, 91, 255, 0.65);
   transition: transform var(--transition), box-shadow var(--transition), background var(--transition), opacity var(--transition);
   touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button:hover:not(:disabled) {
@@ -1188,7 +1189,6 @@ input[type="checkbox"] {
 }
 
 .counter-grid {
-  margin-top: 10px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
   gap: 10px;
@@ -1410,5 +1410,103 @@ input[type="checkbox"] {
 
   .stat span {
     font-size: 0.75rem;
+  }
+}
+
+/* ---------- Emoji pictures, chapters, big numbers ---------- */
+
+.emoji {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.item .emoji {
+  flex: 1 1 0;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  font-size: clamp(1.7rem, 6vw, 2.5rem);
+  pointer-events: none;
+}
+
+.dropzone .item .emoji {
+  font-size: 2.1rem;
+}
+
+.count-tray .emoji {
+  font-size: 2.9rem;
+  animation: pop 220ms ease backwards;
+}
+
+.count-tray.many img {
+  width: 38px;
+  height: 38px;
+}
+
+.count-tray.many .emoji {
+  font-size: 1.9rem;
+}
+
+.count-tray .big-number {
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: var(--accent-dark);
+  margin-left: 6px;
+}
+
+.guide-items .emoji {
+  font-size: 1.3rem;
+  width: 26px;
+  text-align: center;
+}
+
+.chapters {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.chapter h3,
+.chapter-title {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  color: var(--accent-dark);
+}
+
+.chapter h3 small {
+  margin-left: 8px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.chapter-title {
+  margin: 8px 2px 0;
+}
+
+.above-ten {
+  margin: 10px 0 6px !important;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .count-tray .emoji {
+    font-size: 2.3rem;
+  }
+
+  .count-tray.many .emoji {
+    font-size: 1.5rem;
+  }
+
+  .count-tray.many img {
+    width: 30px;
+    height: 30px;
+  }
+
+  .counter-grid {
+    grid-template-columns: repeat(auto-fill, minmax(74px, 1fr));
+    gap: 8px;
   }
 }

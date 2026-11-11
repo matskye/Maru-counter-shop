@@ -3,7 +3,8 @@ import {
   itemAccepts, pickRound, buildShelf, checkServe, buildChoices, romajiToHiragana, normalizeTypedAnswer,
   checkTypedAnswer, normalizeStats, recordResult, accuracy,
   cardIds, cardForRound, emptyProgress, normalizeProgress, lockedCounters, nextNewCard, dueCards, nextDueTime,
-  buildShift, gradeCard, counterStars, roundForCard, updateDayStreak
+  buildShift, gradeCard, counterStars, roundForCard, updateDayStreak,
+  isForced, roundReadings, maxNumber, bigNumbers, specialNumbers
 } from "./logic.js";
 
 const CHALLENGE_ROUNDS = 10;
@@ -90,7 +91,7 @@ function loadSettings() {
   }
   if (!["serve", "count", "mix"].includes(settings.gameMode)) settings.gameMode = "mix";
   if (!["ja", "en", "off"].includes(settings.labels)) settings.labels = "ja";
-  if (![5, 10].includes(settings.maxNumber)) settings.maxNumber = 10;
+  if (![5, 10, 20].includes(settings.maxNumber)) settings.maxNumber = 10;
   if (!["choice", "type"].includes(settings.answerStyle)) settings.answerStyle = "choice";
   return settings;
 }
@@ -146,6 +147,13 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
 function itemName(item, { withRuby = state.settings.furigana } = {}) {
   return withRuby && item.label_ja !== item.kana ? ruby(item.label_ja, item.kana) : ja(item.label_ja);
+}
+
+/** An item's picture: artwork where we have it, an emoji otherwise. */
+function picture(item, attrs = {}) {
+  return item.image
+    ? h("img", { src: item.image, alt: "", draggable: false, ...attrs })
+    : h("span", { class: "emoji", role: "img", "aria-label": attrs.alt || null, style: attrs.style }, item.emoji);
 }
 
 function tileLabel(item) {
@@ -305,7 +313,7 @@ function renderHome() {
 
   const dueKeys = new Set(due.map(id => id.split(":")[1]));
   const nextUp = lockedCounters(data, progress)[0];
-  els.counterGrid.replaceChildren(...data.counters.map(counter => {
+  const tile = counter => {
     const stars = counterStars(counter, progress);
     const locked = stars === null;
     return h("button", {
@@ -319,7 +327,24 @@ function renderHome() {
       h("span", { class: "stars" }, locked ? (counter === nextUp ? "next up" : "🔒") : starText(stars)),
       dueKeys.has(counter.counter) ? h("span", { class: "due-dot", title: "Reviews ready" }) : null
     );
+  };
+  els.counterGrid.replaceChildren(...chapters(data.counters).map(([name, counters]) => {
+    const started = counters.filter(c => progress.unlocked.includes(c.counter)).length;
+    return h("section", { class: "chapter" },
+      h("h3", {}, name, h("small", {}, `${started}/${counters.length}`)),
+      h("div", { class: "counter-grid" }, counters.map(tile)));
   }));
+}
+
+/** Counters grouped by chapter, in teaching order: [[name, counters], …]. */
+function chapters(counters) {
+  const groups = new Map();
+  counters.forEach(counter => {
+    const name = counter.group || "Counters";
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name).push(counter);
+  });
+  return [...groups.entries()];
 }
 
 /* ---------- Day streak ---------- */
@@ -474,6 +499,7 @@ function roundSpeech(round, phase) {
   const item = round.entry.item;
   if (round.mode === "serve") return `${reading}ください。`;
   if (round.mode === "order") return `${item.kana}を${reading}ください。`;
+  if (round.counter.abstract) return phase === "answered" ? `${reading}です。` : "";
   return phase === "answered" ? `${item.kana}、${reading}ですね。` : item.kana;
 }
 
@@ -627,11 +653,17 @@ function renderPrompt() {
 
   if (round.mode === "count") {
     els.speaker.replaceChildren(h("img", { src: MARU_OK, alt: "" }));
-    const useGeneric = counter.generic ? [" Use the general counter ", ja(`「${counter.counter}」`), "."] : [];
+    if (counter.abstract) {
+      els.taskLabel.textContent = `${retry ? "One more try at one you missed. " : ""}How do you read this? (${entry.item.label_en})`;
+      els.prompt.append("「", answered ? ruby(amount, reading, "answer") : ja(amount, "answer"), "です。」");
+      return;
+    }
+    const useCounter = isForced(round)
+      ? [counter.generic ? " Use the general counter " : " Use ", ja(`「${counter.counter}」`), "."] : [];
     els.taskLabel.replaceChildren(
       retry ? "One more try at one you missed. How do you say how many there are?"
         : "Confirm the customer's items. How do you say how many there are?",
-      ...useGeneric);
+      ...useCounter);
     const blank = answered ? ruby(amount, reading, "answer") : h("span", { class: "blank" }, "？");
     els.prompt.append("「", itemName(entry.item), "、", blank, "ですね。」");
     return;
@@ -681,6 +713,8 @@ function renderHint() {
       ja(NUMBERS.map(n => primaryReading(counter, n)).join("、")), ".");
   } else if (counter.generic) {
     els.hint.replaceChildren(counterName(counter), " uses the native Japanese numbers, which do not sound like いち, に, さん. ", counter.note);
+  } else if (isForced(round)) {
+    els.hint.replaceChildren(counterName(counter), ` (${counter.reading}): `, counter.note);
   } else {
     els.hint.replaceChildren(
       itemName(entry.item, { withRuby: true }), ` (${entry.item.label_en}) belongs with `, h("strong", {}, counter.category),
@@ -708,7 +742,7 @@ function makeTile(entry, { onClick, draggable = false, count = 0, title }) {
     "aria-label": `${entry.item.label_en}${count ? `, ${count} on the counter` : ""}`,
     onclick: onClick
   },
-    h("img", { src: entry.item.image, alt: "", draggable: false }),
+    picture(entry.item),
     tileLabel(entry.item),
     count ? h("span", { class: "item-count" }, `×${count}`) : null
   );
@@ -792,7 +826,8 @@ function removeFromTray(itemId) {
 /** The small "3本" tag under a choice: which amount, if any, that reading really means. */
 function choiceTag(choice) {
   const counter = state.data.byKey.get(choice.counterKey);
-  const number = NUMBERS.find(n => readingsFor(counter, n).includes(choice.reading));
+  const candidates = [state.round.number, ...Array.from({ length: Math.min(40, maxNumber(counter)) }, (_, i) => i + 1)];
+  const number = candidates.find(n => readingsFor(counter, n).includes(choice.reading));
   return number ? amountText(counter, number) : "✕";
 }
 
@@ -800,10 +835,18 @@ function renderCountArea() {
   const round = state.round;
   const { entry, number } = round;
   const asking = state.phase === "asking";
-  els.countTray.replaceChildren(...Array.from({ length: number }, (_, i) =>
-    h("img", { src: entry.item.image, alt: i === 0 ? `${number} × ${entry.item.label_en}` : "", style: `animation-delay:${i * 35}ms` })
-  ));
+  const description = `${number} × ${entry.item.label_en}`;
+  els.countTray.classList.toggle("many", number > 10 && number <= 20);
+  if (round.counter.abstract || number > 20) {
+    // Nothing to count one by one: show the number itself.
+    els.countTray.replaceChildren(picture(entry.item, { alt: description }),
+      h("span", { class: "big-number", lang: "ja" }, round.counter.abstract ? amountText(round.counter, number) : `× ${number}`));
+  } else {
+    els.countTray.replaceChildren(...Array.from({ length: number }, (_, i) =>
+      picture(entry.item, { alt: i === 0 ? description : "", style: `animation-delay:${Math.min(i, 12) * 35}ms` })));
+  }
   els.countLabel.replaceChildren(itemName(entry.item), h("small", {}, entry.item.label_en));
+  els.countLabel.dataset.itemId = entry.item.id;
 
   const typing = state.settings.answerStyle === "type";
   els.choices.hidden = typing;
@@ -896,18 +939,18 @@ function submitTyped() {
   const round = state.round;
   const { counter, number, entry } = round;
   const everyReading = acceptedReadingsForItem(state.data, entry, number);
-  const accepted = counter.generic ? readingsFor(counter, number) : everyReading;
+  const accepted = roundReadings(state.data, round);
   const typed = normalizeTypedAnswer(text);
   const correct = checkTypedAnswer(text, accepted);
 
-  if (!correct) {
+  if (!correct && !counter.abstract) {
     // Good Japanese, but not the counter this question is practising: let them try again, no penalty.
-    if (counter.generic && checkTypedAnswer(text, everyReading)) {
+    if (isForced(round) && checkTypedAnswer(text, everyReading)) {
       softRetry([h("p", { class: "headline" }, "That works too!"),
         h("p", {}, "But this question is practising ", counterName(counter), ". Try again with that one.")]);
       return;
     }
-    const generic = state.data.counters.find(c => c.generic && !(c.notFor || []).includes(entry.counter.counter) &&
+    const generic = state.data.counters.find(c => c.generic && c !== counter && !(c.notFor || []).includes(entry.counter.counter) &&
       checkTypedAnswer(text, readingsFor(c, number)));
     if (generic) {
       softRetry([h("p", { class: "headline" }, "You would be understood!"),
@@ -918,8 +961,10 @@ function submitTyped() {
   }
 
   // If the answer is wrong, see whether it is the right reading for some other counter.
-  const otherCounter = correct ? null : state.data.counters.find(c =>
-    readingsFor(c, number).some(r => typed.includes(r)));
+  const sameCounter = !correct && Array.from({ length: Math.min(40, maxNumber(counter)) }, (_, i) => i + 1)
+    .some(n => readingsFor(counter, n).some(r => typed.includes(r)));
+  const otherCounter = correct ? null : sameCounter ? counter : state.data.counters.find(c =>
+    !c.abstract && readingsFor(c, number).some(r => typed.includes(r)));
   // "nn" can mean ん (typing style) or ん + n… (Hepburn); show whichever reading the player most likely meant.
   const known = typed.find(t => state.data.counters.some(c => readingsFor(c, number).includes(t)));
   const shown = known || (/nn(?![aiueoy])/i.test(text) ? typed[typed.length - 1] : typed[0]);
@@ -933,8 +978,10 @@ function finishCount(correct, givenReading, givenCounterKey) {
   const lines = [];
   if (correct) {
     lines.push(h("p", { class: "headline" }, ja("正解！"), " Correct!"));
-    lines.push(h("p", {}, name(), ` × ${number} = `, amountRuby(counter, number)));
-    const others = acceptedReadingsForItem(state.data, entry, number).filter(r => !readingsFor(counter, number).includes(r));
+    lines.push(counter.abstract
+      ? h("p", {}, amountRuby(counter, number), ` (${entry.item.label_en})`)
+      : h("p", {}, name(), ` × ${number} = `, amountRuby(counter, number)));
+    const others = counter.abstract ? [] : acceptedReadingsForItem(state.data, entry, number).filter(r => !readingsFor(counter, number).includes(r));
     const same = readingsFor(counter, number).slice(1);
     const also = [...same, ...others];
     if (also.length) lines.push(h("p", {}, "Other ways to say it: ", ja(also.slice(0, 4).join("、")), "."));
@@ -946,7 +993,8 @@ function finishCount(correct, givenReading, givenCounterKey) {
       lines.push(h("p", {}, counterName(given), ` is for ${given.category}; `, name(),
         " takes ", counterName(counter), ` (${counter.category}).`));
     } else if (given) {
-      const meant = NUMBERS.find(n => readingsFor(counter, n).includes(givenReading));
+      const meant = Array.from({ length: Math.min(40, maxNumber(counter)) }, (_, i) => i + 1)
+        .find(n => readingsFor(counter, n).includes(givenReading));
       lines.push(h("p", {}, meant && meant !== number
         ? ["Right counter, but ", ja(givenReading), ` means ${meant}.`]
         : "Right counter, but the reading is different for this number."));
@@ -1080,6 +1128,26 @@ function showChallengeResults() {
 
 /* ---------- Counter guide ---------- */
 
+/** A few readings above ten, where the counter goes that far and anything about it is irregular. */
+function aboveTen(counter) {
+  const special = specialNumbers(counter);
+  const pool = bigNumbers(counter);
+  if (!pool.length || !(special.length || NUMBERS.some(n => isIrregular(counter, n)))) return null;
+  const irregular = pool.filter(n => isIrregular(counter, n));
+  const picks = [...new Set([...special, ...irregular, ...pool])].slice(0, 5).sort((a, b) => a - b);
+  return [
+    h("p", { class: "above-ten" }, "Above ten, the last digit decides the reading:"),
+    h("div", { class: "reading-grid" }, picks.map(n => {
+      const readings = readingsFor(counter, n);
+      return h("button", {
+        class: `reading-cell${isIrregular(counter, n) ? " irregular" : ""}`, type: "button", lang: "ja",
+        title: readings.length > 1 ? `Also: ${readings.slice(1).join("、")}` : "Tap to hear",
+        onclick: () => speech.say(readings[0], { force: true })
+      }, h("small", {}, amountText(counter, n)), readings[0]);
+    }))
+  ];
+}
+
 /** Reading table and example items: used in the guide and in lessons. */
 function counterDetail(counter, { withNote = true } = {}) {
   const key = counter.counter;
@@ -1093,10 +1161,11 @@ function counterDetail(counter, { withNote = true } = {}) {
         onclick: () => speech.say(readings[0], { force: true })
       }, h("small", {}, amountText(counter, n)), readings[0]);
     })),
-    h("div", { class: "guide-items" }, counter.entries.map(({ item }) => {
-      const others = (item.also || []).filter(k => k !== key && !state.data.byKey.get(k).generic);
-      return h("span", {}, h("img", { src: item.image, alt: "", loading: "lazy" }), itemName(item, { withRuby: true }),
-        ` ${item.label_en}`, !counter.generic && others.length ? ja(`（${others.join("・")}も）`) : null);
+    aboveTen(counter),
+    h("div", { class: "guide-items" }, counter.entries.map(({ item, counter: home }) => {
+      const others = [home.counter, ...(item.also || [])].filter(k => k !== key && !state.data.byKey.get(k).generic);
+      return h("span", {}, picture(item, { loading: "lazy" }), itemName(item, { withRuby: true }),
+        ` ${item.label_en}`, !counter.generic && !counter.abstract && others.length ? ja(`（${others.join("・")}も）`) : null);
     }))
   );
 }
@@ -1114,7 +1183,7 @@ function renderGuide(openKey) {
   const openKeys = new Set([...els.counterList.querySelectorAll("details[open]")].map(d => d.dataset.key));
   if (openKey) openKeys.add(openKey);
   const upNext = lockedCounters(state.data, progress)[0];
-  els.counterList.replaceChildren(...all.map(counter => {
+  const row = counter => {
     const key = counter.counter;
     const stat = state.stats[key];
     const acc = accuracy(stat);
@@ -1156,7 +1225,9 @@ function renderGuide(openKey) {
     details.dataset.key = key;
     return h("div", { class: `counter-row${isOn ? "" : " is-off"}`, role: "listitem" },
       h("div", { class: "counter-row__head" }, checkbox, details));
-  }));
+  };
+  els.counterList.replaceChildren(...chapters(all).flatMap(([name, counters]) =>
+    [h("h3", { class: "chapter-title" }, name), ...counters.map(row)]));
 }
 
 function openGuide(openKey) {

@@ -22,32 +22,63 @@ const CAN_FOLLOW_SOKUON = new Set([..."かきくけこさしすせそたちつ�
 /** Validate and index the raw JSON. Returns { counters, byKey, allItems }. */
 export function prepareData(raw) {
   const counters = (raw && Array.isArray(raw.counters) ? raw.counters : []).filter(
-    c => c && c.counter && c.readings && Array.isArray(c.items) && (c.items.length || c.generic)
+    c => c && c.counter && c.readings && Array.isArray(c.items)
   );
   const byKey = new Map(counters.map(c => [c.counter, c]));
   const allItems = [];
   counters.forEach(counter => {
     counter.items.forEach(item => allItems.push({ item, counter }));
   });
-  // `entries` = the things a counter can be asked about. A generic counter (つ) has no
-  // items of its own: it borrows every item that lists it under "also".
+  // `entries` = the things a counter can be asked about. A counter with no items of its
+  // own (つ, 名) borrows every item that lists it under "also".
   counters.forEach(counter => {
-    counter.entries = counter.generic
-      ? allItems.filter(e => (e.item.also || []).includes(counter.counter))
-      : counter.items.map(item => ({ item, counter }));
+    counter.entries = counter.items.length
+      ? counter.items.map(item => ({ item, counter }))
+      : allItems.filter(e => (e.item.also || []).includes(counter.counter));
   });
-  return { counters: counters.filter(c => c.entries.length), byKey, allItems };
+  // Abstract counters (時, 歳, 円…) have no objects to put on a shelf.
+  const shelfItems = allItems.filter(e => !e.counter.abstract);
+  return { counters: counters.filter(c => c.entries.length), byKey, allItems, shelfItems };
+}
+
+/** Highest number a counter is used with (つ stops at ten, 時 at twelve…). */
+export function maxNumber(counter) {
+  return Number.isFinite(counter.max) ? counter.max : 99;
+}
+
+/** Plain Sino-Japanese number, 1-99: じゅういち, にじゅう, さんじゅうご. */
+export function sinoNumber(number) {
+  if (number <= 10) return NUMBER_READINGS[number] || "";
+  const tens = Math.floor(number / 10);
+  const units = number % 10;
+  return (tens > 1 ? NUMBER_READINGS[tens] : "") + "じゅう" + (units ? NUMBER_READINGS[units] : "");
+}
+
+/** The part of a number above ten that the last digit's reading attaches to: 13 → じゅう, 20 → に, 24 → にじゅう. */
+function tensPrefix(number) {
+  const tens = Math.floor(number / 10);
+  const head = tens > 1 ? NUMBER_READINGS[tens] : "";
+  return number % 10 ? head + "じゅう" : head;
 }
 
 /** The reading a beginner would guess: plain number + plain counter (e.g. いちほん). */
 export function naiveReading(counter, number) {
-  return NUMBER_READINGS[number] + counter.reading;
+  return sinoNumber(number) + counter.reading;
 }
 
-/** All accepted readings for a number, standard reading first. */
+/**
+ * All accepted readings for a number, standard reading first.
+ * Above ten the last digit decides the reading (13本 = じゅう + さんぼん, 20本 = に + じゅっぽん);
+ * `compound` overrides the digit's reading where the stand-alone one is not used (11人 = じゅう + いちにん).
+ */
 export function readingsFor(counter, number) {
-  const list = counter.readings[String(number)];
-  return Array.isArray(list) && list.length ? list : [naiveReading(counter, number)];
+  const explicit = counter.readings[String(number)];
+  if (Array.isArray(explicit) && explicit.length) return explicit;
+  if (number <= 10 || number > maxNumber(counter)) return [];
+  const digit = String(number % 10 || 10);
+  const tails = (counter.compound && counter.compound[digit]) || counter.readings[digit] || [];
+  const prefix = tensPrefix(number);
+  return tails.map(tail => prefix + tail);
 }
 
 /** The standard reading (e.g. さんぼん). */
@@ -72,6 +103,19 @@ export function hasNativeStem(counter, number) {
 export function amountText(counter, number) {
   const bare = counter.generic && !primaryReading(counter, number).endsWith(counter.reading);
   return bare ? String(number) : `${number}${counter.counter}`;
+}
+
+/**
+ * True when the question itself says which counter to use, so only that counter's readings count:
+ * the general counter つ, abstract counters, and counters practised on borrowed items (名 on people).
+ */
+export function isForced(round) {
+  return Boolean(round.counter.generic || round.counter.abstract || round.counter !== round.entry.counter);
+}
+
+/** The readings that answer a round. */
+export function roundReadings(data, round) {
+  return isForced(round) ? readingsFor(round.counter, round.number) : acceptedReadingsForItem(data, round.entry, round.number);
 }
 
 /** Counter keys that are acceptable for an item: its home counter plus any alternatives. */
@@ -198,7 +242,7 @@ export function numberWeight(counter, number, stat, mode) {
  * Choose what to ask next.
  * @returns {{mode, counter, number, entry}|null}
  */
-export function pickRound({ data, activeCounters, stats, mode, maxNumber = 10, lastCounterKey = null, rng = Math.random }) {
+export function pickRound({ data, activeCounters, stats, mode, maxNumber: limit = 10, lastCounterKey = null, rng = Math.random }) {
   if (!activeCounters || !activeCounters.length) return null;
   let pool = activeCounters;
   if (pool.length > 1 && lastCounterKey) {
@@ -208,9 +252,13 @@ export function pickRound({ data, activeCounters, stats, mode, maxNumber = 10, l
   let roundMode = mode === "mix" ? (rng() < 0.45 ? "serve" : "count") : mode;
   // A generic counter fits anything, so "which items take it?" has no answer: ask for a named item instead.
   if (counter.generic && roundMode === "serve") roundMode = mode === "mix" && rng() < 0.5 ? "count" : "order";
-  const numbers = Array.from({ length: maxNumber }, (_, i) => i + 1);
+  // Abstract counters have nothing to put on the counter: they are always "how do you read this?".
+  if (counter.abstract) roundMode = "count";
+  // Nobody wants to click fourteen times: big numbers are for reading practice only.
+  const top = Math.min(roundMode === "count" ? limit : Math.min(limit, 10), maxNumber(counter));
+  const numbers = Array.from({ length: top }, (_, i) => i + 1);
   const number = weightedPick(numbers, n => numberWeight(counter, n, stats[counter.counter], roundMode), rng);
-  if (mode === "mix" && roundMode === "count" && hasNativeStem(counter, number) && rng() < 0.35) roundMode = "order";
+  if (mode === "mix" && roundMode === "count" && !counter.abstract && number <= 10 && hasNativeStem(counter, number) && rng() < 0.35) roundMode = "order";
   const entry = counter.entries[Math.floor(rng() * counter.entries.length)];
   return { mode: roundMode, counter, number, entry };
 }
@@ -226,7 +274,7 @@ export function buildShelf({ data, round, activeCounters, size = 8, rng = Math.r
 
   if (round.mode === "order") {
     // The customer names the item, so the shelf just needs other things to choose from.
-    for (const entry of shuffle(data.allItems, rng)) {
+    for (const entry of shuffle(data.shelfItems, rng)) {
       if (shelf.length >= size) break;
       if (!shelf.some(e => sameId(e, entry))) shelf.push(entry);
     }
@@ -235,13 +283,13 @@ export function buildShelf({ data, round, activeCounters, size = 8, rng = Math.r
 
   // One more correct option when available, so the answer is not always a single tile.
   const otherCorrect = shuffle(
-    data.allItems.filter(e => itemAccepts(e, key) && !sameId(e, round.entry)),
+    data.shelfItems.filter(e => itemAccepts(e, key) && !sameId(e, round.entry)),
     rng
   );
   if (otherCorrect.length && rng() < 0.7) shelf.push(otherCorrect[0]);
 
   const activeKeys = new Set((activeCounters || data.counters).map(c => c.counter));
-  const wrong = data.allItems.filter(e => !itemAccepts(e, key));
+  const wrong = data.shelfItems.filter(e => !itemAccepts(e, key));
   const confusable = new Set(round.counter.confusable || []);
   const tiers = [
     wrong.filter(e => confusable.has(e.counter.counter) && activeKeys.has(e.counter.counter)),
@@ -278,6 +326,15 @@ export function checkServe(round, tray) {
 
 /** Plausible-but-wrong readings produced by mis-applying sound changes (e.g. さんほん, さんぽん). */
 export function soundAlikeDistractors(counter, number) {
+  if (number > 10) {
+    // Above ten, the mistakes are the last digit's mistakes (じゅうさんほん), plus keeping
+    // a stand-alone reading where it no longer applies (じゅうひとり).
+    const digit = number % 10 || 10;
+    const prefix = tensPrefix(number);
+    const accepted = new Set(readingsFor(counter, number));
+    const tails = [...soundAlikeDistractors(counter, digit), primaryReading(counter, digit)];
+    return [...new Set([naiveReading(counter, number), ...tails.map(tail => prefix + tail)])].filter(r => !accepted.has(r));
+  }
   const base = counter.reading;
   const first = base[0];
   const rest = base.slice(1);
@@ -299,8 +356,8 @@ export function soundAlikeDistractors(counter, number) {
  */
 export function buildChoices({ data, round, size = 4, rng = Math.random }) {
   const { counter, number, entry } = round;
-  const forced = Boolean(counter.generic); // the question says which counter to use
-  const accepted = new Set(forced ? readingsFor(counter, number) : acceptedReadingsForItem(data, entry, number));
+  const forced = isForced(round); // the question says which counter to use
+  const accepted = new Set(roundReadings(data, round));
   const correct = { reading: primaryReading(counter, number), counterKey: counter.counter, correct: true };
   const choices = [correct];
   const used = new Set(accepted);
@@ -317,17 +374,22 @@ export function buildChoices({ data, round, size = 4, rng = Math.random }) {
   ordered.slice(0, forced ? 1 : Math.min(2, size - 2)).forEach(r => add(r, counter.counter));
 
   // Native readings (ひとつ/ふたつ, みっつ/むっつ, ひとり/ふたり) are easy to mix up with each other.
-  if (forced || hasNativeStem(counter, number)) {
-    const mixUps = shuffle(
-      Array.from({ length: 10 }, (_, i) => i + 1).filter(n => n !== number && (forced || hasNativeStem(counter, n))),
-      rng
-    );
-    mixUps.slice(0, forced ? size : 1).forEach(n => add(primaryReading(counter, n), counter.counter));
+  const sameCounterOnly = counter.generic || counter.abstract;
+  if (sameCounterOnly || hasNativeStem(counter, number)) {
+    const native = Array.from({ length: 10 }, (_, i) => i + 1).filter(n => n !== number && hasNativeStem(counter, n));
+    shuffle(native, rng).slice(0, sameCounterOnly ? 2 : 1).forEach(n => add(primaryReading(counter, n), counter.counter));
+  }
+  if (sameCounterOnly) {
+    // No other counter makes sense here, so fill up with this counter's readings for nearby numbers.
+    const top = maxNumber(counter);
+    const nearby = shuffle([-3, -2, -1, 1, 2, 3].map(d => number + d).filter(n => n >= 1 && n <= top), rng);
+    const rest = shuffle(Array.from({ length: Math.min(top, 20) }, (_, i) => i + 1).filter(n => n !== number), rng);
+    [...nearby, ...rest].forEach(n => add(primaryReading(counter, n), counter.counter));
   }
 
   // Fill the rest with "wrong counter" options, easily confused counters first.
   const acceptedKeys = acceptedCounterKeys(entry);
-  const others = data.counters.filter(c => !c.generic && !acceptedKeys.includes(c.counter));
+  const others = data.counters.filter(c => !c.generic && !c.abstract && !acceptedKeys.includes(c.counter) && number <= maxNumber(c));
   const confusable = new Set(counter.confusable || []);
   const preferred = shuffle(others.filter(c => confusable.has(c.counter)), rng);
   const remaining = shuffle(others.filter(c => !confusable.has(c.counter)), rng);
@@ -430,17 +492,50 @@ export function checkTypedAnswer(text, acceptedReadings) {
 //   read:本:reg  its regular readings (にほん, よんほん…): one card, a random number each time
 //   read:本:3    one card per irregular reading (さんぼん)
 // Cards live in Leitner boxes; a card in box n comes back after BOX_HOURS[n].
-export const BOX_HOURS = [0, 4, 24, 72, 168, 384, 840];
+export const BOX_HOURS = [0, 4, 24, 96, 240, 600, 1440, 3600];
 const HOUR = 3600 * 1000;
 const NUMBERS = Array.from({ length: 10 }, (_, i) => i + 1);
 
-export function cardIds(counter) {
+//   read:本:teens  numbers above ten (じゅういっぽん, にじゅっぽん): one card, a random number each time
+//   read:歳:20     one card per special reading above ten (はたち)
+// The last two are "advanced": they only appear once the counter's basic cards have stuck.
+
+/** Numbers above ten with a reading of their own in the data (20日 はつか, 20歳 はたち). */
+export function specialNumbers(counter) {
+  return Object.keys(counter.readings).map(Number).filter(n => n > 10).sort((a, b) => a - b);
+}
+
+/** Numbers used to practise "above ten": the teens, 20, and a few bigger ones. */
+export function bigNumbers(counter) {
+  const special = new Set(specialNumbers(counter));
+  return [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 24, 30, 40].filter(n => n <= maxNumber(counter) && !special.has(n));
+}
+
+export function basicCardIds(counter) {
   const key = counter.counter;
   const ids = [];
-  if (!counter.generic) ids.push(`use:${key}`);
+  if (!counter.generic && !counter.abstract) ids.push(`use:${key}`);
   if (NUMBERS.some(n => !isIrregular(counter, n))) ids.push(`read:${key}:reg`);
   NUMBERS.filter(n => isIrregular(counter, n)).forEach(n => ids.push(`read:${key}:${n}`));
   return ids;
+}
+
+export function advancedCardIds(counter) {
+  const key = counter.counter;
+  const ids = [];
+  // Above ten is only worth a card where the reading changes somewhere (じゅういちまい is no surprise).
+  if (bigNumbers(counter).length && NUMBERS.some(n => isIrregular(counter, n))) ids.push(`read:${key}:teens`);
+  specialNumbers(counter).forEach(n => ids.push(`read:${key}:${n}`));
+  return ids;
+}
+
+export function cardIds(counter) {
+  return [...basicCardIds(counter), ...advancedCardIds(counter)];
+}
+
+/** Advanced cards open up once every basic card of the counter has been recalled at least once. */
+export function advancedReady(counter, progress) {
+  return basicCardIds(counter).every(id => progress.cards[id] && progress.cards[id].box >= 2);
 }
 
 export function parseCard(id) {
@@ -452,6 +547,9 @@ export function parseCard(id) {
 export function cardForRound(round) {
   const key = round.counter.counter;
   if (round.mode === "serve") return `use:${key}`;
+  if (round.number > 10) {
+    return specialNumbers(round.counter).includes(round.number) ? `read:${key}:${round.number}` : `read:${key}:teens`;
+  }
   return isIrregular(round.counter, round.number) ? `read:${key}:${round.number}` : `read:${key}:reg`;
 }
 
@@ -504,9 +602,17 @@ export function nextNewCard(data, progress, { pending = new Set(), pendingUnlock
   for (const key of [...progress.unlocked, ...pendingUnlocks]) {
     const counter = data.byKey.get(key);
     if (!counter) continue;
-    const cardId = cardIds(counter).find(id => !progress.cards[id] && !pending.has(id));
+    const cardId = basicCardIds(counter).find(id => !progress.cards[id] && !pending.has(id));
     if (cardId) return { cardId, unlock: null };
   }
+  // Nothing basic left in the counters under way: deepen one that has stuck…
+  for (const key of progress.unlocked) {
+    const counter = data.byKey.get(key);
+    if (!counter || !advancedReady(counter, progress)) continue;
+    const cardId = advancedCardIds(counter).find(id => !progress.cards[id] && !pending.has(id));
+    if (cardId) return { cardId, unlock: null };
+  }
+  // …or start the next counter.
   const next = lockedCounters(data, progress, pendingUnlocks)[0];
   return next ? { cardId: cardIds(next)[0], unlock: next.counter } : null;
 }
@@ -525,13 +631,16 @@ export function nextDueTime(progress, now) {
  * Plan a shift: reviews that are due, then a little new material, then extra practice to fill up.
  * @returns [{kind: "lesson", counterKey} | {kind: "card", cardId, isNew, early}]
  */
-export function buildShift({ data, progress, now, size = 12, maxNew = 5, maxUnlocks = 2, rng = Math.random }) {
-  const due = shuffle(dueCards(progress, now).slice(0, size), rng);
+export function buildShift({ data, progress, now, size = 12, maxNew = 5, minNew = 3, maxUnlocks = 2, rng = Math.random }) {
+  const allDue = dueCards(progress, now);
+  const due = shuffle(allDue.slice(0, size), rng);
   const steps = due.map(cardId => ({ kind: "card", cardId, isNew: false, early: false }));
 
-  // Don't pile new material onto a learner who is still shaky on what they have.
+  // Don't pile new material onto a learner who is still shaky on what they have, or far behind
+  // on reviews. Otherwise every shift moves forward a little, even on a busy review day.
   const shaky = Object.values(progress.cards).filter(card => card.box <= 1).length;
-  let budget = shaky > 10 ? 0 : Math.min(maxNew, size - due.length);
+  const behind = allDue.length > 2 * size;
+  let budget = shaky > 10 || behind ? 0 : Math.max(minNew, Math.min(maxNew, size - due.length));
   const pending = new Set();
   const pendingUnlocks = [];
   while (budget > 0) {
@@ -607,8 +716,11 @@ export function roundForCard(data, cardId, rng = Math.random) {
   if (which === "reg") {
     const regular = NUMBERS.filter(n => !isIrregular(counter, n));
     number = regular[Math.floor(rng() * regular.length)];
+  } else if (which === "teens") {
+    number = weightedPick(bigNumbers(counter), n => (isIrregular(counter, n) ? 3 : 1), rng);
   }
-  const mode = hasNativeStem(counter, number) && rng() < 0.4 ? "order" : "count";
+  const canOrder = !counter.abstract && number <= 10 && hasNativeStem(counter, number);
+  const mode = canOrder && rng() < 0.4 ? "order" : "count";
   return { mode, counter, number, entry, cardId };
 }
 

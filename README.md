@@ -1,14 +1,27 @@
 # Maru's Counter Shop
 
-A browser game for practicing **Japanese counters** (助数詞) with Maru the red panda.
+A browser game for practicing **Japanese counters** (助数詞) with Maru the red panda: 57 counters in eight chapters, from 個 and 本 to 泊, 艘 and 貫, including readings above ten.
 
 ## How it works
 
 **Shifts** are the heart of the game. A shift is a few minutes of customers in Maru's shop:
 
-- Maru introduces counters **one at a time**, each with a short lesson (what it counts, readings 1–10, examples), starting with the most useful ones (個, 本, 枚, 人, つ…).
+- Maru introduces counters **one at a time**, each with a short lesson (what it counts, readings 1–10, examples), chapter by chapter:
+
+  | Chapter | Counters |
+  | --- | --- |
+  | First steps | 個 本 枚 人 つ |
+  | Around the shop | 冊 台 匹 杯 円 |
+  | Clock and calendar | 時 分 日 月 歳 回 階 |
+  | Animals and clothes | 頭 羽 足 着 |
+  | Food and drink | 缶 皿 切れ 袋 箱 膳 粒 玉 串 貫 束 |
+  | How long, how often | 年 か月 週間 時間 泊 番 |
+  | Buildings and vehicles | 軒 棟 機 両 隻 艘 脚 |
+  | Paper, culture and more | 通 部 件 点 曲 問 輪 組 体 発 滴 名 |
 - Every counter is broken into small things to remember: what it is used for, its regular readings, and one card for **each irregular reading** (いっぽん, さんぼん, ろっぽん…).
-- Those cards are scheduled with **spaced repetition**: something you get right comes back after 4 hours, then a day, 3 days, a week, and so on; something you miss comes back later in the same shift and again soon after.
+- Once the basics of a counter have stuck, it deepens with **numbers above ten** (じゅういっぽん, じゅうよにん, にじゅっぷん) and special readings such as 20日 はつか and 20歳 はたち.
+- Those cards are scheduled with **spaced repetition**: something you get right comes back after 4 hours, then a day, 4 days, 10 days, and so on up to several months; something you miss comes back later in the same shift and again soon after.
+- The whole course is a little over 300 cards. At one shift a day that is roughly half a year from zero; faster if you already know some of it or play more than one shift.
 - A shift mixes the reviews that are due with a little new material. If you already know something the first time you see it, it skips ahead and Maru moves on faster.
 - The home screen shows what is ready for review, your day streak, and 0–3 stars per counter.
 
@@ -18,6 +31,7 @@ Customers ask three kinds of questions:
 | --- | --- | --- |
 | 🛒 **Serve** | A customer orders with only a number and a counter (「3本ください」). Put that many matching items on the counter. | Knowing what each counter is used for |
 | 🧾 **Count** | Items are on the counter. Pick, or type, the right way to say how many there are (「鉛筆、さんぼんですね」). | Choosing the counter and producing the reading, including sound changes |
+| 🔤 **Read** | For counters with nothing to put on a counter (時, 日, 歳, 円…): you see 「3日です」 and choose or type the reading. | みっか, よじ, はたち, じゅうよっか |
 | 👂 **Order** | The customer names the item and says the amount with a native number (「りんごをみっつください」, 「お客さん、ふたり」). Put exactly that on the counter. | Recognising ひとつ…とお, ひとり, ふたり and friends |
 
 Other features:
@@ -65,6 +79,7 @@ Everything the game knows lives in `data/counters.json`. Each counter looks like
 {
   "counter": "本",
   "reading": "ほん",
+  "group": "First steps",
   "category": "long, thin objects",
   "note": "Shown as a hint and in the counter guide.",
   "confusable": ["枚", "個", "缶"],
@@ -75,6 +90,7 @@ Everything the game knows lives in `data/counters.json`. Each counter looks like
   "items": [
     { "id": "pencil", "label_en": "pencil", "label_ja": "鉛筆", "kana": "えんぴつ",
       "image": "data/assets/items/pencil/pencil.png" },
+    { "id": "umbrella", "label_en": "umbrella", "label_ja": "傘", "kana": "かさ", "emoji": "☂️" },
     { "id": "soda_can", "label_en": "can of soda", "label_ja": "缶ジュース", "kana": "かんジュース",
       "image": "data/assets/items/soda_can/soda_can.png", "also": ["個"] }
   ]
@@ -84,9 +100,17 @@ Everything the game knows lives in `data/counters.json`. Each counter looks like
 - `readings` needs an entry for every number from 1 to 10. Each is a list: the standard reading first, then any other reading that should be accepted (they are never offered as wrong answers).
 - `confusable` lists counters learners mix this one up with; their items are preferred as distractors.
 - `also` on an item lists other counters that are also correct for it. Such an item is accepted for those counters and never used as a wrong option for them.
-- Item `id`s must be unique across the whole file.
+- An item needs either an `image` or an `emoji`. Emoji are stand-ins for artwork that does not exist yet: to replace one, add a PNG under `data/assets/items/` and swap `emoji` for `image`.
+- Item `id`s and `label_ja`s must be unique across the whole file.
+- `group` is the chapter shown on the home screen.
+- **Above ten** readings are built automatically from the last digit (13本 = じゅう + さんぼん, 20本 = に + じゅっぽん). Three optional fields adjust that:
+  - `max`: the highest number the counter is used with (つ and the ひと〜/ふた〜 counters stop at 10, 時 and 月 at 12, 日 at 31).
+  - `compound`: the reading a digit takes inside a bigger number when it differs from the stand-alone one (11人 is じゅう + いちにん, not じゅうひとり).
+  - extra keys in `readings` for numbers with a reading of their own (`"20": ["はつか"]`). Each gets its own lesson card.
+- `"abstract": true` marks counters with nothing to hand over a shop counter (time, dates, age, money). They are practised as reading questions only; their single item is just the picture and label shown with the number.
+- A counter with an empty `items` list borrows every item that lists it under `also` (つ, and 名 for people).
 - The order of the counters in the file is the order Maru teaches them in.
-- A counter with `"generic": true` (つ) has no items of its own: it borrows every item that lists it under `also`, is never offered as a wrong answer, and `notFor` lists the counters whose items it must not be used for (people and animals).
+- A counter with `"generic": true` (つ) is never offered as a wrong answer, and `notFor` lists the counters whose items it must not be used for (people and animals).
 - Lesson cards are derived automatically: a reading counts as irregular when it differs from plain number + counter reading.
 
 `npm test` checks the file for missing readings, missing images and ambiguous questions.
