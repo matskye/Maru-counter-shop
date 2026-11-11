@@ -1,9 +1,10 @@
 {
-  "meta": { "version": 4 },
+  "meta": { "version": 6 },
   "counters": [
     {
       "counter": "個",
       "reading": "こ",
+      "group": "First steps",
       "category": "small, compact objects",
       "note": "The general-purpose counter for small things: fruit, eggs, balls. When in doubt, 個 is often acceptable.",
       "confusable": ["本", "枚", "缶", "袋"],
@@ -20,20 +21,27 @@
         "10": ["じゅっこ", "じっこ"]
       },
       "items": [
-        {"id": "apple", "label_en": "apple", "label_ja": "りんご", "kana": "りんご", "image": "data/assets/items/apple/apple.png"},
-        {"id": "egg", "label_en": "egg", "label_ja": "卵", "kana": "たまご", "image": "data/assets/items/egg/egg.png"},
-        {"id": "orange", "label_en": "orange", "label_ja": "オレンジ", "kana": "オレンジ", "image": "data/assets/items/orange/orange.png"},
-        {"id": "soccer_ball", "label_en": "soccer ball", "label_ja": "サッカーボール", "kana": "サッカーボール", "image": "data/assets/items/soccer_ball/soccer_ball.png"},
-        {"id": "basketball", "label_en": "basketball", "label_ja": "バスケットボール", "kana": "バスケットボール", "image": "data/assets/items/basket_ball/basket_ball.png"},
-        {"id": "tennis_ball", "label_en": "tennis ball", "label_ja": "テニスボール", "kana": "テニスボール", "image": "data/assets/items/tennis_ball/tennis_ball.png"},
-        {"id": "hat", "label_en": "hat", "label_ja": "帽子", "kana": "ぼうし", "image": "data/assets/items/hat/hat.png"}
+        {"id": "apple", "label_en": "apple", "label_ja": "りんご", "kana": "りんご", "image": "data/assets/items/apple/apple.png", "also": ["つ"]},
+        {"id": "egg", "label_en": "egg", "label_ja": "卵", "kana": "たまご", "image": "data/assets/items/egg/egg.png", "also": ["つ"]},
+        {"id": "orange", "label_en": "orange", "label_ja": "オレンジ", "kana": "オレンジ", "image": "data/assets/items/orange/orange.png", "also": ["つ"]},
+        {"id": "soccer_ball", "label_en": "soccer ball", "label_ja": "サッカーボール", "kana": "サッカーボール", "image": "data/assets/items/soccer_ball/soccer_ball.png", "also": ["つ"]},
+        {"id": "basketball", "label_en": "basketball", "label_ja": "バスケットボール", "kana": "バスケットボール", "image": "data/assets/items/basket_ball/basket_ball.png", "also": ["つ"]},
+        {"id": "tennis_ball", "label_en": "tennis ball", "label_ja": "テニスボール", "kana": "テニスボール", "image": "data/assets/items/tennis_ball/tennis_ball.png", "also": ["つ"]},
+        {"id": "hat", "label_en": "hat", "label_ja": "帽子", "kana": "ぼうし", "image": "data/assets/items/hat/hat.png", "also": ["つ"]},
+        {"id": "onigiri", "label_en": "rice ball", "label_ja": "おにぎり", "kana": "おにぎり", "emoji": "🍙", "also": ["つ"]},
+        {"id": "donut", "label_en": "doughnut", "label_ja": "ドーナツ", "kana": "ドーナツ", "emoji": "🍩", "also": ["つ"]},
+        {"id": "tomato", "label_en": "tomato", "label_ja": "トマト", "kana": "トマト", "emoji": "🍅", "also": ["つ"]},
+        {"id": "lemon", "label_en": "lemon", "label_ja": "レモン", "kana": "レモン", "emoji": "🍋", "also": ["つ"]},
+        {"id": "peach", "label_en": "peach", "label_ja": "桃", "kana": "もも", "emoji": "🍑", "also": ["つ"]},
+        {"id": "soap", "label_en": "bar of soap", "label_ja": "石けん", "kana": "せっけん", "emoji": "🧼", "also": ["つ"]}
       ]
     },
     {
       "counter": "本",
       "reading": "ほん",
+      "group": "First steps",
       "category": "long, thin objects",
-      "note": "Pencils, bottles, carrots, umbrellas, trees. The reading shifts between ほん, ぼん and ぽん.",
+      "note": "Pencils, bottles, umbrellas, bananas, trees. The reading shifts between ほん, ぼん and ぽん.",
       "confusable": ["枚", "個", "缶"],
       "readings": {
         "1": ["いっぽん"],
@@ -50,14 +58,20 @@
       "items": [
         {"id": "pencil", "label_en": "pencil", "label_ja": "鉛筆", "kana": "えんぴつ", "image": "data/assets/items/pencil/pencil.png"},
         {"id": "bottle", "label_en": "bottle", "label_ja": "瓶", "kana": "びん", "image": "data/assets/items/bottle/bottle.png"},
-        {"id": "carrot", "label_en": "carrot", "label_ja": "にんじん", "kana": "にんじん", "image": "data/assets/items/carrot/carrot.png"}
+        {"id": "carrot", "label_en": "carrot", "label_ja": "にんじん", "kana": "にんじん", "image": "data/assets/items/carrot/carrot.png"},
+        {"id": "umbrella", "label_en": "umbrella", "label_ja": "傘", "kana": "かさ", "emoji": "☂️"},
+        {"id": "banana", "label_en": "banana", "label_ja": "バナナ", "kana": "バナナ", "emoji": "🍌"},
+        {"id": "tree", "label_en": "tree", "label_ja": "木", "kana": "き", "emoji": "🌲"},
+        {"id": "pen", "label_en": "pen", "label_ja": "ペン", "kana": "ペン", "emoji": "🖊️"},
+        {"id": "cucumber", "label_en": "cucumber", "label_ja": "きゅうり", "kana": "きゅうり", "emoji": "🥒"}
       ]
     },
     {
       "counter": "枚",
       "reading": "まい",
+      "group": "First steps",
       "category": "flat, thin objects",
-      "note": "Paper, CDs, plates, tickets, and also shirts. Completely regular readings.",
+      "note": "Paper, tickets, plates, banknotes, and also shirts. Completely regular readings.",
       "confusable": ["冊", "着", "本"],
       "readings": {
         "1": ["いちまい"],
@@ -74,15 +88,72 @@
       "items": [
         {"id": "paper", "label_en": "sheet of paper", "label_ja": "紙", "kana": "かみ", "image": "data/assets/items/paper/paper.png"},
         {"id": "cd", "label_en": "CD", "label_ja": "CD", "kana": "シーディー", "image": "data/assets/items/cd/cd.png"},
-        {"id": "shirt", "label_en": "shirt", "label_ja": "シャツ", "kana": "シャツ", "image": "data/assets/items/shirt/shirt.png", "also": ["着"]}
+        {"id": "shirt", "label_en": "shirt", "label_ja": "シャツ", "kana": "シャツ", "image": "data/assets/items/shirt/shirt.png", "also": ["着"]},
+        {"id": "ticket", "label_en": "ticket", "label_ja": "切符", "kana": "きっぷ", "emoji": "🎫"},
+        {"id": "cookie", "label_en": "cookie", "label_ja": "クッキー", "kana": "クッキー", "emoji": "🍪", "also": ["個", "つ"]},
+        {"id": "banknote", "label_en": "banknote", "label_ja": "お札", "kana": "おさつ", "emoji": "💴"},
+        {"id": "plate", "label_en": "plate", "label_ja": "お皿", "kana": "おさら", "emoji": "🍽️"}
       ]
+    },
+    {
+      "counter": "人",
+      "reading": "にん",
+      "group": "First steps",
+      "category": "people",
+      "note": "1 and 2 use native readings: ひとり, ふたり. Watch out for 4: よにん. Above ten the native readings disappear: 11人 is じゅういちにん.",
+      "compound": {"1": ["いちにん"], "2": ["ににん"]},
+      "confusable": ["匹", "頭"],
+      "readings": {
+        "1": ["ひとり"],
+        "2": ["ふたり"],
+        "3": ["さんにん"],
+        "4": ["よにん"],
+        "5": ["ごにん"],
+        "6": ["ろくにん"],
+        "7": ["ななにん", "しちにん"],
+        "8": ["はちにん"],
+        "9": ["きゅうにん", "くにん"],
+        "10": ["じゅうにん"]
+      },
+      "items": [
+        {"id": "person", "label_en": "customer", "label_ja": "お客さん", "kana": "おきゃくさん", "image": "data/assets/items/person/person.png", "also": ["名"]},
+        {"id": "baby", "label_en": "baby", "label_ja": "赤ちゃん", "kana": "あかちゃん", "emoji": "👶", "also": ["名"]},
+        {"id": "child", "label_en": "child", "label_ja": "子ども", "kana": "こども", "emoji": "👧", "also": ["名"]},
+        {"id": "grandma", "label_en": "grandmother", "label_ja": "おばあさん", "kana": "おばあさん", "emoji": "👵", "also": ["名"]},
+        {"id": "police", "label_en": "police officer", "label_ja": "警察官", "kana": "けいさつかん", "emoji": "👮", "also": ["名"]}
+      ]
+    },
+    {
+      "counter": "つ",
+      "reading": "つ",
+      "group": "First steps",
+      "category": "almost anything (general counter)",
+      "note": "The native Japanese numbers. They work for most things that are not people or animals, but only up to ten, and 10 is just とお.",
+      "generic": true,
+      "max": 10,
+      "notFor": ["人", "名", "匹", "頭", "羽"],
+      "confusable": [],
+      "readings": {
+        "1": ["ひとつ"],
+        "2": ["ふたつ"],
+        "3": ["みっつ"],
+        "4": ["よっつ"],
+        "5": ["いつつ"],
+        "6": ["むっつ"],
+        "7": ["ななつ"],
+        "8": ["やっつ"],
+        "9": ["ここのつ"],
+        "10": ["とお"]
+      },
+      "items": []
     },
     {
       "counter": "冊",
       "reading": "さつ",
+      "group": "Around the shop",
       "category": "books and bound volumes",
-      "note": "Books, magazines, notebooks. Not 本, even though 本 means “book”!",
-      "confusable": ["枚", "本"],
+      "note": "Books, magazines, notebooks, dictionaries. Not 本, even though 本 means “book”!",
+      "confusable": ["枚", "本", "部"],
       "readings": {
         "1": ["いっさつ"],
         "2": ["にさつ"],
@@ -98,15 +169,18 @@
       "items": [
         {"id": "book", "label_en": "book", "label_ja": "本", "kana": "ほん", "image": "data/assets/items/book/book.png"},
         {"id": "magazine", "label_en": "magazine", "label_ja": "雑誌", "kana": "ざっし", "image": "data/assets/items/magazine/magazine.png"},
-        {"id": "notebook", "label_en": "notebook", "label_ja": "ノート", "kana": "ノート", "image": "data/assets/items/notebook/notebook.png"}
+        {"id": "notebook", "label_en": "notebook", "label_ja": "ノート", "kana": "ノート", "image": "data/assets/items/notebook/notebook.png"},
+        {"id": "dictionary", "label_en": "dictionary", "label_ja": "辞書", "kana": "じしょ", "emoji": "📕"},
+        {"id": "diary", "label_en": "diary", "label_ja": "日記", "kana": "にっき", "emoji": "📔"}
       ]
     },
     {
       "counter": "台",
       "reading": "だい",
+      "group": "Around the shop",
       "category": "machines and vehicles",
-      "note": "Cars, computers, TVs, bicycles, game consoles. Completely regular readings.",
-      "confusable": ["個", "軒"],
+      "note": "Cars, bicycles, computers, TVs, cameras, pianos. Completely regular readings.",
+      "confusable": ["個", "軒", "機"],
       "readings": {
         "1": ["いちだい"],
         "2": ["にだい"],
@@ -122,36 +196,20 @@
       "items": [
         {"id": "car", "label_en": "car", "label_ja": "車", "kana": "くるま", "image": "data/assets/items/car/car.png"},
         {"id": "computer", "label_en": "computer", "label_ja": "パソコン", "kana": "パソコン", "image": "data/assets/items/computer/computer.png"},
-        {"id": "game_console", "label_en": "game console", "label_ja": "ゲーム機", "kana": "ゲームき", "image": "data/assets/items/game_console/game_console.png"}
-      ]
-    },
-    {
-      "counter": "人",
-      "reading": "にん",
-      "category": "people",
-      "note": "1 and 2 use native readings: ひとり, ふたり. Watch out for 4: よにん, not よんにん.",
-      "confusable": ["匹", "頭"],
-      "readings": {
-        "1": ["ひとり"],
-        "2": ["ふたり"],
-        "3": ["さんにん"],
-        "4": ["よにん"],
-        "5": ["ごにん"],
-        "6": ["ろくにん"],
-        "7": ["しちにん", "ななにん"],
-        "8": ["はちにん"],
-        "9": ["きゅうにん", "くにん"],
-        "10": ["じゅうにん"]
-      },
-      "items": [
-        {"id": "person", "label_en": "customer", "label_ja": "お客さん", "kana": "おきゃくさん", "image": "data/assets/items/person/person.png"}
+        {"id": "game_console", "label_en": "game console", "label_ja": "ゲーム機", "kana": "ゲームき", "image": "data/assets/items/game_console/game_console.png"},
+        {"id": "bicycle", "label_en": "bicycle", "label_ja": "自転車", "kana": "じてんしゃ", "emoji": "🚲"},
+        {"id": "tv", "label_en": "TV", "label_ja": "テレビ", "kana": "テレビ", "emoji": "📺"},
+        {"id": "bus", "label_en": "bus", "label_ja": "バス", "kana": "バス", "emoji": "🚌"},
+        {"id": "camera", "label_en": "camera", "label_ja": "カメラ", "kana": "カメラ", "emoji": "📷"},
+        {"id": "piano", "label_en": "piano", "label_ja": "ピアノ", "kana": "ピアノ", "emoji": "🎹"}
       ]
     },
     {
       "counter": "匹",
       "reading": "ひき",
+      "group": "Around the shop",
       "category": "small animals",
-      "note": "Cats, dogs, fish, insects. The reading shifts between ひき, びき and ぴき.",
+      "note": "Cats, dogs, fish, frogs, insects. The reading shifts between ひき, びき and ぴき.",
       "confusable": ["頭", "羽"],
       "readings": {
         "1": ["いっぴき"],
@@ -168,14 +226,248 @@
       "items": [
         {"id": "cat", "label_en": "cat", "label_ja": "猫", "kana": "ねこ", "image": "data/assets/items/cat/cat.png"},
         {"id": "dog", "label_en": "dog", "label_ja": "犬", "kana": "いぬ", "image": "data/assets/items/dog/dog.png"},
-        {"id": "fish", "label_en": "fish", "label_ja": "魚", "kana": "さかな", "image": "data/assets/items/fish/fish.png"}
+        {"id": "fish", "label_en": "fish", "label_ja": "魚", "kana": "さかな", "image": "data/assets/items/fish/fish.png"},
+        {"id": "mouse", "label_en": "mouse", "label_ja": "ねずみ", "kana": "ねずみ", "emoji": "🐭"},
+        {"id": "frog", "label_en": "frog", "label_ja": "かえる", "kana": "かえる", "emoji": "🐸"},
+        {"id": "monkey", "label_en": "monkey", "label_ja": "猿", "kana": "さる", "emoji": "🐒"},
+        {"id": "ant", "label_en": "ant", "label_ja": "あり", "kana": "あり", "emoji": "🐜"}
+      ]
+    },
+    {
+      "counter": "杯",
+      "reading": "はい",
+      "group": "Around the shop",
+      "category": "cupfuls, glassfuls and bowlfuls",
+      "note": "Drinks in cups or glasses, bowls of ramen or rice. Oddly, squid and crabs are counted with 杯 too. The reading shifts between はい, ばい and ぱい.",
+      "confusable": ["缶", "本", "皿"],
+      "readings": {
+        "1": ["いっぱい"],
+        "2": ["にはい"],
+        "3": ["さんばい"],
+        "4": ["よんはい"],
+        "5": ["ごはい"],
+        "6": ["ろっぱい"],
+        "7": ["ななはい", "しちはい"],
+        "8": ["はっぱい", "はちはい"],
+        "9": ["きゅうはい"],
+        "10": ["じゅっぱい", "じっぱい"]
+      },
+      "items": [
+        {"id": "tea_cup", "label_en": "cup of tea", "label_ja": "お茶", "kana": "おちゃ", "image": "data/assets/items/tea_cup/tea_cup.png"},
+        {"id": "coffee_cup", "label_en": "cup of coffee", "label_ja": "コーヒー", "kana": "コーヒー", "image": "data/assets/items/coffee_cup/coffee_cup.png"},
+        {"id": "beer_glass", "label_en": "glass of beer", "label_ja": "ビール", "kana": "ビール", "image": "data/assets/items/beer_glass/beer_glass.png"},
+        {"id": "ramen", "label_en": "bowl of ramen", "label_ja": "ラーメン", "kana": "ラーメン", "emoji": "🍜"},
+        {"id": "wine", "label_en": "glass of wine", "label_ja": "ワイン", "kana": "ワイン", "emoji": "🍷"},
+        {"id": "milk", "label_en": "glass of milk", "label_ja": "牛乳", "kana": "ぎゅうにゅう", "emoji": "🥛"},
+        {"id": "squid", "label_en": "squid", "label_ja": "いか", "kana": "いか", "emoji": "🦑", "also": ["匹"]},
+        {"id": "crab", "label_en": "crab", "label_ja": "かに", "kana": "かに", "emoji": "🦀", "also": ["匹"]}
+      ]
+    },
+    {
+      "counter": "円",
+      "reading": "えん",
+      "group": "Around the shop",
+      "category": "yen",
+      "note": "Prices. Regular except 4円, which is よえん.",
+      "abstract": true,
+      "confusable": [],
+      "readings": {
+        "1": ["いちえん"],
+        "2": ["にえん"],
+        "3": ["さんえん"],
+        "4": ["よえん"],
+        "5": ["ごえん"],
+        "6": ["ろくえん"],
+        "7": ["ななえん", "しちえん"],
+        "8": ["はちえん"],
+        "9": ["きゅうえん"],
+        "10": ["じゅうえん"]
+      },
+      "items": [
+        {"id": "ctx_yen", "label_en": "price in yen", "label_ja": "値段", "kana": "ねだん", "emoji": "💴"}
+      ]
+    },
+    {
+      "counter": "時",
+      "reading": "じ",
+      "group": "Clock and calendar",
+      "category": "o'clock",
+      "note": "Hours on the clock. Three to remember: よじ, しちじ, くじ.",
+      "abstract": true,
+      "max": 12,
+      "confusable": [],
+      "readings": {
+        "1": ["いちじ"],
+        "2": ["にじ"],
+        "3": ["さんじ"],
+        "4": ["よじ"],
+        "5": ["ごじ"],
+        "6": ["ろくじ"],
+        "7": ["しちじ", "ななじ"],
+        "8": ["はちじ"],
+        "9": ["くじ"],
+        "10": ["じゅうじ"]
+      },
+      "items": [
+        {"id": "ctx_oclock", "label_en": "time of day", "label_ja": "時刻", "kana": "じこく", "emoji": "🕒"}
+      ]
+    },
+    {
+      "counter": "分",
+      "reading": "ふん",
+      "group": "Clock and calendar",
+      "category": "minutes",
+      "note": "Minutes. Switches between ふん and ぷん: いっぷん, さんぷん, よんぷん, ろっぷん, はっぷん, じゅっぷん.",
+      "abstract": true,
+      "max": 59,
+      "confusable": [],
+      "readings": {
+        "1": ["いっぷん"],
+        "2": ["にふん"],
+        "3": ["さんぷん"],
+        "4": ["よんぷん"],
+        "5": ["ごふん"],
+        "6": ["ろっぷん"],
+        "7": ["ななふん", "しちふん"],
+        "8": ["はっぷん", "はちふん"],
+        "9": ["きゅうふん"],
+        "10": ["じゅっぷん", "じっぷん"]
+      },
+      "items": [
+        {"id": "ctx_minutes", "label_en": "minutes", "label_ja": "分", "kana": "ふん", "emoji": "⏱️"}
+      ]
+    },
+    {
+      "counter": "日",
+      "reading": "にち",
+      "group": "Clock and calendar",
+      "category": "days of the month",
+      "note": "The 1st to the 10th use native readings (ついたち, ふつか, みっか…). After that it is regular 〜にち, except 14日 じゅうよっか, 20日 はつか and 24日 にじゅうよっか.",
+      "abstract": true,
+      "max": 31,
+      "compound": {"1": ["いちにち"], "2": ["ににち"], "3": ["さんにち"], "5": ["ごにち"], "6": ["ろくにち"], "7": ["しちにち"], "8": ["はちにち"], "9": ["くにち"], "10": ["じゅうにち"]},
+      "confusable": [],
+      "readings": {
+        "1": ["ついたち", "いちにち"],
+        "2": ["ふつか"],
+        "3": ["みっか"],
+        "4": ["よっか"],
+        "5": ["いつか"],
+        "6": ["むいか"],
+        "7": ["なのか"],
+        "8": ["ようか"],
+        "9": ["ここのか"],
+        "10": ["とおか"],
+        "20": ["はつか"]
+      },
+      "items": [
+        {"id": "ctx_date", "label_en": "date", "label_ja": "日付", "kana": "ひづけ", "emoji": "📅"}
+      ]
+    },
+    {
+      "counter": "月",
+      "reading": "がつ",
+      "group": "Clock and calendar",
+      "category": "months of the year",
+      "note": "January to December are just numbers plus がつ. Three to remember: しがつ, しちがつ, くがつ.",
+      "abstract": true,
+      "max": 12,
+      "confusable": [],
+      "readings": {
+        "1": ["いちがつ"],
+        "2": ["にがつ"],
+        "3": ["さんがつ"],
+        "4": ["しがつ"],
+        "5": ["ごがつ"],
+        "6": ["ろくがつ"],
+        "7": ["しちがつ"],
+        "8": ["はちがつ"],
+        "9": ["くがつ"],
+        "10": ["じゅうがつ"]
+      },
+      "items": [
+        {"id": "ctx_month", "label_en": "month of the year", "label_ja": "月", "kana": "つき", "emoji": "🗓️"}
+      ]
+    },
+    {
+      "counter": "歳",
+      "reading": "さい",
+      "group": "Clock and calendar",
+      "category": "years of age",
+      "note": "Ages. いっさい, はっさい, じゅっさい, and the special はたち for 20.",
+      "abstract": true,
+      "confusable": [],
+      "readings": {
+        "1": ["いっさい"],
+        "2": ["にさい"],
+        "3": ["さんさい"],
+        "4": ["よんさい"],
+        "5": ["ごさい"],
+        "6": ["ろくさい"],
+        "7": ["ななさい", "しちさい"],
+        "8": ["はっさい"],
+        "9": ["きゅうさい"],
+        "10": ["じゅっさい", "じっさい"],
+        "20": ["はたち", "にじゅっさい", "にじっさい"]
+      },
+      "items": [
+        {"id": "ctx_age", "label_en": "age", "label_ja": "年齢", "kana": "ねんれい", "emoji": "🎂"}
+      ]
+    },
+    {
+      "counter": "回",
+      "reading": "かい",
+      "group": "Clock and calendar",
+      "category": "number of times",
+      "note": "How many times something happens: いっかい, ろっかい, はっかい, じゅっかい.",
+      "abstract": true,
+      "confusable": [],
+      "readings": {
+        "1": ["いっかい"],
+        "2": ["にかい"],
+        "3": ["さんかい"],
+        "4": ["よんかい"],
+        "5": ["ごかい"],
+        "6": ["ろっかい"],
+        "7": ["ななかい", "しちかい"],
+        "8": ["はっかい", "はちかい"],
+        "9": ["きゅうかい"],
+        "10": ["じゅっかい", "じっかい"]
+      },
+      "items": [
+        {"id": "ctx_times", "label_en": "number of times", "label_ja": "回数", "kana": "かいすう", "emoji": "🔁"}
+      ]
+    },
+    {
+      "counter": "階",
+      "reading": "かい",
+      "group": "Clock and calendar",
+      "category": "floors of a building",
+      "note": "Like 回, but the 3rd floor is usually さんがい.",
+      "abstract": true,
+      "confusable": [],
+      "readings": {
+        "1": ["いっかい"],
+        "2": ["にかい"],
+        "3": ["さんがい", "さんかい"],
+        "4": ["よんかい"],
+        "5": ["ごかい"],
+        "6": ["ろっかい"],
+        "7": ["ななかい", "しちかい"],
+        "8": ["はっかい", "はちかい"],
+        "9": ["きゅうかい"],
+        "10": ["じゅっかい", "じっかい"]
+      },
+      "items": [
+        {"id": "ctx_floor", "label_en": "floor of a building", "label_ja": "建物の階", "kana": "たてもののかい", "emoji": "🏢"}
       ]
     },
     {
       "counter": "頭",
       "reading": "とう",
+      "group": "Animals and clothes",
       "category": "large animals",
-      "note": "Cows, horses, elephants: animals bigger than a person.",
+      "note": "Cows, horses, elephants, lions, whales: animals bigger than a person.",
       "confusable": ["匹", "羽"],
       "readings": {
         "1": ["いっとう"],
@@ -192,12 +484,17 @@
       "items": [
         {"id": "cow", "label_en": "cow", "label_ja": "牛", "kana": "うし", "image": "data/assets/items/cow/cow.png"},
         {"id": "horse", "label_en": "horse", "label_ja": "馬", "kana": "うま", "image": "data/assets/items/horse/horse.png"},
-        {"id": "elephant", "label_en": "elephant", "label_ja": "象", "kana": "ぞう", "image": "data/assets/items/elephant/elephant.png"}
+        {"id": "elephant", "label_en": "elephant", "label_ja": "象", "kana": "ぞう", "image": "data/assets/items/elephant/elephant.png"},
+        {"id": "lion", "label_en": "lion", "label_ja": "ライオン", "kana": "ライオン", "emoji": "🦁"},
+        {"id": "giraffe", "label_en": "giraffe", "label_ja": "きりん", "kana": "きりん", "emoji": "🦒"},
+        {"id": "whale", "label_en": "whale", "label_ja": "くじら", "kana": "くじら", "emoji": "🐋"},
+        {"id": "bear", "label_en": "bear", "label_ja": "熊", "kana": "くま", "emoji": "🐻"}
       ]
     },
     {
       "counter": "羽",
       "reading": "わ",
+      "group": "Animals and clothes",
       "category": "birds and rabbits",
       "note": "Birds, and by tradition rabbits (匹 is also fine for rabbits).",
       "confusable": ["匹", "頭"],
@@ -216,85 +513,20 @@
       "items": [
         {"id": "bird", "label_en": "bird", "label_ja": "鳥", "kana": "とり", "image": "data/assets/items/bird/bird.png"},
         {"id": "chicken", "label_en": "chicken", "label_ja": "鶏", "kana": "にわとり", "image": "data/assets/items/chicken/chicken.png"},
-        {"id": "rabbit", "label_en": "rabbit", "label_ja": "うさぎ", "kana": "うさぎ", "image": "data/assets/items/rabbit/rabbit.png", "also": ["匹"]}
-      ]
-    },
-    {
-      "counter": "杯",
-      "reading": "はい",
-      "category": "cupfuls and glassfuls",
-      "note": "Drinks in cups or glasses, bowls of rice or ramen. The reading shifts between はい, ばい and ぱい.",
-      "confusable": ["缶", "本"],
-      "readings": {
-        "1": ["いっぱい"],
-        "2": ["にはい"],
-        "3": ["さんばい"],
-        "4": ["よんはい"],
-        "5": ["ごはい"],
-        "6": ["ろっぱい"],
-        "7": ["ななはい", "しちはい"],
-        "8": ["はっぱい", "はちはい"],
-        "9": ["きゅうはい"],
-        "10": ["じゅっぱい", "じっぱい"]
-      },
-      "items": [
-        {"id": "tea_cup", "label_en": "cup of tea", "label_ja": "お茶", "kana": "おちゃ", "image": "data/assets/items/tea_cup/tea_cup.png"},
-        {"id": "coffee_cup", "label_en": "cup of coffee", "label_ja": "コーヒー", "kana": "コーヒー", "image": "data/assets/items/coffee_cup/coffee_cup.png"},
-        {"id": "beer_glass", "label_en": "glass of beer", "label_ja": "ビール", "kana": "ビール", "image": "data/assets/items/beer_glass/beer_glass.png"}
-      ]
-    },
-    {
-      "counter": "缶",
-      "reading": "かん",
-      "category": "cans",
-      "note": "Canned food and drinks. Canned drinks are also often counted with 本.",
-      "confusable": ["杯", "本"],
-      "readings": {
-        "1": ["いっかん"],
-        "2": ["にかん"],
-        "3": ["さんかん"],
-        "4": ["よんかん"],
-        "5": ["ごかん"],
-        "6": ["ろっかん"],
-        "7": ["ななかん", "しちかん"],
-        "8": ["はっかん", "はちかん"],
-        "9": ["きゅうかん"],
-        "10": ["じゅっかん", "じっかん"]
-      },
-      "items": [
-        {"id": "soda_can", "label_en": "can of soda", "label_ja": "缶ジュース", "kana": "かんジュース", "image": "data/assets/items/soda_can/soda_can.png", "also": ["本", "個"]},
-        {"id": "coffee_can", "label_en": "canned coffee", "label_ja": "缶コーヒー", "kana": "かんコーヒー", "image": "data/assets/items/coffee_can/coffee_can.png", "also": ["本", "個"]},
-        {"id": "soup_can", "label_en": "can of soup", "label_ja": "スープ缶", "kana": "スープかん", "image": "data/assets/items/soup_can/soup_can.png", "also": ["個"]}
-      ]
-    },
-    {
-      "counter": "着",
-      "reading": "ちゃく",
-      "category": "outfits and garments",
-      "note": "Dresses, suits, coats: clothes worn on the body. Shirts can take 着 or 枚.",
-      "confusable": ["枚", "足"],
-      "readings": {
-        "1": ["いっちゃく"],
-        "2": ["にちゃく"],
-        "3": ["さんちゃく"],
-        "4": ["よんちゃく"],
-        "5": ["ごちゃく"],
-        "6": ["ろくちゃく"],
-        "7": ["ななちゃく", "しちちゃく"],
-        "8": ["はっちゃく", "はちちゃく"],
-        "9": ["きゅうちゃく"],
-        "10": ["じゅっちゃく", "じっちゃく"]
-      },
-      "items": [
-        {"id": "dress", "label_en": "dress", "label_ja": "ドレス", "kana": "ドレス", "image": "data/assets/items/dress/dress.png"}
+        {"id": "rabbit", "label_en": "rabbit", "label_ja": "うさぎ", "kana": "うさぎ", "image": "data/assets/items/rabbit/rabbit.png", "also": ["匹"]},
+        {"id": "duck", "label_en": "duck", "label_ja": "あひる", "kana": "あひる", "emoji": "🦆"},
+        {"id": "owl", "label_en": "owl", "label_ja": "ふくろう", "kana": "ふくろう", "emoji": "🦉"},
+        {"id": "penguin", "label_en": "penguin", "label_ja": "ペンギン", "kana": "ペンギン", "emoji": "🐧"},
+        {"id": "dove", "label_en": "dove", "label_ja": "鳩", "kana": "はと", "emoji": "🕊️"}
       ]
     },
     {
       "counter": "足",
       "reading": "そく",
+      "group": "Animals and clothes",
       "category": "pairs of footwear",
-      "note": "Shoes, socks, sandals: one 足 is one pair.",
-      "confusable": ["着", "枚"],
+      "note": "Shoes, socks, boots: one 足 is one pair.",
+      "confusable": ["着", "枚", "組"],
       "readings": {
         "1": ["いっそく"],
         "2": ["にそく"],
@@ -310,12 +542,461 @@
       "items": [
         {"id": "shoes", "label_en": "pair of shoes", "label_ja": "靴", "kana": "くつ", "image": "data/assets/items/shoes/shoes.png"},
         {"id": "socks", "label_en": "pair of socks", "label_ja": "靴下", "kana": "くつした", "image": "data/assets/items/socks/socks.png"},
-        {"id": "sandals", "label_en": "pair of sandals", "label_ja": "サンダル", "kana": "サンダル", "image": "data/assets/items/sandals/sandals.png"}
+        {"id": "sandals", "label_en": "pair of sandals", "label_ja": "サンダル", "kana": "サンダル", "image": "data/assets/items/sandals/sandals.png"},
+        {"id": "boots", "label_en": "pair of boots", "label_ja": "ブーツ", "kana": "ブーツ", "emoji": "👢"},
+        {"id": "sneakers", "label_en": "pair of sneakers", "label_ja": "スニーカー", "kana": "スニーカー", "emoji": "👟"}
+      ]
+    },
+    {
+      "counter": "着",
+      "reading": "ちゃく",
+      "group": "Animals and clothes",
+      "category": "outfits and garments",
+      "note": "Dresses, suits, coats, kimono: clothes worn on the body. Shirts can take 着 or 枚.",
+      "confusable": ["枚", "足"],
+      "readings": {
+        "1": ["いっちゃく"],
+        "2": ["にちゃく"],
+        "3": ["さんちゃく"],
+        "4": ["よんちゃく"],
+        "5": ["ごちゃく"],
+        "6": ["ろくちゃく"],
+        "7": ["ななちゃく", "しちちゃく"],
+        "8": ["はっちゃく", "はちちゃく"],
+        "9": ["きゅうちゃく"],
+        "10": ["じゅっちゃく", "じっちゃく"]
+      },
+      "items": [
+        {"id": "dress", "label_en": "dress", "label_ja": "ドレス", "kana": "ドレス", "image": "data/assets/items/dress/dress.png"},
+        {"id": "coat", "label_en": "coat", "label_ja": "コート", "kana": "コート", "emoji": "🧥"},
+        {"id": "kimono", "label_en": "kimono", "label_ja": "着物", "kana": "きもの", "emoji": "👘"}
+      ]
+    },
+    {
+      "counter": "缶",
+      "reading": "かん",
+      "group": "Food and drink",
+      "category": "cans",
+      "note": "Canned food and drinks. Canned drinks are also often counted with 本.",
+      "confusable": ["杯", "本", "箱"],
+      "readings": {
+        "1": ["いっかん"],
+        "2": ["にかん"],
+        "3": ["さんかん"],
+        "4": ["よんかん"],
+        "5": ["ごかん"],
+        "6": ["ろっかん"],
+        "7": ["ななかん", "しちかん"],
+        "8": ["はっかん", "はちかん"],
+        "9": ["きゅうかん"],
+        "10": ["じゅっかん", "じっかん"]
+      },
+      "items": [
+        {"id": "soda_can", "label_en": "can of soda", "label_ja": "缶ジュース", "kana": "かんジュース", "image": "data/assets/items/soda_can/soda_can.png", "also": ["本", "個", "つ"]},
+        {"id": "coffee_can", "label_en": "canned coffee", "label_ja": "缶コーヒー", "kana": "かんコーヒー", "image": "data/assets/items/coffee_can/coffee_can.png", "also": ["本", "個", "つ"]},
+        {"id": "soup_can", "label_en": "can of soup", "label_ja": "スープ缶", "kana": "スープかん", "image": "data/assets/items/soup_can/soup_can.png", "also": ["個", "つ"]}
+      ]
+    },
+    {
+      "counter": "皿",
+      "reading": "さら",
+      "group": "Food and drink",
+      "category": "plates of food",
+      "note": "Servings that come on a plate: curry, pasta, salad. 1 and 2 are ひとさら, ふたさら.",
+      "max": 10,
+      "confusable": ["杯", "枚", "個"],
+      "readings": {
+        "1": ["ひとさら"],
+        "2": ["ふたさら"],
+        "3": ["さんさら", "みさら"],
+        "4": ["よんさら", "よさら"],
+        "5": ["ごさら"],
+        "6": ["ろくさら"],
+        "7": ["ななさら", "しちさら"],
+        "8": ["はちさら", "はっさら"],
+        "9": ["きゅうさら"],
+        "10": ["じゅっさら", "じっさら", "じゅうさら"]
+      },
+      "items": [
+        {"id": "curry", "label_en": "plate of curry", "label_ja": "カレー", "kana": "カレー", "emoji": "🍛"},
+        {"id": "pasta", "label_en": "plate of pasta", "label_ja": "スパゲッティ", "kana": "スパゲッティ", "emoji": "🍝"},
+        {"id": "salad", "label_en": "plate of salad", "label_ja": "サラダ", "kana": "サラダ", "emoji": "🥗"}
+      ]
+    },
+    {
+      "counter": "切れ",
+      "reading": "きれ",
+      "group": "Food and drink",
+      "category": "slices and cut pieces",
+      "note": "Slices of pizza, cake, meat or fish. 1 and 2 are ひときれ, ふたきれ.",
+      "max": 10,
+      "confusable": ["枚", "個", "皿"],
+      "readings": {
+        "1": ["ひときれ"],
+        "2": ["ふたきれ"],
+        "3": ["さんきれ", "みきれ"],
+        "4": ["よんきれ", "よきれ"],
+        "5": ["ごきれ"],
+        "6": ["ろくきれ", "ろっきれ"],
+        "7": ["ななきれ", "しちきれ"],
+        "8": ["はちきれ", "はっきれ"],
+        "9": ["きゅうきれ"],
+        "10": ["じゅっきれ", "じっきれ", "じゅうきれ"]
+      },
+      "items": [
+        {"id": "pizza_slice", "label_en": "slice of pizza", "label_ja": "ピザ", "kana": "ピザ", "image": "data/assets/items/pizza_slice/pizza_slice.png", "also": ["つ"]},
+        {"id": "cake", "label_en": "slice of cake", "label_ja": "ケーキ", "kana": "ケーキ", "emoji": "🍰", "also": ["個", "つ"]},
+        {"id": "steak", "label_en": "cut of meat", "label_ja": "肉", "kana": "にく", "emoji": "🥩"}
+      ]
+    },
+    {
+      "counter": "袋",
+      "reading": "ふくろ",
+      "group": "Food and drink",
+      "category": "bags and bagfuls",
+      "note": "Bags and the things sold in them. 1 and 2 are ひとふくろ, ふたふくろ.",
+      "max": 10,
+      "confusable": ["個", "枚", "箱"],
+      "readings": {
+        "1": ["ひとふくろ"],
+        "2": ["ふたふくろ"],
+        "3": ["さんふくろ", "みふくろ"],
+        "4": ["よんふくろ", "よふくろ"],
+        "5": ["ごふくろ"],
+        "6": ["ろくふくろ", "ろっぷくろ"],
+        "7": ["ななふくろ", "しちふくろ"],
+        "8": ["はちふくろ", "はっぷくろ"],
+        "9": ["きゅうふくろ"],
+        "10": ["じゅっぷくろ", "じっぷくろ", "じゅうふくろ"]
+      },
+      "items": [
+        {"id": "grocery_bag", "label_en": "shopping bag", "label_ja": "買い物袋", "kana": "かいものぶくろ", "image": "data/assets/items/grocery_bag/grocery_bag.png", "also": ["個", "つ"]},
+        {"id": "trash_bag", "label_en": "garbage bag", "label_ja": "ゴミ袋", "kana": "ゴミぶくろ", "image": "data/assets/items/trash_bag/trash_bag.png", "also": ["個", "つ"]},
+        {"id": "peanuts", "label_en": "bag of peanuts", "label_ja": "ピーナッツ", "kana": "ピーナッツ", "emoji": "🥜"}
+      ]
+    },
+    {
+      "counter": "箱",
+      "reading": "はこ",
+      "group": "Food and drink",
+      "category": "boxes and boxfuls",
+      "note": "Boxes and things sold by the box. 1 and 2 are ひとはこ, ふたはこ; then さんぱこ, ろっぱこ, はっぱこ, じゅっぱこ.",
+      "max": 10,
+      "confusable": ["個", "袋", "缶"],
+      "readings": {
+        "1": ["ひとはこ"],
+        "2": ["ふたはこ"],
+        "3": ["さんぱこ", "さんはこ", "みはこ"],
+        "4": ["よんはこ", "よはこ"],
+        "5": ["ごはこ"],
+        "6": ["ろっぱこ", "ろくはこ"],
+        "7": ["ななはこ", "しちはこ"],
+        "8": ["はっぱこ", "はちはこ"],
+        "9": ["きゅうはこ"],
+        "10": ["じゅっぱこ", "じっぱこ", "じゅうはこ"]
+      },
+      "items": [
+        {"id": "box", "label_en": "cardboard box", "label_ja": "段ボール箱", "kana": "だんボールばこ", "emoji": "📦", "also": ["個", "つ"]},
+        {"id": "present", "label_en": "gift box", "label_ja": "プレゼント", "kana": "プレゼント", "emoji": "🎁", "also": ["個", "つ"]}
+      ]
+    },
+    {
+      "counter": "膳",
+      "reading": "ぜん",
+      "group": "Food and drink",
+      "category": "pairs of chopsticks, bowls of rice",
+      "note": "Pairs of chopsticks and servings of rice. Regular readings.",
+      "confusable": ["本", "杯", "組"],
+      "readings": {
+        "1": ["いちぜん"],
+        "2": ["にぜん"],
+        "3": ["さんぜん"],
+        "4": ["よんぜん"],
+        "5": ["ごぜん"],
+        "6": ["ろくぜん"],
+        "7": ["ななぜん", "しちぜん"],
+        "8": ["はちぜん"],
+        "9": ["きゅうぜん"],
+        "10": ["じゅうぜん"]
+      },
+      "items": [
+        {"id": "chopsticks", "label_en": "pair of chopsticks", "label_ja": "箸", "kana": "はし", "emoji": "🥢"},
+        {"id": "rice", "label_en": "bowl of rice", "label_ja": "ご飯", "kana": "ごはん", "emoji": "🍚", "also": ["杯"]}
+      ]
+    },
+    {
+      "counter": "粒",
+      "reading": "つぶ",
+      "group": "Food and drink",
+      "category": "grains and tiny round things",
+      "note": "Pills, candies, grapes, grains of rice, raindrops. 1 and 2 are ひとつぶ, ふたつぶ.",
+      "max": 10,
+      "confusable": ["個", "滴"],
+      "readings": {
+        "1": ["ひとつぶ"],
+        "2": ["ふたつぶ"],
+        "3": ["さんつぶ", "みつぶ"],
+        "4": ["よんつぶ", "よつぶ"],
+        "5": ["ごつぶ"],
+        "6": ["ろくつぶ"],
+        "7": ["ななつぶ", "しちつぶ"],
+        "8": ["はちつぶ", "はっつぶ"],
+        "9": ["きゅうつぶ"],
+        "10": ["じゅっつぶ", "じっつぶ", "じゅうつぶ"]
+      },
+      "items": [
+        {"id": "pill", "label_en": "pill", "label_ja": "薬", "kana": "くすり", "emoji": "💊"},
+        {"id": "candy", "label_en": "candy", "label_ja": "あめ", "kana": "あめ", "emoji": "🍬", "also": ["個", "つ"]},
+        {"id": "chestnut", "label_en": "chestnut", "label_ja": "栗", "kana": "くり", "emoji": "🌰", "also": ["個", "つ"]}
+      ]
+    },
+    {
+      "counter": "玉",
+      "reading": "たま",
+      "group": "Food and drink",
+      "category": "round heads of produce",
+      "note": "Whole watermelons, melons, heads of cabbage or lettuce, portions of noodles. 1 and 2 are ひとたま, ふたたま.",
+      "max": 10,
+      "confusable": ["個", "切れ"],
+      "readings": {
+        "1": ["ひとたま"],
+        "2": ["ふたたま"],
+        "3": ["さんたま", "みたま"],
+        "4": ["よんたま", "よたま"],
+        "5": ["ごたま"],
+        "6": ["ろくたま"],
+        "7": ["ななたま", "しちたま"],
+        "8": ["はちたま", "はったま"],
+        "9": ["きゅうたま"],
+        "10": ["じゅうたま", "じゅったま", "じったま"]
+      },
+      "items": [
+        {"id": "watermelon", "label_en": "watermelon", "label_ja": "すいか", "kana": "すいか", "emoji": "🍉", "also": ["個", "つ"]},
+        {"id": "melon", "label_en": "melon", "label_ja": "メロン", "kana": "メロン", "emoji": "🍈", "also": ["個", "つ"]},
+        {"id": "hakusai", "label_en": "head of Chinese cabbage", "label_ja": "白菜", "kana": "はくさい", "emoji": "🥬", "also": ["個", "つ"]}
+      ]
+    },
+    {
+      "counter": "串",
+      "reading": "くし",
+      "group": "Food and drink",
+      "category": "skewers",
+      "note": "Food on a stick: dango, oden, yakitori. 本 works too. 1 and 2 are ひとくし, ふたくし.",
+      "max": 10,
+      "confusable": ["本", "個", "皿"],
+      "readings": {
+        "1": ["ひとくし"],
+        "2": ["ふたくし"],
+        "3": ["さんくし", "みくし"],
+        "4": ["よんくし", "よくし"],
+        "5": ["ごくし"],
+        "6": ["ろくくし", "ろっくし"],
+        "7": ["ななくし", "しちくし"],
+        "8": ["はちくし", "はっくし"],
+        "9": ["きゅうくし"],
+        "10": ["じゅっくし", "じっくし", "じゅうくし"]
+      },
+      "items": [
+        {"id": "dango", "label_en": "skewer of dango", "label_ja": "だんご", "kana": "だんご", "emoji": "🍡", "also": ["本"]},
+        {"id": "oden", "label_en": "skewer of oden", "label_ja": "おでん", "kana": "おでん", "emoji": "🍢", "also": ["本"]}
+      ]
+    },
+    {
+      "counter": "貫",
+      "reading": "かん",
+      "group": "Food and drink",
+      "category": "pieces of sushi",
+      "note": "Pieces of nigiri sushi. Same readings as 缶.",
+      "confusable": ["個", "皿", "切れ"],
+      "readings": {
+        "1": ["いっかん"],
+        "2": ["にかん"],
+        "3": ["さんかん"],
+        "4": ["よんかん"],
+        "5": ["ごかん"],
+        "6": ["ろっかん"],
+        "7": ["ななかん", "しちかん"],
+        "8": ["はっかん", "はちかん"],
+        "9": ["きゅうかん"],
+        "10": ["じゅっかん", "じっかん"]
+      },
+      "items": [
+        {"id": "sushi", "label_en": "piece of sushi", "label_ja": "すし", "kana": "すし", "emoji": "🍣", "also": ["個", "つ"]}
+      ]
+    },
+    {
+      "counter": "束",
+      "reading": "たば",
+      "group": "Food and drink",
+      "category": "bundles and bunches",
+      "note": "Bouquets, bunches of greens, bundles of paper. 1 and 2 are ひとたば, ふたたば.",
+      "max": 10,
+      "confusable": ["本", "輪", "袋"],
+      "readings": {
+        "1": ["ひとたば"],
+        "2": ["ふたたば"],
+        "3": ["さんたば", "みたば"],
+        "4": ["よんたば", "よたば"],
+        "5": ["ごたば"],
+        "6": ["ろくたば"],
+        "7": ["ななたば", "しちたば"],
+        "8": ["はちたば", "はったば"],
+        "9": ["きゅうたば"],
+        "10": ["じゅったば", "じったば", "じゅうたば"]
+      },
+      "items": [
+        {"id": "bouquet", "label_en": "bouquet", "label_ja": "花束", "kana": "はなたば", "emoji": "💐"},
+        {"id": "rice_sheaf", "label_en": "sheaf of rice", "label_ja": "稲", "kana": "いね", "emoji": "🌾"}
+      ]
+    },
+    {
+      "counter": "年",
+      "reading": "ねん",
+      "group": "How long, how often",
+      "category": "years",
+      "note": "Years. 4年 is よねん.",
+      "abstract": true,
+      "confusable": [],
+      "readings": {
+        "1": ["いちねん"],
+        "2": ["にねん"],
+        "3": ["さんねん"],
+        "4": ["よねん"],
+        "5": ["ごねん"],
+        "6": ["ろくねん"],
+        "7": ["ななねん", "しちねん"],
+        "8": ["はちねん"],
+        "9": ["きゅうねん", "くねん"],
+        "10": ["じゅうねん"]
+      },
+      "items": [
+        {"id": "ctx_years", "label_en": "years", "label_ja": "年数", "kana": "ねんすう", "emoji": "🎍"}
+      ]
+    },
+    {
+      "counter": "か月",
+      "reading": "かげつ",
+      "group": "How long, how often",
+      "category": "months (duration)",
+      "note": "How many months something lasts: いっかげつ, ろっかげつ, はっかげつ, じゅっかげつ.",
+      "abstract": true,
+      "confusable": [],
+      "readings": {
+        "1": ["いっかげつ"],
+        "2": ["にかげつ"],
+        "3": ["さんかげつ"],
+        "4": ["よんかげつ"],
+        "5": ["ごかげつ"],
+        "6": ["ろっかげつ"],
+        "7": ["ななかげつ", "しちかげつ"],
+        "8": ["はっかげつ", "はちかげつ"],
+        "9": ["きゅうかげつ"],
+        "10": ["じゅっかげつ", "じっかげつ"]
+      },
+      "items": [
+        {"id": "ctx_months", "label_en": "length in months", "label_ja": "期間", "kana": "きかん", "emoji": "🌙"}
+      ]
+    },
+    {
+      "counter": "週間",
+      "reading": "しゅうかん",
+      "group": "How long, how often",
+      "category": "weeks",
+      "note": "Weeks: いっしゅうかん, はっしゅうかん, じゅっしゅうかん.",
+      "abstract": true,
+      "confusable": [],
+      "readings": {
+        "1": ["いっしゅうかん"],
+        "2": ["にしゅうかん"],
+        "3": ["さんしゅうかん"],
+        "4": ["よんしゅうかん"],
+        "5": ["ごしゅうかん"],
+        "6": ["ろくしゅうかん"],
+        "7": ["ななしゅうかん", "しちしゅうかん"],
+        "8": ["はっしゅうかん", "はちしゅうかん"],
+        "9": ["きゅうしゅうかん"],
+        "10": ["じゅっしゅうかん", "じっしゅうかん"]
+      },
+      "items": [
+        {"id": "ctx_weeks", "label_en": "weeks", "label_ja": "週", "kana": "しゅう", "emoji": "📆"}
+      ]
+    },
+    {
+      "counter": "時間",
+      "reading": "じかん",
+      "group": "How long, how often",
+      "category": "hours (duration)",
+      "note": "Hours of time. Follows 時: よじかん, くじかん.",
+      "abstract": true,
+      "confusable": [],
+      "readings": {
+        "1": ["いちじかん"],
+        "2": ["にじかん"],
+        "3": ["さんじかん"],
+        "4": ["よじかん"],
+        "5": ["ごじかん"],
+        "6": ["ろくじかん"],
+        "7": ["しちじかん", "ななじかん"],
+        "8": ["はちじかん"],
+        "9": ["くじかん"],
+        "10": ["じゅうじかん"]
+      },
+      "items": [
+        {"id": "ctx_hours", "label_en": "length in hours", "label_ja": "時間", "kana": "じかん", "emoji": "⏳"}
+      ]
+    },
+    {
+      "counter": "泊",
+      "reading": "はく",
+      "group": "How long, how often",
+      "category": "nights' stay",
+      "note": "Nights at a hotel: いっぱく, さんぱく, ろっぱく, はっぱく, じゅっぱく.",
+      "abstract": true,
+      "confusable": [],
+      "readings": {
+        "1": ["いっぱく"],
+        "2": ["にはく"],
+        "3": ["さんぱく"],
+        "4": ["よんはく", "よんぱく"],
+        "5": ["ごはく"],
+        "6": ["ろっぱく"],
+        "7": ["ななはく", "しちはく"],
+        "8": ["はっぱく", "はちはく"],
+        "9": ["きゅうはく"],
+        "10": ["じゅっぱく", "じっぱく"]
+      },
+      "items": [
+        {"id": "ctx_nights", "label_en": "nights' stay", "label_ja": "宿泊", "kana": "しゅくはく", "emoji": "🛏️"}
+      ]
+    },
+    {
+      "counter": "番",
+      "reading": "ばん",
+      "group": "How long, how often",
+      "category": "numbers in a sequence",
+      "note": "Number one, number two: platform numbers, turns, rankings. Regular readings.",
+      "abstract": true,
+      "confusable": [],
+      "readings": {
+        "1": ["いちばん"],
+        "2": ["にばん"],
+        "3": ["さんばん"],
+        "4": ["よんばん"],
+        "5": ["ごばん"],
+        "6": ["ろくばん"],
+        "7": ["ななばん", "しちばん"],
+        "8": ["はちばん"],
+        "9": ["きゅうばん"],
+        "10": ["じゅうばん"]
+      },
+      "items": [
+        {"id": "ctx_number", "label_en": "place in a sequence", "label_ja": "順番", "kana": "じゅんばん", "emoji": "🔢"}
       ]
     },
     {
       "counter": "軒",
       "reading": "けん",
+      "group": "Buildings and vehicles",
       "category": "houses and shops",
       "note": "Houses, shops, restaurants. 3 is usually さんげん.",
       "confusable": ["棟", "台"],
@@ -332,14 +1013,18 @@
         "10": ["じゅっけん", "じっけん"]
       },
       "items": [
-        {"id": "house", "label_en": "house", "label_ja": "家", "kana": "いえ", "image": "data/assets/items/house/house.png"}
+        {"id": "house", "label_en": "house", "label_ja": "家", "kana": "いえ", "image": "data/assets/items/house/house.png"},
+        {"id": "konbini", "label_en": "convenience store", "label_ja": "コンビニ", "kana": "コンビニ", "emoji": "🏪"},
+        {"id": "hotel", "label_en": "hotel", "label_ja": "ホテル", "kana": "ホテル", "emoji": "🏨", "also": ["棟"]}
       ]
     },
     {
       "counter": "棟",
       "reading": "とう",
+      "group": "Buildings and vehicles",
       "category": "large buildings",
-      "note": "Apartment blocks, office buildings, warehouses. Same readings as 頭.",
+      "note": "Apartment blocks, office buildings, factories. Same readings as 頭.",
+      "compound": {"1": ["いっとう"], "2": ["にとう"]},
       "confusable": ["軒", "台"],
       "readings": {
         "1": ["いっとう", "ひとむね"],
@@ -355,31 +1040,418 @@
       },
       "items": [
         {"id": "apartment", "label_en": "apartment building", "label_ja": "アパート", "kana": "アパート", "image": "data/assets/items/apartment/apartment.png", "also": ["軒"]},
-        {"id": "office_building", "label_en": "office building", "label_ja": "ビル", "kana": "ビル", "image": "data/assets/items/office_building/office_building.png"}
+        {"id": "office_building", "label_en": "office building", "label_ja": "ビル", "kana": "ビル", "image": "data/assets/items/office_building/office_building.png"},
+        {"id": "factory", "label_en": "factory", "label_ja": "工場", "kana": "こうじょう", "emoji": "🏭", "also": ["軒"]}
       ]
     },
     {
-      "counter": "袋",
-      "reading": "ふくろ",
-      "category": "bags and bagfuls",
-      "note": "Bags and the things sold in them. 1 and 2 use native readings: ひとふくろ, ふたふくろ.",
-      "confusable": ["個", "枚"],
+      "counter": "機",
+      "reading": "き",
+      "group": "Buildings and vehicles",
+      "category": "aircraft",
+      "note": "Planes, helicopters, rockets: いっき, ろっき, はっき, じゅっき.",
+      "confusable": ["台", "隻"],
       "readings": {
-        "1": ["ひとふくろ"],
-        "2": ["ふたふくろ"],
-        "3": ["さんふくろ", "みふくろ"],
-        "4": ["よんふくろ", "よふくろ"],
-        "5": ["ごふくろ"],
-        "6": ["ろくふくろ", "ろっぷくろ"],
-        "7": ["ななふくろ", "しちふくろ"],
-        "8": ["はちふくろ", "はっぷくろ"],
-        "9": ["きゅうふくろ"],
-        "10": ["じゅっぷくろ", "じっぷくろ", "じゅうふくろ"]
+        "1": ["いっき"],
+        "2": ["にき"],
+        "3": ["さんき"],
+        "4": ["よんき"],
+        "5": ["ごき"],
+        "6": ["ろっき"],
+        "7": ["ななき", "しちき"],
+        "8": ["はっき", "はちき"],
+        "9": ["きゅうき"],
+        "10": ["じゅっき", "じっき"]
       },
       "items": [
-        {"id": "grocery_bag", "label_en": "shopping bag", "label_ja": "買い物袋", "kana": "かいものぶくろ", "image": "data/assets/items/grocery_bag/grocery_bag.png", "also": ["個"]},
-        {"id": "trash_bag", "label_en": "garbage bag", "label_ja": "ゴミ袋", "kana": "ゴミぶくろ", "image": "data/assets/items/trash_bag/trash_bag.png", "also": ["個"]}
+        {"id": "airplane", "label_en": "airplane", "label_ja": "飛行機", "kana": "ひこうき", "emoji": "✈️"},
+        {"id": "helicopter", "label_en": "helicopter", "label_ja": "ヘリコプター", "kana": "ヘリコプター", "emoji": "🚁"},
+        {"id": "rocket", "label_en": "rocket", "label_ja": "ロケット", "kana": "ロケット", "emoji": "🚀"}
       ]
+    },
+    {
+      "counter": "両",
+      "reading": "りょう",
+      "group": "Buildings and vehicles",
+      "category": "train carriages",
+      "note": "Carriages of a train. Regular readings.",
+      "confusable": ["台", "機"],
+      "readings": {
+        "1": ["いちりょう"],
+        "2": ["にりょう"],
+        "3": ["さんりょう"],
+        "4": ["よんりょう"],
+        "5": ["ごりょう"],
+        "6": ["ろくりょう"],
+        "7": ["ななりょう", "しちりょう"],
+        "8": ["はちりょう"],
+        "9": ["きゅうりょう"],
+        "10": ["じゅうりょう"]
+      },
+      "items": [
+        {"id": "train_car", "label_en": "train carriage", "label_ja": "電車", "kana": "でんしゃ", "emoji": "🚃"},
+        {"id": "tram", "label_en": "tram", "label_ja": "路面電車", "kana": "ろめんでんしゃ", "emoji": "🚋"}
+      ]
+    },
+    {
+      "counter": "隻",
+      "reading": "せき",
+      "group": "Buildings and vehicles",
+      "category": "large ships",
+      "note": "Ships and large boats: いっせき, はっせき, じゅっせき.",
+      "confusable": ["艘", "台", "機"],
+      "readings": {
+        "1": ["いっせき"],
+        "2": ["にせき"],
+        "3": ["さんせき"],
+        "4": ["よんせき"],
+        "5": ["ごせき"],
+        "6": ["ろくせき"],
+        "7": ["ななせき", "しちせき"],
+        "8": ["はっせき", "はちせき"],
+        "9": ["きゅうせき"],
+        "10": ["じゅっせき", "じっせき"]
+      },
+      "items": [
+        {"id": "ship", "label_en": "ship", "label_ja": "船", "kana": "ふね", "emoji": "🚢"},
+        {"id": "ferry", "label_en": "ferry", "label_ja": "フェリー", "kana": "フェリー", "emoji": "⛴️"}
+      ]
+    },
+    {
+      "counter": "艘",
+      "reading": "そう",
+      "group": "Buildings and vehicles",
+      "category": "small boats",
+      "note": "Small boats: yachts, rowing boats, canoes.",
+      "confusable": ["隻", "台"],
+      "readings": {
+        "1": ["いっそう"],
+        "2": ["にそう"],
+        "3": ["さんそう"],
+        "4": ["よんそう"],
+        "5": ["ごそう"],
+        "6": ["ろくそう"],
+        "7": ["ななそう", "しちそう"],
+        "8": ["はっそう", "はちそう"],
+        "9": ["きゅうそう"],
+        "10": ["じゅっそう", "じっそう"]
+      },
+      "items": [
+        {"id": "yacht", "label_en": "sailing boat", "label_ja": "ヨット", "kana": "ヨット", "emoji": "⛵"},
+        {"id": "canoe", "label_en": "canoe", "label_ja": "カヌー", "kana": "カヌー", "emoji": "🛶"}
+      ]
+    },
+    {
+      "counter": "脚",
+      "reading": "きゃく",
+      "group": "Buildings and vehicles",
+      "category": "chairs and furniture with legs",
+      "note": "Chairs, and desks or tables with legs: いっきゃく, ろっきゃく, はっきゃく, じゅっきゃく.",
+      "confusable": ["台", "個", "本"],
+      "readings": {
+        "1": ["いっきゃく"],
+        "2": ["にきゃく"],
+        "3": ["さんきゃく"],
+        "4": ["よんきゃく"],
+        "5": ["ごきゃく"],
+        "6": ["ろっきゃく"],
+        "7": ["ななきゃく", "しちきゃく"],
+        "8": ["はっきゃく", "はちきゃく"],
+        "9": ["きゅうきゃく"],
+        "10": ["じゅっきゃく", "じっきゃく"]
+      },
+      "items": [
+        {"id": "chair", "label_en": "chair", "label_ja": "いす", "kana": "いす", "emoji": "🪑"}
+      ]
+    },
+    {
+      "counter": "通",
+      "reading": "つう",
+      "group": "Paper, culture and more",
+      "category": "letters and emails",
+      "note": "Letters, emails, documents sent to someone: いっつう, はっつう, じゅっつう.",
+      "confusable": ["枚", "冊", "件"],
+      "readings": {
+        "1": ["いっつう"],
+        "2": ["につう"],
+        "3": ["さんつう"],
+        "4": ["よんつう"],
+        "5": ["ごつう"],
+        "6": ["ろくつう"],
+        "7": ["ななつう", "しちつう"],
+        "8": ["はっつう", "はちつう"],
+        "9": ["きゅうつう"],
+        "10": ["じゅっつう", "じっつう"]
+      },
+      "items": [
+        {"id": "letter", "label_en": "letter", "label_ja": "手紙", "kana": "てがみ", "emoji": "✉️"},
+        {"id": "email", "label_en": "email", "label_ja": "メール", "kana": "メール", "emoji": "📧", "also": ["件"]},
+        {"id": "love_letter", "label_en": "love letter", "label_ja": "ラブレター", "kana": "ラブレター", "emoji": "💌"}
+      ]
+    },
+    {
+      "counter": "部",
+      "reading": "ぶ",
+      "group": "Paper, culture and more",
+      "category": "copies of printed matter",
+      "note": "Copies of newspapers, pamphlets, handouts. Regular readings.",
+      "confusable": ["冊", "枚", "通"],
+      "readings": {
+        "1": ["いちぶ"],
+        "2": ["にぶ"],
+        "3": ["さんぶ"],
+        "4": ["よんぶ"],
+        "5": ["ごぶ"],
+        "6": ["ろくぶ"],
+        "7": ["ななぶ", "しちぶ"],
+        "8": ["はちぶ"],
+        "9": ["きゅうぶ"],
+        "10": ["じゅうぶ"]
+      },
+      "items": [
+        {"id": "newspaper", "label_en": "newspaper", "label_ja": "新聞", "kana": "しんぶん", "emoji": "📰"},
+        {"id": "handout", "label_en": "handout", "label_ja": "資料", "kana": "しりょう", "emoji": "📑"}
+      ]
+    },
+    {
+      "counter": "件",
+      "reading": "けん",
+      "group": "Paper, culture and more",
+      "category": "cases and matters",
+      "note": "Incidents, orders, messages, reservations: things that are handled one case at a time. Same readings as 軒, except さんけん.",
+      "confusable": ["通", "個", "回"],
+      "readings": {
+        "1": ["いっけん"],
+        "2": ["にけん"],
+        "3": ["さんけん"],
+        "4": ["よんけん"],
+        "5": ["ごけん"],
+        "6": ["ろっけん"],
+        "7": ["ななけん", "しちけん"],
+        "8": ["はっけん", "はちけん"],
+        "9": ["きゅうけん"],
+        "10": ["じゅっけん", "じっけん"]
+      },
+      "items": [
+        {"id": "incident", "label_en": "incident", "label_ja": "事件", "kana": "じけん", "emoji": "🚨"},
+        {"id": "order_slip", "label_en": "order", "label_ja": "注文", "kana": "ちゅうもん", "emoji": "🧾"},
+        {"id": "message", "label_en": "message", "label_ja": "メッセージ", "kana": "メッセージ", "emoji": "💬", "also": ["通"]}
+      ]
+    },
+    {
+      "counter": "点",
+      "reading": "てん",
+      "group": "Paper, culture and more",
+      "category": "items of goods, works of art",
+      "note": "Items in a shop or collection, and works of art: いってん, はってん, じゅってん.",
+      "confusable": ["個", "枚", "体"],
+      "readings": {
+        "1": ["いってん"],
+        "2": ["にてん"],
+        "3": ["さんてん"],
+        "4": ["よんてん"],
+        "5": ["ごてん"],
+        "6": ["ろくてん"],
+        "7": ["ななてん", "しちてん"],
+        "8": ["はってん", "はちてん"],
+        "9": ["きゅうてん"],
+        "10": ["じゅってん", "じってん"]
+      },
+      "items": [
+        {"id": "painting", "label_en": "painting", "label_ja": "絵", "kana": "え", "emoji": "🖼️", "also": ["枚"]},
+        {"id": "vase", "label_en": "piece of pottery", "label_ja": "つぼ", "kana": "つぼ", "emoji": "🏺", "also": ["個", "つ"]}
+      ]
+    },
+    {
+      "counter": "曲",
+      "reading": "きょく",
+      "group": "Paper, culture and more",
+      "category": "songs and pieces of music",
+      "note": "Songs and pieces of music: いっきょく, ろっきょく, はっきょく, じゅっきょく.",
+      "confusable": ["本", "枚", "問"],
+      "readings": {
+        "1": ["いっきょく"],
+        "2": ["にきょく"],
+        "3": ["さんきょく"],
+        "4": ["よんきょく"],
+        "5": ["ごきょく"],
+        "6": ["ろっきょく"],
+        "7": ["ななきょく", "しちきょく"],
+        "8": ["はっきょく", "はちきょく"],
+        "9": ["きゅうきょく"],
+        "10": ["じゅっきょく", "じっきょく"]
+      },
+      "items": [
+        {"id": "song", "label_en": "song", "label_ja": "歌", "kana": "うた", "emoji": "🎵"}
+      ]
+    },
+    {
+      "counter": "問",
+      "reading": "もん",
+      "group": "Paper, culture and more",
+      "category": "questions and problems",
+      "note": "Questions on a test or quiz. Regular readings.",
+      "confusable": ["件", "個", "曲"],
+      "readings": {
+        "1": ["いちもん"],
+        "2": ["にもん"],
+        "3": ["さんもん"],
+        "4": ["よんもん"],
+        "5": ["ごもん"],
+        "6": ["ろくもん"],
+        "7": ["ななもん", "しちもん"],
+        "8": ["はちもん"],
+        "9": ["きゅうもん"],
+        "10": ["じゅうもん"]
+      },
+      "items": [
+        {"id": "question", "label_en": "test question", "label_ja": "問題", "kana": "もんだい", "emoji": "❓"}
+      ]
+    },
+    {
+      "counter": "輪",
+      "reading": "りん",
+      "group": "Paper, culture and more",
+      "category": "flowers",
+      "note": "Single flowers (本 also works), and wheels. Regular readings.",
+      "confusable": ["本", "束", "個"],
+      "readings": {
+        "1": ["いちりん"],
+        "2": ["にりん"],
+        "3": ["さんりん"],
+        "4": ["よんりん"],
+        "5": ["ごりん"],
+        "6": ["ろくりん"],
+        "7": ["ななりん", "しちりん"],
+        "8": ["はちりん"],
+        "9": ["きゅうりん"],
+        "10": ["じゅうりん"]
+      },
+      "items": [
+        {"id": "rose", "label_en": "rose", "label_ja": "バラ", "kana": "バラ", "emoji": "🌹", "also": ["本"]},
+        {"id": "tulip", "label_en": "tulip", "label_ja": "チューリップ", "kana": "チューリップ", "emoji": "🌷", "also": ["本"]},
+        {"id": "sunflower", "label_en": "sunflower", "label_ja": "ひまわり", "kana": "ひまわり", "emoji": "🌻", "also": ["本"]}
+      ]
+    },
+    {
+      "counter": "組",
+      "reading": "くみ",
+      "group": "Paper, culture and more",
+      "category": "sets and pairs",
+      "note": "Things that come as a set or a pair: gloves, a deck of cards, a couple. 1 and 2 are ひとくみ, ふたくみ.",
+      "max": 10,
+      "confusable": ["足", "個", "人"],
+      "readings": {
+        "1": ["ひとくみ"],
+        "2": ["ふたくみ"],
+        "3": ["さんくみ", "みくみ"],
+        "4": ["よんくみ", "よくみ"],
+        "5": ["ごくみ"],
+        "6": ["ろくくみ", "ろっくみ"],
+        "7": ["ななくみ", "しちくみ"],
+        "8": ["はちくみ", "はっくみ"],
+        "9": ["きゅうくみ"],
+        "10": ["じゅっくみ", "じっくみ", "じゅうくみ"]
+      },
+      "items": [
+        {"id": "gloves", "label_en": "pair of gloves", "label_ja": "手袋", "kana": "てぶくろ", "emoji": "🧤"},
+        {"id": "cards", "label_en": "deck of cards", "label_ja": "トランプ", "kana": "トランプ", "emoji": "🃏"},
+        {"id": "couple", "label_en": "couple", "label_ja": "カップル", "kana": "カップル", "emoji": "👫"}
+      ]
+    },
+    {
+      "counter": "体",
+      "reading": "たい",
+      "group": "Paper, culture and more",
+      "category": "dolls, statues and robots",
+      "note": "Human-shaped things: dolls, statues, robots, snowmen: いったい, はったい, じゅったい.",
+      "confusable": ["人", "個", "台"],
+      "readings": {
+        "1": ["いったい"],
+        "2": ["にたい"],
+        "3": ["さんたい"],
+        "4": ["よんたい"],
+        "5": ["ごたい"],
+        "6": ["ろくたい"],
+        "7": ["ななたい", "しちたい"],
+        "8": ["はったい", "はちたい"],
+        "9": ["きゅうたい"],
+        "10": ["じゅったい", "じったい"]
+      },
+      "items": [
+        {"id": "robot", "label_en": "robot", "label_ja": "ロボット", "kana": "ロボット", "emoji": "🤖", "also": ["台"]},
+        {"id": "teddy", "label_en": "stuffed toy", "label_ja": "ぬいぐるみ", "kana": "ぬいぐるみ", "emoji": "🧸", "also": ["個", "つ"]},
+        {"id": "statue", "label_en": "statue", "label_ja": "像", "kana": "ぞう", "emoji": "🗿"},
+        {"id": "snowman", "label_en": "snowman", "label_ja": "雪だるま", "kana": "ゆきだるま", "emoji": "⛄", "also": ["個", "つ"]}
+      ]
+    },
+    {
+      "counter": "発",
+      "reading": "はつ",
+      "group": "Paper, culture and more",
+      "category": "shots and fireworks",
+      "note": "Fireworks, gunshots, punches: いっぱつ, さんぱつ, ろっぱつ, はっぱつ, じゅっぱつ.",
+      "confusable": ["本", "個", "回"],
+      "readings": {
+        "1": ["いっぱつ"],
+        "2": ["にはつ"],
+        "3": ["さんぱつ"],
+        "4": ["よんはつ", "よんぱつ"],
+        "5": ["ごはつ"],
+        "6": ["ろっぱつ"],
+        "7": ["ななはつ", "しちはつ"],
+        "8": ["はっぱつ", "はちはつ"],
+        "9": ["きゅうはつ"],
+        "10": ["じゅっぱつ", "じっぱつ"]
+      },
+      "items": [
+        {"id": "firework", "label_en": "firework", "label_ja": "花火", "kana": "はなび", "emoji": "🎆"}
+      ]
+    },
+    {
+      "counter": "滴",
+      "reading": "てき",
+      "group": "Paper, culture and more",
+      "category": "drops of liquid",
+      "note": "Drops of water, medicine, blood: いってき, はってき, じゅってき.",
+      "confusable": ["粒", "杯", "個"],
+      "readings": {
+        "1": ["いってき"],
+        "2": ["にてき"],
+        "3": ["さんてき"],
+        "4": ["よんてき"],
+        "5": ["ごてき"],
+        "6": ["ろくてき"],
+        "7": ["ななてき", "しちてき"],
+        "8": ["はってき", "はちてき"],
+        "9": ["きゅうてき"],
+        "10": ["じゅってき", "じってき"]
+      },
+      "items": [
+        {"id": "water_drop", "label_en": "drop of water", "label_ja": "水", "kana": "みず", "emoji": "💧"},
+        {"id": "blood_drop", "label_en": "drop of blood", "label_ja": "血", "kana": "ち", "emoji": "🩸"}
+      ]
+    },
+    {
+      "counter": "名",
+      "reading": "めい",
+      "group": "Paper, culture and more",
+      "category": "people (polite)",
+      "note": "A polite way to count people, used by staff: 何名様ですか. Unlike 人, it is completely regular: いちめい, にめい.",
+      "confusable": ["人", "匹", "体"],
+      "readings": {
+        "1": ["いちめい"],
+        "2": ["にめい"],
+        "3": ["さんめい"],
+        "4": ["よんめい"],
+        "5": ["ごめい"],
+        "6": ["ろくめい"],
+        "7": ["ななめい", "しちめい"],
+        "8": ["はちめい"],
+        "9": ["きゅうめい"],
+        "10": ["じゅうめい"]
+      },
+      "items": []
     }
   ]
 }
