@@ -6,6 +6,7 @@ import {
   RANKS, DECORATIONS, answerReward, emptyGame, normalizeGame, addYen, rankInfo, buyDecoration,
   recordShiftDay, lastSevenDays, stampList, awardStamps, gameFacts
 } from "../js/rewards.js";
+import { REGULARS } from "../js/story.js";
 
 const data = prepareData(JSON.parse(readFileSync(new URL("../data/counters.json", import.meta.url), "utf8")));
 const fresh = () => ({ ...emptyProgress(), game: emptyGame() });
@@ -104,6 +105,7 @@ test("stamps", () => {
   const all = fresh();
   all.shifts = 999;
   all.game = { ...emptyGame(), earned: 10 ** 7, owned: DECORATIONS.map(d => d.id), perfectShifts: 99, bestCombo: 99 };
+  all.story = { seen: [], friends: Object.fromEntries(REGULARS.map(r => [r.id, 99])) };
   data.counters.forEach(counter => {
     all.unlocked.push(counter.counter);
     cardIds(counter).forEach(id => { all.cards[id] = { box: 7, due: 0 }; });

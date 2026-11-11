@@ -8,8 +8,12 @@ import {
 } from "./logic.js";
 import {
   DECORATIONS, PERFECT_BONUS, answerReward, emptyGame, normalizeGame, addYen, rankInfo, buyDecoration,
-  recordShiftDay, lastSevenDays, stampList, awardStamps
+  recordShiftDay, lastSevenDays, stampList, awardStamps, HEART_STEPS
 } from "./rewards.js";
+import {
+  REGULARS, parseRuby, spokenText, emptyStory, normalizeStory, hearts, metRegulars, regularFor,
+  regularById, allScenes, pendingScenes, markSeen
+} from "./story.js";
 
 const CHALLENGE_ROUNDS = 10;
 const SHELF_SIZE = 8;
@@ -19,7 +23,8 @@ const SHIFT_MAX_QUESTIONS = 20;
 const SHIFT_MAX_NEW_COUNTERS = 3;
 const MARU_OK = "data/assets/ui/maru_ok.png";
 const MARU_WRONG = "data/assets/ui/maru_wrong.png";
-const CUSTOMERS = ["👵", "👴", "👩", "👨", "🧑", "👧", "👦", "👩‍🍳", "👨‍🎓", "👩‍💼", "🧑‍🎨", "👨‍🔧", "🧕", "👩‍🏫", "🧑‍🌾"];
+// Passing strangers (the regulars have faces of their own, in story.js).
+const CUSTOMERS = ["🧒", "👧", "🧑", "👩‍🍳", "👨‍🎓", "👩‍💼", "🧑‍🎨", "👨‍🔧", "🧕", "👩‍🏫", "🧑‍🌾", "👲", "🤵", "🤠", "👷"];
 const NUMBERS = Array.from({ length: 10 }, (_, i) => i + 1);
 
 const $ = id => document.getElementById(id);
@@ -55,7 +60,11 @@ const els = {
   yenStatus: $("yenStatus"), shiftYen: $("shiftYen"),
   decorDialog: $("decorDialog"), decorBalance: $("decorBalance"), decorList: $("decorList"),
   stampsDialog: $("stampsDialog"), stampsSummary: $("stampsSummary"), stampList: $("stampList"),
-  toast: $("toast"), confetti: $("confetti")
+  toast: $("toast"), confetti: $("confetti"),
+  openStoryBtn: $("openStoryBtn"), storyBadge: $("storyBadge"),
+  storyDialog: $("storyDialog"), storyTitle: $("storyTitle"), storySpeaker: $("storySpeaker"), storyName: $("storyName"),
+  storyJa: $("storyJa"), storyEn: $("storyEn"), storyDots: $("storyDots"), storyNextBtn: $("storyNextBtn"),
+  storyLogDialog: $("storyLogDialog"), regularList: $("regularList"), sceneList: $("sceneList"), sceneCount: $("sceneCount")
 };
 
 /* ---------- Storage ---------- */
@@ -130,7 +139,7 @@ const state = {
 };
 
 function freshProgress() {
-  return { ...emptyProgress(), game: emptyGame() };
+  return { ...emptyProgress(), game: emptyGame(), story: emptyStory() };
 }
 
 const yen = amount => `¥${amount.toLocaleString("en-US")}`;
@@ -303,7 +312,7 @@ function renderHome() {
   els.learnedCount.textContent = `${progress.unlocked.length}/${data.counters.length}`;
   els.dueCount.textContent = String(due.length);
 
-  [els.startShiftBtn, els.freePracticeBtn, els.homeChallengeBtn, els.openDecorBtn, els.openStampsBtn].forEach(btn => {
+  [els.startShiftBtn, els.freePracticeBtn, els.homeChallengeBtn, els.openDecorBtn, els.openStampsBtn, els.openStoryBtn].forEach(btn => {
     btn.disabled = false;
   });
   renderShopBanner();
@@ -394,6 +403,10 @@ function renderShopBanner() {
     h("div", { class: `day${day.played ? " played" : ""}${day.isToday ? " today" : ""}`, title: day.date },
       h("span", { lang: "ja" }, day.weekday), h("span", { class: "mark" }, day.played ? "✓" : ""))));
 
+  const waiting = pendingScenes(state.data, state.progress).length;
+  els.storyBadge.hidden = !waiting;
+  els.storyBadge.textContent = String(waiting);
+
   const stamps = stampList(state.data);
   els.stampCount.textContent = `${stamps.filter(s => game.stamps[s.id]).length}/${stamps.length}`;
 }
@@ -468,6 +481,110 @@ function celebrate() {
   window.setTimeout(() => els.confetti.replaceChildren(), 3400);
 }
 
+/* ---------- Story ---------- */
+
+/** Japanese story text with its furigana: "{猫|ねこ}がいる" → nodes. */
+function rubyNodes(text) {
+  return parseRuby(text).map(part => (part.ruby ? ruby(part.text, part.ruby) : part.text));
+}
+
+const heartText = count => "♥".repeat(hearts(count)) + "♡".repeat(HEART_STEPS.length - hearts(count));
+
+let playing = null; // the scene on screen: { scene, index, onDone }
+
+function playScene(scene, onDone) {
+  playing = { scene, index: 0, onDone };
+  els.storyTitle.textContent = scene.title;
+  renderStoryLine();
+  if (!els.storyDialog.open) els.storyDialog.showModal();
+  els.storyNextBtn.focus({ preventScroll: true });
+}
+
+function renderStoryLine() {
+  const { scene, index } = playing;
+  const line = scene.lines[index];
+  const regular = regularById(line.who);
+  const narrator = line.who === "narrator";
+  els.storyDialog.classList.toggle("narration", narrator);
+  els.storySpeaker.hidden = narrator;
+  els.storyName.hidden = narrator;
+  if (line.who === "maru") {
+    els.storySpeaker.replaceChildren(h("img", { src: MARU_OK, alt: "" }));
+    els.storyName.replaceChildren("マル ", h("small", {}, "Maru"));
+  } else if (regular) {
+    els.storySpeaker.replaceChildren(h("span", { class: "emoji" }, regular.emoji));
+    els.storyName.replaceChildren(h("span", { lang: "ja" }, rubyNodes(regular.ja)), " ", h("small", {}, regular.en));
+  }
+  els.storyJa.hidden = !line.ja;
+  els.storyJa.replaceChildren(...(line.ja ? ["「", ...rubyNodes(line.ja), "」"] : []));
+  els.storyEn.textContent = line.en;
+  els.storyDots.textContent = scene.lines.map((_, i) => (i === index ? "●" : "○")).join(" ");
+  els.storyNextBtn.textContent = index === scene.lines.length - 1 ? "Continue ▶" : "Next ▶";
+  if (line.ja) speech.say(spokenText(line.ja));
+  else speech.stop();
+}
+
+function nextStoryLine() {
+  if (!playing) return;
+  if (playing.index < playing.scene.lines.length - 1) {
+    playing.index += 1;
+    renderStoryLine();
+  } else {
+    els.storyDialog.close();
+  }
+}
+
+/** Runs when the scene dialog closes, however it was closed (Continue, Skip or Esc). */
+function finishScene() {
+  if (!playing) return;
+  const { scene, onDone } = playing;
+  playing = null;
+  speech.stop();
+  markSeen(state.progress.story, scene.id);
+  saveProgress();
+  if (onDone) onDone();
+}
+
+const sceneById = id => allScenes(state.data).find(scene => scene.id === id);
+
+function openStoryLog() {
+  const { progress, data } = state;
+  const met = new Set(metRegulars(data, progress).map(r => r.id));
+  els.regularList.replaceChildren(...REGULARS.map(regular => {
+    if (!met.has(regular.id)) {
+      return h("div", { class: "regular unknown" }, h("span", { class: "emoji" }, "❔"),
+        h("div", {}, h("strong", {}, "？？？"), h("small", {}, `You will meet them in “${regular.chapter}”.`)));
+    }
+    const count = progress.story.friends[regular.id] || 0;
+    const next = HEART_STEPS.find(step => count < step);
+    return h("div", { class: "regular" }, h("span", { class: "emoji" }, regular.emoji),
+      h("div", {},
+        h("strong", {}, h("span", { lang: "ja" }, rubyNodes(regular.ja)), ` ${regular.en} `, h("span", { class: "hearts" }, heartText(count))),
+        h("small", {}, regular.role, ". ", next ? `${next - count} more good answers to the next heart.` : "A friend for life.")));
+  }));
+
+  const seen = new Set(progress.story.seen);
+  const pending = new Set(pendingScenes(data, progress).map(scene => scene.id));
+  const scenes = allScenes(data);
+  const open = scenes.filter(scene => seen.has(scene.id) || pending.has(scene.id) || scene.id === "opening");
+  els.sceneCount.textContent = `${open.filter(s => seen.has(s.id)).length} of ${scenes.length} seen`;
+  els.sceneList.replaceChildren(...open.map(scene => h("button", {
+    class: `ghost small scene${seen.has(scene.id) ? "" : " fresh"}`, type: "button",
+    onclick: () => playScene(scene, () => {
+      openStoryLog();
+      renderShopBanner();
+    })
+  }, seen.has(scene.id) ? "▶ " : "● New: ", scene.title)));
+  if (!els.storyLogDialog.open) els.storyLogDialog.showModal();
+}
+
+/** Play the next earned scene, if there is one, then carry on. */
+function thenStory(next) {
+  const scene = pendingScenes(state.data, state.progress)[0];
+  if (scene) playScene(scene, next);
+  else next();
+}
+
 /* ---------- Day streak ---------- */
 
 function dateString(date) {
@@ -496,7 +613,7 @@ function startShift() {
   state.streak = 0;
   state.shift = {
     steps, asked: 0, firstTry: { correct: 0, total: 0 }, newCounters: [], requeues: new Map(),
-    earned: 0, rankIndex: rankInfo(state.progress.game.earned).index
+    earned: 0, rankIndex: rankInfo(state.progress.game.earned).index, heartUps: []
   };
   showPlay();
   nextShiftStep();
@@ -525,6 +642,13 @@ function nextShiftStep() {
 
 function showLesson(step) {
   const counter = state.data.byKey.get(step.counterKey);
+  // The first counter of a chapter is preceded by that chapter's scene, where its regular walks in.
+  const intro = sceneById(`intro:${counter.group}`);
+  const chapterStarted = state.data.counters.some(c => c.group === counter.group && state.progress.unlocked.includes(c.counter));
+  if (intro && !chapterStarted && !state.progress.story.seen.includes(intro.id)) {
+    playScene(intro, () => showLesson(step));
+    return;
+  }
   state.phase = "lesson";
   state.lessonStep = step;
   state.round = null;
@@ -621,6 +745,13 @@ function finishShift() {
   } else if (rank.next) {
     lines.push(rankBarNode(game.earned), h("p", { class: "note" }, `${yen(rank.toGo)} to go until `, ja(rank.next.ja)));
   }
+  shift.heartUps.forEach(regular => {
+    lines.push(h("p", { class: "rank-up" }, h("span", { class: "emoji" }, regular.emoji), " ", h("span", { lang: "ja" }, rubyNodes(regular.ja)),
+      " has warmed to you ", h("span", { class: "hearts" }, heartText(progress.story.friends[regular.id]))));
+  });
+  if (pendingScenes(state.data, progress).length) {
+    lines.push(h("p", { class: "note" }, "💌 Someone has something to tell you…"));
+  }
   if (stamps.length) {
     lines.push(h("div", { class: "stamp-list compact" }, stamps.map(stamp => stampNode(stamp, today))));
   }
@@ -692,7 +823,8 @@ function startRound() {
 }
 
 function presentRound(round) {
-  round.customer = CUSTOMERS[Math.floor(Math.random() * CUSTOMERS.length)];
+  round.regular = regularFor(round.counter, metRegulars(state.data, state.progress));
+  round.customer = round.regular ? round.regular.emoji : CUSTOMERS[Math.floor(Math.random() * CUSTOMERS.length)];
   state.round = round;
   state.lastCounterKey = round.counter.counter;
   state.phase = "asking";
@@ -749,6 +881,7 @@ function render() {
     return;
   }
   renderPrompt();
+  nameCustomer();
   renderHint();
   const counting = round.mode === "count";
   els.serveArea.hidden = counting;
@@ -850,6 +983,21 @@ function renderPrompt() {
       els.prompt.append("「", itemName(entry.item), "を", amountNode, "ください。」");
     }
   }
+}
+
+/** When a regular is the customer, the task line says who it is. */
+function nameCustomer() {
+  const regular = state.round && state.round.regular;
+  if (!regular) return;
+  const first = els.taskLabel.firstChild;
+  if (!first || first.nodeType !== Node.TEXT_NODE) return;
+  const text = first.textContent;
+  const named = text
+    .replace("A customer is ordering.", `${regular.en} is ordering.`)
+    .replace("the customer's items", `${regular.en}'s items`)
+    .replace("How do you read this?", `${regular.en} asks: how do you read this?`);
+  first.textContent = named === text ? `${regular.en} is back. ${text}` : named;
+  els.speaker.title = regular.en;
 }
 
 function renderHint() {
@@ -1191,11 +1339,25 @@ function finishRound(correct, lines) {
     state.streak = 0;
   }
 
+  const regular = round.regular;
+  if (regular) {
+    const [jaLine, enLine] = correct ? regular.thanks[Math.floor(Math.random() * regular.thanks.length)] : regular.oops;
+    lines.push(h("p", { class: "regular-line" }, h("span", { class: "emoji" }, regular.emoji), " ",
+      h("span", { lang: "ja" }, "「", rubyNodes(jaLine), "」"), " ", h("small", {}, enLine)));
+    // Regulars warm to you for first-try answers during shifts.
+    if (state.shift && correct && !round.step.retry) {
+      const friends = state.progress.story.friends;
+      const before = hearts(friends[regular.id]);
+      friends[regular.id] = (friends[regular.id] || 0) + 1;
+      if (hearts(friends[regular.id]) > before && !state.shift.heartUps.includes(regular)) state.shift.heartUps.push(regular);
+    }
+  }
+
   if (state.shift) {
     const reward = gradeShiftAnswer(round, correct);
     if (reward && lines[0]) {
-      lines[0].append(h("span", { class: "yen-pop" }, `+${yen(reward)}`),
-        state.streak >= 3 ? h("span", { class: "combo" }, `${state.streak} in a row!`) : null);
+      lines[0].append(h("span", { class: "yen-pop" }, `+${yen(reward)}`));
+      if (state.streak >= 3) lines[0].append(h("span", { class: "combo" }, `${state.streak} in a row!`));
     }
   } else {
     if (!correct) {
@@ -1560,18 +1722,25 @@ function bindEvents() {
   els.openStampsBtn.addEventListener("click", openStamps);
   $("closeStampsBtn").addEventListener("click", () => els.stampsDialog.close());
 
+  // Story
+  els.openStoryBtn.addEventListener("click", openStoryLog);
+  $("closeStoryLogBtn").addEventListener("click", () => els.storyLogDialog.close());
+  els.storyNextBtn.addEventListener("click", nextStoryLine);
+  $("storySkipBtn").addEventListener("click", () => els.storyDialog.close());
+  els.storyDialog.addEventListener("close", finishScene);
+
   // Shift summary
   $("summaryAgainBtn").addEventListener("click", () => els.summaryDialog.close("again"));
   $("summaryHomeBtn").addEventListener("click", () => els.summaryDialog.close("home"));
   els.summaryDialog.addEventListener("close", () => {
     const again = els.summaryDialog.returnValue === "again";
     els.summaryDialog.returnValue = "";
-    if (again) startShift();
-    else showHome();
+    // Any scene earned during the shift plays before moving on.
+    thenStory(() => (again ? startShift() : showHome()));
   });
 
   // Click on the backdrop closes a dialog.
-  [els.settingsDialog, els.guideDialog, els.decorDialog, els.stampsDialog].forEach(dialog => dialog.addEventListener("click", event => {
+  [els.settingsDialog, els.guideDialog, els.decorDialog, els.stampsDialog, els.storyLogDialog].forEach(dialog => dialog.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
   }));
 
@@ -1625,6 +1794,7 @@ async function init() {
   const savedProgress = store.get("maruProgress", null);
   state.progress = normalizeProgress(savedProgress, state.data);
   state.progress.game = normalizeGame(savedProgress && savedProgress.game);
+  state.progress.story = normalizeStory(savedProgress && savedProgress.story);
   collectStamps(); // anything already earned before the stamp card existed
   const savedEnabled = store.get("enabledCounters", null);
   if (Array.isArray(savedEnabled)) {
@@ -1632,6 +1802,9 @@ async function init() {
     state.enabled = valid.length && valid.length < keys.length ? valid : null;
   }
   showHome();
+  // A brand-new player gets the opening scene. (Anyone can re-read it from 📖 Story.)
+  const brandNew = !state.progress.shifts && !Object.keys(state.progress.cards).length;
+  if (brandNew && !state.progress.story.seen.includes("opening")) playScene(sceneById("opening"), null);
 }
 
 init();

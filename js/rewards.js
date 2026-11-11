@@ -38,6 +38,10 @@ export const COMBO_STEP = 20;
 export const COMBO_CAP = 5;
 export const PERFECT_BONUS = 500;
 
+/** Correct first-try answers for a regular needed for one, two and three hearts. */
+export const HEART_STEPS = [8, 25, 60];
+export const REGULAR_COUNT = 8;
+
 /** Yen for a first-try correct answer; `combo` is how many in a row including this one. */
 export function answerReward(combo) {
   return BASE_REWARD + COMBO_STEP * Math.min(Math.max(combo, 1) - 1, COMBO_CAP);
@@ -143,6 +147,7 @@ export function gameFacts(data, progress, dayStreak) {
     perfectShifts: game.perfectShifts,
     bestCombo: game.bestCombo,
     owned: game.owned.length,
+    bestFriends: Object.values((progress.story && progress.story.friends) || {}).filter(n => n >= HEART_STEPS[HEART_STEPS.length - 1]).length,
     rank: rankInfo(game.earned).index
   };
 }
@@ -176,6 +181,8 @@ export function stampList(data) {
       id: `chapter:${name}`, icon: CHAPTER_ICONS[i % CHAPTER_ICONS.length], title: name,
       how: `Get 2 stars on every counter in “${name}”`, earned: f => f.chaptersDone.includes(name)
     })),
+    { id: "friend_1", icon: "💌", title: "A regular's favourite", how: "Reach three hearts with a regular", earned: f => f.bestFriends >= 1 },
+    { id: "friend_all", icon: "🏘️", title: "Heart of the street", how: "Reach three hearts with every regular", earned: f => f.bestFriends >= REGULAR_COUNT },
     { id: "deco_1", icon: "🏮", title: "A touch of style", how: "Buy a decoration for the shop", earned: f => f.owned >= 1 },
     { id: "deco_all", icon: "🎊", title: "Fully decorated", how: "Buy every decoration", earned: f => f.owned >= DECORATIONS.length },
     { id: "rank_3", icon: "🏬", title: "Talk of the town", how: "Grow the shop into a 人気店", earned: f => f.rank >= 3 },

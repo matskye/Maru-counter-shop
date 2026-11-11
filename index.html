@@ -67,6 +67,7 @@
           <button id="homeChallengeBtn" class="ghost" type="button" disabled title="Ten rounds, no hints">🏁 Challenge</button>
           <button id="openDecorBtn" class="ghost" type="button" disabled title="Spend your takings on the shop front">🛍️ Decorate</button>
           <button id="openStampsBtn" class="ghost" type="button" disabled title="Your stamp card">💮 Stamps <span id="stampCount"></span></button>
+          <button id="openStoryBtn" class="ghost" type="button" disabled title="Your regulars and the story so far">📖 Story <span id="storyBadge" class="badge" hidden></span></button>
         </div>
       </section>
 
@@ -174,6 +175,7 @@
           <li><strong>👂 Order:</strong> the customer names the item and says how many with a native number, like <span lang="ja">「りんごをみっつください」</span>. Put exactly that on the counter.</li>
           <li><strong>🧾 Count:</strong> items are on the counter. Pick (or type) the right way to say how many there are. Watch for sound changes such as <span lang="ja">さん<strong>ぼ</strong>ん</span> and <span lang="ja">いっ<strong>ぽ</strong>ん</span>.</li>
           <li><strong>💴 Yen</strong> come from answering right first time in a shift, with a bonus for answers in a row and for a perfect shift. Takings grow the shop's rank and buy decorations; the <strong>💮 stamp card</strong> marks your milestones.</li>
+          <li><strong>📖 Story:</strong> each chapter brings a new regular customer. Answer their orders right first time during shifts to earn hearts and unlock little scenes.</li>
           <li><strong>🎯 Free practice</strong> and <strong>🏁 Challenge</strong> (ten rounds, no hints) are for extra drilling with any counters you like, ticked under <em>📖 Counters</em>.</li>
           <li>Keyboard: <kbd>Enter</kbd> = Done / Next, <kbd>1</kbd>–<kbd>4</kbd> = pick an answer, <kbd>R</kbd> = replay audio, <kbd>H</kbd> = hint.</li>
         </ul>
@@ -279,6 +281,41 @@
     <div id="stampList" class="stamp-list"></div>
     <div class="dialog-actions">
       <button id="closeStampsBtn" type="button">Done</button>
+    </div>
+  </dialog>
+
+  <!-- Story scene -->
+  <dialog id="storyDialog" class="dialog story" aria-labelledby="storyTitle">
+    <p id="storyTitle" class="story-title"></p>
+    <div class="story-stage">
+      <div id="storySpeaker" class="speaker story-speaker" aria-hidden="true"></div>
+      <div class="story-text">
+        <strong id="storyName"></strong>
+        <p id="storyJa" class="story-ja" lang="ja"></p>
+        <p id="storyEn" class="story-en"></p>
+      </div>
+    </div>
+    <div class="story-actions">
+      <button id="storySkipBtn" class="ghost small" type="button">Skip</button>
+      <span id="storyDots" class="story-dots" aria-hidden="true"></span>
+      <button id="storyNextBtn" class="primary" type="button">Next ▶</button>
+    </div>
+  </dialog>
+
+  <!-- Story log -->
+  <dialog id="storyLogDialog" class="dialog wide" aria-labelledby="storyLogTitle">
+    <header class="dialog-header">
+      <h2 id="storyLogTitle">Story</h2>
+      <p>Your regulars and the story so far. Serve a regular well during shifts and they warm to you.</p>
+    </header>
+    <div class="story-log">
+      <h3 class="chapter-title">Regulars</h3>
+      <div id="regularList" class="regular-list"></div>
+      <h3 class="chapter-title">Scenes <small id="sceneCount"></small></h3>
+      <div id="sceneList" class="scene-list"></div>
+    </div>
+    <div class="dialog-actions">
+      <button id="closeStoryLogBtn" type="button">Done</button>
     </div>
   </dialog>
 

@@ -30,8 +30,15 @@ Rewards are tied to learning rather than to time spent:
 - **Yen**: every first-try correct answer in a shift earns ¥100, rising to ¥200 for answers in a row, plus ¥500 for a perfect shift. Free practice earns nothing, so there is no reason to grind.
 - **Shop rank**: lifetime takings grow the shop from a 屋台 (street stall) through seven ranks to 日本一の店.
 - **Decorations**: yen buys things for the shop front (lanterns, wind chimes, a torii gate…).
-- **Stamp card**: 32 stamps for milestones such as a week-long streak, a perfect shift, finishing a chapter or three stars on a counter.
+- **Stamp card**: 34 stamps for milestones such as a week-long streak, a perfect shift, finishing a chapter or three stars on a counter.
 - **This week**: a seven-day strip on the home screen shows which days you played.
+
+There is a little story too:
+
+- An **opening scene** on first launch, and a short scene at the start and end of each chapter.
+- Eight **regular customers**, one per chapter (Mrs Tanaka next door, Kenta and his cats, the ever-punctual Mr Suzuki…). They turn up as the customer for their chapter's counters and react to your answers in their own way of speaking.
+- Answering a regular right first time during shifts earns **hearts**; each heart unlocks a small scene with them.
+- Japanese lines in scenes always carry furigana and an English translation, and are read aloud if voice is on. **📖 Story** on the home screen lists your regulars and lets you replay any scene.
 
 Customers ask three kinds of questions:
 
@@ -68,6 +75,7 @@ index.html          page structure
 style.css           styles
 js/logic.js         game rules: readings, questions, answer checking, lesson plan and spaced repetition (no DOM)
 js/rewards.js       yen, shop ranks, decorations and the stamp card (no DOM)
+js/story.js         opening, chapter scenes, regular customers and their story beats
 js/app.js           UI, storage, speech
 data/counters.json  counters, readings and items
 data/assets/        images
@@ -123,3 +131,7 @@ Everything the game knows lives in `data/counters.json`. Each counter looks like
 - Lesson cards are derived automatically: a reading counts as irregular when it differs from plain number + counter reading.
 
 `npm test` checks the file for missing readings, missing images and ambiguous questions.
+
+## Writing story scenes
+
+Scenes live in `js/story.js`. A line is either narration (`{ who: "narrator", en: "…" }`) or speech (`{ who: "maru" | <regular id>, ja: "…", en: "…" }`). Japanese text uses `{漢字|かんじ}` for furigana; `npm test` fails if any kanji is left without a reading.
