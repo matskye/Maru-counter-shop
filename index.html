@@ -2,108 +2,147 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="description" content="Practice Japanese counters by running Maru's shop: serve customers and count their items.">
-  <meta name="theme-color" content="#6b5bff">
+  <meta name="theme-color" content="#f6f1e7">
   <title>Maru's Counter Shop</title>
   <link rel="icon" href="data/assets/ui/maru_ok.png">
   <link rel="preload" as="image" href="data/assets/ui/maru_ok.png">
   <link rel="preload" as="image" href="data/assets/ui/maru_wrong.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&family=Zen+Maru+Gothic:wght@500;700&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Icons (drawn with the current text colour) -->
+  <svg xmlns="http://www.w3.org/2000/svg" class="sprite" aria-hidden="true">
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H19v16H7.5A2.5 2.5 0 0 0 5 20.5z"/><path d="M5 20.5A2.5 2.5 0 0 0 7.5 22H19v-4"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7"/><path d="M12 17h.01"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4"/><path d="M5 4h13l-2.5 4.5L18 13H5"/></symbol>
+    <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5.5 8h13l1 13h-15z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></symbol>
+    <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M8.5 14 7 22l5-3 5 3-1.5-8"/></symbol>
+    <symbol id="i-story" viewBox="0 0 24 24"><path d="M12 6c-2-1.4-5-2-8-2v14c3 0 6 .6 8 2 2-1.4 5-2 8-2V4c-3 0-6 .6-8 2z"/><path d="M12 6v14"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M4 9.5v5h3.5L12 18V6L7.5 9.5z"/><path d="M15.5 9a4 4 0 0 1 0 6"/><path d="M18 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
+    <symbol id="i-slow" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 13V9"/><path d="M9.5 2.5h5"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></symbol>
+    <symbol id="i-next" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  </svg>
+
   <div class="app-shell">
     <header class="app-header">
       <div class="brand">
-        <h1>Maru's Counter Shop</h1>
-        <p class="subtitle">Master Japanese counters with Maru!</p>
+        <img src="data/assets/ui/maru_ok.png" alt="" width="44" height="44">
+        <div>
+          <h1>Maru's Counter Shop</h1>
+          <p class="subtitle" lang="ja">マルのお店 <span lang="en">· Japanese counters</span></p>
+        </div>
       </div>
-      <div class="header-actions">
-        <button id="homeBtn" class="ghost" type="button" hidden>🏠 Shop</button>
-        <button id="openGuideBtn" class="ghost" type="button">📖 Counters</button>
-        <button id="openSettingsBtn" class="ghost" type="button">⚙️ Settings</button>
-      </div>
+      <nav class="header-actions" aria-label="Main">
+        <button id="homeBtn" class="nav-btn" type="button" hidden><svg class="icon"><use href="#i-home"/></svg><span>Shop</span></button>
+        <button id="openGuideBtn" class="nav-btn" type="button"><svg class="icon"><use href="#i-book"/></svg><span>Counters</span></button>
+        <button id="openHelpBtn" class="nav-btn" type="button"><svg class="icon"><use href="#i-help"/></svg><span>How to play</span></button>
+        <button id="openSettingsBtn" class="nav-btn" type="button"><svg class="icon"><use href="#i-sliders"/></svg><span>Settings</span></button>
+      </nav>
     </header>
 
     <!-- Home: the shop front -->
-    <main id="home" class="game-panel home">
-      <section class="welcome">
-        <img src="data/assets/ui/maru_ok.png" alt="Maru the red panda" width="104" height="104">
-        <div class="welcome-text">
-          <p class="speech-bubble small" lang="ja">「いらっしゃいませ！」</p>
-          <p id="homeMessage" class="home-message">Loading…</p>
-        </div>
-      </section>
-
-      <section class="shop-banner" aria-label="Your shop">
-        <div class="shop-rank">
-          <span id="rankIcon" class="emoji rank-icon">⛺</span>
-          <div class="rank-text">
-            <strong id="rankName" lang="ja">屋台</strong>
-            <small id="rankEn">Street stall</small>
+    <main id="home" class="home">
+      <section class="card hero">
+        <div class="welcome">
+          <img src="data/assets/ui/maru_ok.png" alt="Maru the red panda" width="120" height="120">
+          <div class="welcome-text">
+            <p class="speech-bubble small" lang="ja">「いらっしゃいませ！」</p>
+            <p id="homeMessage" class="home-message">Loading…</p>
           </div>
-          <span id="yenBalance" class="yen-chip" title="Yen to spend on decorations">💴 ¥0</span>
         </div>
-        <div class="bar" role="progressbar" aria-label="Progress to the next shop rank" aria-valuemin="0" aria-valuemax="100"><div id="rankBar"></div></div>
-        <p id="rankNote" class="note"></p>
-        <div id="shopDecos" class="shop-decos" aria-label="Shop decorations"></div>
-      </section>
-
-      <section class="home-stats" aria-label="Your progress">
-        <div class="stat"><strong id="dayStreak">0</strong><span>🔥 day streak</span></div>
-        <div class="stat"><strong id="learnedCount">0</strong><span>⭐ counters started</span></div>
-        <div class="stat"><strong id="dueCount">0</strong><span>📚 reviews ready</span></div>
-      </section>
-
-      <section class="week" aria-label="This week">
-        <div id="weekStrip" class="week-strip"></div>
-      </section>
-
-      <section class="home-actions">
-        <button id="startShiftBtn" class="primary big" type="button" disabled>▶ Start a shift</button>
-        <p id="shiftPlan" class="note"></p>
-        <div class="home-secondary">
-          <button id="freePracticeBtn" class="ghost" type="button" disabled title="Endless practice with the counters ticked under 📖 Counters">🎯 Free practice</button>
-          <button id="homeChallengeBtn" class="ghost" type="button" disabled title="Ten rounds, no hints">🏁 Challenge</button>
-          <button id="openDecorBtn" class="ghost" type="button" disabled title="Spend your takings on the shop front">🛍️ Decorate</button>
-          <button id="openStampsBtn" class="ghost" type="button" disabled title="Your stamp card">💮 Stamps <span id="stampCount"></span></button>
-          <button id="openStoryBtn" class="ghost" type="button" disabled title="Your regulars and the story so far">📖 Story <span id="storyBadge" class="badge" hidden></span></button>
+        <div class="home-cta">
+          <button id="startShiftBtn" class="primary big" type="button" disabled><svg class="icon"><use href="#i-play"/></svg><span class="label">Start a shift</span></button>
+          <p id="shiftPlan" class="note"></p>
         </div>
       </section>
 
-      <section>
+      <aside class="sidebar">
+        <section class="card shop-banner" aria-label="Your shop">
+          <div class="shop-rank">
+            <span id="rankIcon" class="emoji rank-icon">⛺</span>
+            <div class="rank-text">
+              <strong id="rankName" lang="ja">屋台</strong>
+              <small id="rankEn">Street stall</small>
+            </div>
+            <span id="yenBalance" class="yen-chip" title="Yen to spend on decorations">¥0</span>
+          </div>
+          <div class="bar" role="progressbar" aria-label="Progress to the next shop rank" aria-valuemin="0" aria-valuemax="100"><div id="rankBar"></div></div>
+          <p id="rankNote" class="note"></p>
+          <div id="shopDecos" class="shop-decos" aria-label="Shop decorations"></div>
+        </section>
+
+        <section class="card progress-card" aria-label="Your progress">
+          <div class="home-stats">
+            <div class="stat"><strong id="dayStreak">0</strong><span>day streak</span></div>
+            <div class="stat"><strong id="learnedCount">0</strong><span>counters</span></div>
+            <div class="stat"><strong id="dueCount">0</strong><span>reviews ready</span></div>
+          </div>
+          <div id="weekStrip" class="week-strip" aria-label="This week"></div>
+        </section>
+
+        <section class="action-grid" aria-label="More to do">
+          <button id="freePracticeBtn" class="action-tile" type="button" disabled>
+            <svg class="icon"><use href="#i-target"/></svg><strong>Free practice</strong><small>Any counters, no schedule</small>
+          </button>
+          <button id="homeChallengeBtn" class="action-tile" type="button" disabled>
+            <svg class="icon"><use href="#i-flag"/></svg><strong>Challenge</strong><small>Ten rounds, no hints</small>
+          </button>
+          <button id="openDecorBtn" class="action-tile" type="button" disabled>
+            <svg class="icon"><use href="#i-bag"/></svg><strong>Decorate</strong><small>Spend your takings</small>
+          </button>
+          <button id="openStampsBtn" class="action-tile" type="button" disabled>
+            <svg class="icon"><use href="#i-award"/></svg><strong>Stamps</strong><small id="stampCount">0 collected</small>
+          </button>
+          <button id="openStoryBtn" class="action-tile wide" type="button" disabled>
+            <svg class="icon"><use href="#i-story"/></svg><strong>Story <span id="storyBadge" class="badge" hidden></span></strong><small>Your regulars and scenes so far</small>
+          </button>
+        </section>
+      </aside>
+
+      <section class="card counters-card">
         <h2 class="section-title">Your counters</h2>
         <div id="counterGrid" class="chapters"></div>
       </section>
     </main>
 
     <!-- Play -->
-    <main id="game" class="game-panel" hidden>
+    <main id="game" class="card game-panel" hidden>
       <section class="mode-row">
         <div id="shiftProgress" class="shift-progress" hidden>
           <span id="shiftLabel">Customer 1 of 12</span>
           <div class="bar" role="progressbar" aria-labelledby="shiftLabel" aria-valuemin="0" aria-valuemax="100"><div id="shiftBar"></div></div>
         </div>
         <div id="modeSwitch" class="segmented" role="group" aria-label="Game mode">
-          <button type="button" data-mode="serve" title="Hear an order and put the right items on the counter">🛒 Serve</button>
-          <button type="button" data-mode="count" title="See the items and say how many there are">🧾 Count</button>
-          <button type="button" data-mode="mix" title="A mix of both">🔀 Mix</button>
+          <button type="button" data-mode="serve" title="Hear an order and put the right items on the counter">Serve</button>
+          <button type="button" data-mode="count" title="See the items and say how many there are">Count</button>
+          <button type="button" data-mode="mix" title="A mix of both">Mix</button>
         </div>
         <div class="status-bar" aria-live="polite">
           <div class="status-chip" id="streakStatus" title="Correct answers in a row (best ever in brackets)">🔥 <span id="streakCount">0</span><span class="chip-sub" id="bestStreak"></span></div>
-          <div class="status-chip yen-status" id="yenStatus" title="Takings this shift" hidden>💴 <span id="shiftYen">¥0</span></div>
+          <div class="status-chip yen-status" id="yenStatus" title="Takings this shift" hidden><span id="shiftYen">¥0</span></div>
           <div class="status-chip challenge-chip" id="challengeStatus" hidden>
             Round <span id="challengeRound">1</span>/<span id="challengeTotal">10</span> · Score <span id="challengeScore">0</span>
           </div>
         </div>
-        <button id="challengeBtn" type="button">🏁 Challenge</button>
+        <button id="challengeBtn" class="small" type="button">Challenge</button>
       </section>
 
       <!-- A new counter is introduced -->
       <section id="lessonArea" class="lesson" hidden>
-        <p class="task-label">📖 New counter! Read this, then try it out.</p>
+        <p class="task-label"><strong>New counter.</strong> Read this, then try it out.</p>
         <div id="lessonCard" class="lesson-card"></div>
-        <button id="lessonDoneBtn" class="primary big" type="button">Got it, let's practice ▶</button>
+        <button id="lessonDoneBtn" class="primary big" type="button"><span class="label">Got it, let's practice</span><svg class="icon"><use href="#i-next"/></svg></button>
       </section>
 
       <section id="promptCard" class="prompt-card">
@@ -113,9 +152,9 @@
           <div id="prompt" class="speech-bubble" lang="ja">「…」</div>
         </div>
         <div class="prompt-tools">
-          <button id="replayVoiceBtn" class="ghost small" type="button">🔊 Replay</button>
-          <button id="slowVoiceBtn" class="ghost small" type="button">🐢 Slow</button>
-          <button id="toggleHintBtn" class="ghost small" type="button" aria-expanded="false" aria-controls="counterHint">💡 Hint</button>
+          <button id="replayVoiceBtn" class="tool-btn needs-speech" type="button"><svg class="icon"><use href="#i-volume"/></svg><span>Replay</span></button>
+          <button id="slowVoiceBtn" class="tool-btn needs-speech" type="button"><svg class="icon"><use href="#i-slow"/></svg><span>Slow</span></button>
+          <button id="toggleHintBtn" class="tool-btn" type="button" aria-expanded="false" aria-controls="counterHint"><svg class="icon"><use href="#i-bulb"/></svg><span class="label">Hint</span></button>
         </div>
         <div id="counterHint" class="hint-window" hidden></div>
       </section>
@@ -123,7 +162,7 @@
       <!-- Serve mode: pick items from the shelf -->
       <section id="serveArea" class="play-area">
         <div class="panel">
-          <h2 class="section-title">Shelf</h2>
+          <div class="panel-head"><h2 class="section-title">Shelf</h2></div>
           <div id="shelf" class="shelf-grid"></div>
         </div>
         <div class="panel">
@@ -138,12 +177,12 @@
       <!-- Count mode: say how many items there are -->
       <section id="countArea" class="play-area" hidden>
         <div class="panel">
-          <h2 class="section-title">On the counter</h2>
+          <div class="panel-head"><h2 class="section-title">On the counter</h2></div>
           <div id="countTray" class="count-tray"></div>
           <div id="countLabel" class="count-label"></div>
         </div>
         <div class="panel">
-          <h2 class="section-title">Your answer</h2>
+          <div class="panel-head"><h2 class="section-title">Your answer</h2></div>
           <div id="choices" class="choices"></div>
           <form id="typeForm" class="type-form" hidden autocomplete="off">
             <label for="typeInput">Type the reading in hiragana or romaji</label>
@@ -162,57 +201,66 @@
           <div id="resultText" class="result-text"></div>
         </div>
         <div class="controls">
-          <button id="doneBtn" class="primary big" type="button">Done!</button>
-          <button id="nextBtn" class="big" type="button" hidden>Next ▶</button>
+          <button id="doneBtn" class="primary big" type="button"><svg class="icon"><use href="#i-check"/></svg><span class="label">Done</span></button>
+          <button id="nextBtn" class="big" type="button" hidden><span class="label">Next</span><svg class="icon"><use href="#i-next"/></svg></button>
         </div>
       </section>
-
-      <details id="howToPlay" class="learn-more">
-        <summary>How to play &amp; study tips</summary>
-        <ul>
-          <li><strong>▶ Shifts</strong> are the main way to learn: a few minutes of customers, mixing reviews that are due with a little new material. Maru introduces counters one at a time and brings back what you miss.</li>
-          <li><strong>🛒 Serve:</strong> a customer orders with a number and a counter, like <span lang="ja">「3本ください」</span>. Put that many matching items on the counter (click, tap or drag), then press <em>Done!</em></li>
-          <li><strong>👂 Order:</strong> the customer names the item and says how many with a native number, like <span lang="ja">「りんごをみっつください」</span>. Put exactly that on the counter.</li>
-          <li><strong>🧾 Count:</strong> items are on the counter. Pick (or type) the right way to say how many there are. Watch for sound changes such as <span lang="ja">さん<strong>ぼ</strong>ん</span> and <span lang="ja">いっ<strong>ぽ</strong>ん</span>.</li>
-          <li><strong>💴 Yen</strong> come from answering right first time in a shift, with a bonus for answers in a row and for a perfect shift. Takings grow the shop's rank and buy decorations; the <strong>💮 stamp card</strong> marks your milestones.</li>
-          <li><strong>📖 Story:</strong> each chapter brings a new regular customer. Answer their orders right first time during shifts to earn hearts and unlock little scenes.</li>
-          <li><strong>🎯 Free practice</strong> and <strong>🏁 Challenge</strong> (ten rounds, no hints) are for extra drilling with any counters you like, ticked under <em>📖 Counters</em>.</li>
-          <li>Keyboard: <kbd>Enter</kbd> = Done / Next, <kbd>1</kbd>–<kbd>4</kbd> = pick an answer, <kbd>R</kbd> = replay audio, <kbd>H</kbd> = hint.</li>
-        </ul>
-      </details>
     </main>
   </div>
 
+  <!-- How to play -->
+  <dialog id="helpDialog" class="dialog wide" aria-labelledby="helpTitle">
+    <header class="dialog-header"><h2 id="helpTitle">How to play</h2></header>
+    <div class="help-body">
+      <ul>
+        <li><strong>Shifts</strong> are the main way to learn: a few minutes of customers, mixing reviews that are due with a little new material. Maru introduces counters one at a time and brings back what you miss.</li>
+        <li><strong>Serve:</strong> a customer orders with a number and a counter, like <span lang="ja">「3本ください」</span>. Put that many matching items on the counter (click, tap or drag), then press <em>Done</em>.</li>
+        <li><strong>Order:</strong> the customer names the item and says how many with a native number, like <span lang="ja">「りんごをみっつください」</span>. Put exactly that on the counter.</li>
+        <li><strong>Count:</strong> items are on the counter. Pick (or type) the right way to say how many there are. Watch for sound changes such as <span lang="ja">さん<strong>ぼ</strong>ん</span> and <span lang="ja">いっ<strong>ぽ</strong>ん</span>.</li>
+        <li><strong>Yen</strong> come from answering right first time in a shift, with a bonus for answers in a row and for a perfect shift. Takings grow the shop's rank and buy decorations; the <strong>stamp card</strong> marks your milestones.</li>
+        <li><strong>Story:</strong> each chapter brings a new regular customer. Answer their orders right first time during shifts to earn hearts and unlock little scenes.</li>
+        <li><strong>Free practice</strong> and <strong>Challenge</strong> (ten rounds, no hints) are for extra drilling with any counters you like, ticked under <em>Counters</em>.</li>
+        <li>Keyboard: <kbd>Enter</kbd> = Done / Next, <kbd>1</kbd>–<kbd>4</kbd> = pick an answer, <kbd>H</kbd> = hint<span class="needs-speech">, <kbd>R</kbd> = replay audio</span>.</li>
+      </ul>
+    </div>
+    <div class="dialog-actions">
+      <button id="closeHelpBtn" type="button">Got it</button>
+    </div>
+  </dialog>
+
   <!-- Settings -->
   <dialog id="settingsDialog" class="dialog" aria-labelledby="settingsTitle">
-    <h2 id="settingsTitle">Settings</h2>
+    <header class="dialog-header"><h2 id="settingsTitle">Settings</h2></header>
     <div class="settings-list">
-      <label class="setting"><input type="checkbox" id="furiganaCheckbox"> <span>Show furigana<small>Readings above kanji in orders and item names</small></span></label>
-      <label class="setting"><input type="checkbox" id="voiceCheckbox"> <span>Voice<small>Speak orders and answers aloud</small></span></label>
-      <label class="setting"><input type="checkbox" id="listeningCheckbox"> <span>Listening practice<small>Hide the order text in Serve mode until you answer</small></span></label>
-      <label class="setting"><input type="checkbox" id="sfxCheckbox"> <span>Sound effects</span></label>
-      <label class="setting select"><span>Item names</span>
+      <label class="setting"><span>Show furigana<small>Readings above kanji in orders and item names</small></span><input type="checkbox" class="switch" id="furiganaCheckbox"></label>
+      <label class="setting needs-speech"><span>Voice<small>Speak orders and answers aloud</small></span><input type="checkbox" class="switch" id="voiceCheckbox"></label>
+      <label class="setting needs-speech"><span>Listening practice<small>Hide the order text until you answer</small></span><input type="checkbox" class="switch" id="listeningCheckbox"></label>
+      <label class="setting"><span>Sound effects</span><input type="checkbox" class="switch" id="sfxCheckbox"></label>
+      <label class="setting"><span>Item names</span>
         <select id="labelSelect">
           <option value="ja">Japanese</option>
           <option value="en">English</option>
           <option value="off">Hidden</option>
         </select>
       </label>
-      <label class="setting select"><span>Numbers in free practice</span>
+      <label class="setting"><span>Numbers in free practice</span>
         <select id="maxNumberSelect">
           <option value="5">1–5</option>
           <option value="10">1–10</option>
-          <option value="20">1–20 (Count questions only)</option>
+          <option value="20">1–20 (Count only)</option>
         </select>
       </label>
-      <label class="setting select"><span>Answers in Count mode</span>
+      <label class="setting"><span>Answers in Count mode</span>
         <select id="answerStyleSelect">
           <option value="choice">Multiple choice</option>
           <option value="type">Type the reading</option>
         </select>
       </label>
     </div>
-    <p id="voiceNote" class="note" hidden></p>
+    <div id="voiceNote" class="voice-note" hidden>
+      <p id="voiceNoteText"></p>
+      <button id="tryVoiceBtn" class="ghost small" type="button" hidden>Turn voice on anyway</button>
+    </div>
     <div class="dialog-actions">
       <button id="resetProgressBtn" class="ghost danger" type="button">Reset progress</button>
       <button id="closeSettingsBtn" type="button">Close</button>
@@ -223,7 +271,7 @@
   <dialog id="guideDialog" class="dialog wide" aria-labelledby="guideTitle">
     <header class="dialog-header">
       <h2 id="guideTitle">Counters</h2>
-      <p>Tap a counter for its readings and examples; tap a reading to hear it. Ticked counters are used in Free practice and Challenge. Shifts follow Maru's lesson plan.</p>
+      <p>Tap a counter for its readings and examples<span class="needs-speech">; tap a reading to hear it</span>. Ticked counters are used in Free practice and Challenge. Shifts follow Maru's lesson plan.</p>
     </header>
     <div class="guide-toolbar">
       <div id="counterSummary" class="counter-summary"></div>
@@ -236,7 +284,7 @@
   </dialog>
 
   <!-- Challenge results -->
-  <dialog id="resultsDialog" class="dialog" aria-labelledby="resultsTitle">
+  <dialog id="resultsDialog" class="dialog centered" aria-labelledby="resultsTitle">
     <img id="resultsImg" alt="" width="110" height="110">
     <h2 id="resultsTitle">Challenge complete!</h2>
     <p id="resultsScore" class="results-score"></p>
@@ -249,7 +297,7 @@
   </dialog>
 
   <!-- Shift summary -->
-  <dialog id="summaryDialog" class="dialog" aria-labelledby="summaryTitle">
+  <dialog id="summaryDialog" class="dialog centered" aria-labelledby="summaryTitle">
     <img src="data/assets/ui/maru_ok.png" alt="" width="110" height="110">
     <h2 id="summaryTitle">Shift complete!</h2>
     <p id="summaryScore" class="results-score"></p>
@@ -298,7 +346,7 @@
     <div class="story-actions">
       <button id="storySkipBtn" class="ghost small" type="button">Skip</button>
       <span id="storyDots" class="story-dots" aria-hidden="true"></span>
-      <button id="storyNextBtn" class="primary" type="button">Next ▶</button>
+      <button id="storyNextBtn" class="primary" type="button"><span class="label">Next</span><svg class="icon"><use href="#i-next"/></svg></button>
     </div>
   </dialog>
 
