@@ -1,108 +1,180 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Practice Japanese counters by running Maru's shop: serve customers and count their items.">
+  <meta name="theme-color" content="#6b5bff">
   <title>Maru's Counter Shop</title>
+  <link rel="icon" href="data/assets/ui/maru_ok.png">
+  <link rel="preload" as="image" href="data/assets/ui/maru_ok.png">
+  <link rel="preload" as="image" href="data/assets/ui/maru_wrong.png">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app-shell">
     <header class="app-header">
-      <h1>Maru's Counter Shop</h1>
-      <p class="subtitle">Master Japanese counters with Maru!</p>
+      <div class="brand">
+        <h1>Maru's Counter Shop</h1>
+        <p class="subtitle">Master Japanese counters with Maru!</p>
+      </div>
+      <div class="header-actions">
+        <button id="openGuideBtn" class="ghost" type="button">📖 Counters</button>
+        <button id="openSettingsBtn" class="ghost" type="button">⚙️ Settings</button>
+      </div>
     </header>
 
     <main id="game" class="game-panel">
-      <section class="customer-card">
-        <div id="customer" class="speech-bubble">「---」</div>
-        <button id="replayVoiceBtn" class="ghost inline">🔁 Replay audio</button>
-        <div id="maruReaction" class="reaction"></div>
-        <div id="feedback" class="feedback" aria-live="polite"></div>
-        <button id="toggleHintBtn" class="ghost inline" aria-expanded="false" aria-controls="counterHint">💡 Show hint</button>
-        <div id="counterHint" class="hint-window"></div>
-      </section>
-
-      <section class="status-bar" aria-live="polite">
-        <div class="status-chip" id="modeStatus">Practice mode</div>
-        <div class="status-chip" id="challengeStatus" hidden>
-          <span>Round <span id="challengeRound">1</span> / 10</span>
-          <span aria-hidden="true">·</span>
-          <span>Score <span id="challengeScore">0</span></span>
+      <section class="mode-row">
+        <div class="segmented" role="group" aria-label="Game mode">
+          <button type="button" data-mode="serve" title="Hear an order and put the right items on the counter">🛒 Serve</button>
+          <button type="button" data-mode="count" title="See the items and say how many there are">🧾 Count</button>
+          <button type="button" data-mode="mix" title="A mix of both">🔀 Mix</button>
         </div>
-        <div class="status-chip" id="streakStatus">Current streak: <span id="streakCount">0</span></div>
+        <div class="status-bar" aria-live="polite">
+          <div class="status-chip" id="streakStatus" title="Correct answers in a row (best ever in brackets)">🔥 <span id="streakCount">0</span><span class="chip-sub" id="bestStreak"></span></div>
+          <div class="status-chip challenge-chip" id="challengeStatus" hidden>
+            Round <span id="challengeRound">1</span>/<span id="challengeTotal">10</span> · Score <span id="challengeScore">0</span>
+          </div>
+        </div>
+        <button id="challengeBtn" type="button">🏁 Challenge</button>
       </section>
 
-      <section class="play-area">
+      <section class="prompt-card">
+        <p id="taskLabel" class="task-label">Loading…</p>
+        <div id="prompt" class="speech-bubble" lang="ja">「…」</div>
+        <div class="prompt-tools">
+          <button id="replayVoiceBtn" class="ghost small" type="button">🔊 Replay</button>
+          <button id="slowVoiceBtn" class="ghost small" type="button">🐢 Slow</button>
+          <button id="toggleHintBtn" class="ghost small" type="button" aria-expanded="false" aria-controls="counterHint">💡 Hint</button>
+        </div>
+        <div id="counterHint" class="hint-window" hidden></div>
+      </section>
+
+      <!-- Serve mode: pick items from the shelf -->
+      <section id="serveArea" class="play-area">
         <div class="panel">
           <h2 class="section-title">Shelf</h2>
           <div id="shelf" class="shelf-grid"></div>
         </div>
-
         <div class="panel">
-          <h2 class="section-title">Counter</h2>
-          <div id="counter" class="dropzone">
-            <span class="drop-hint">Drag or click items to add</span>
+          <div class="panel-head">
+            <h2 class="section-title">Counter <span id="trayTotal" class="tray-total"></span></h2>
+            <button id="clearTrayBtn" class="ghost small" type="button">Clear</button>
           </div>
+          <div id="counter" class="dropzone"></div>
         </div>
       </section>
 
-      <section id="controls" class="controls">
-        <button id="doneBtn" class="primary">Done!</button>
-        <button id="startPractice">Practice Mode</button>
-        <button id="startChallenge">Challenge Mode</button>
-        <button id="settingsBtn" class="ghost">⚙️ Settings</button>
+      <!-- Count mode: say how many items there are -->
+      <section id="countArea" class="play-area" hidden>
+        <div class="panel">
+          <h2 class="section-title">On the counter</h2>
+          <div id="countTray" class="count-tray"></div>
+          <div id="countLabel" class="count-label"></div>
+        </div>
+        <div class="panel">
+          <h2 class="section-title">Your answer</h2>
+          <div id="choices" class="choices"></div>
+          <form id="typeForm" class="type-form" hidden autocomplete="off">
+            <label for="typeInput">Type the reading in hiragana or romaji</label>
+            <div class="type-row">
+              <input id="typeInput" type="text" lang="ja" inputmode="text" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="e.g. sanbon / さんぼん">
+              <button type="submit" class="primary">Check</button>
+            </div>
+            <div id="typePreview" class="type-preview" lang="ja" aria-live="polite"></div>
+          </form>
+        </div>
       </section>
 
-      <section class="learn-more">
-        <details id="howToPlay">
-          <summary>How to play &amp; study tips</summary>
-          <ol>
-            <li>Listen to Maru&rsquo;s request or read the speech bubble.</li>
-            <li>Drag or click items from the shelf that match the counter being used.</li>
-            <li>Use the <em>Done!</em> button to check your answer and keep your streak going.</li>
-          </ol>
-          <p>
-            Need a hand? Toggle the hint to learn what a counter is used for, or replay the voice prompt as many times as
-            you like. Challenge mode runs for ten rounds&mdash;aim for a perfect score!
-          </p>
-        </details>
+      <section class="result-row">
+        <div id="result" class="result" aria-live="polite" hidden>
+          <img id="resultImg" alt="" width="72" height="72">
+          <div id="resultText" class="result-text"></div>
+        </div>
+        <div class="controls">
+          <button id="doneBtn" class="primary big" type="button">Done!</button>
+          <button id="nextBtn" class="big" type="button" hidden>Next ▶</button>
+        </div>
       </section>
+
+      <details id="howToPlay" class="learn-more">
+        <summary>How to play &amp; study tips</summary>
+        <ul>
+          <li><strong>🛒 Serve:</strong> a customer orders with a number and a counter, like <span lang="ja">「3本ください」</span>. Put that many matching items on the counter (click, tap or drag), then press <em>Done!</em></li>
+          <li><strong>🧾 Count:</strong> items are on the counter. Pick (or type) the right way to say how many there are. Watch for sound changes such as <span lang="ja">さん<strong>ぼ</strong>ん</span> and <span lang="ja">いっ<strong>ぽ</strong>ん</span>.</li>
+          <li><strong>🏁 Challenge:</strong> ten rounds, no hints. Try to beat your best score.</li>
+          <li>Counters you miss come back more often. Open <em>📖 Counters</em> for a cheat sheet, your progress, and to choose which counters to practice.</li>
+          <li>Keyboard: <kbd>Enter</kbd> = Done / Next, <kbd>1</kbd>–<kbd>4</kbd> = pick an answer, <kbd>R</kbd> = replay audio, <kbd>H</kbd> = hint.</li>
+        </ul>
+      </details>
     </main>
   </div>
 
-  <!-- Settings modal -->
-  <div id="settingsModal" class="modal">
-    <div class="modal-content">
-      <h2>Settings</h2>
-      <label>
-        <input type="checkbox" id="furiganaCheckbox"> Show Furigana
+  <!-- Settings -->
+  <dialog id="settingsDialog" class="dialog" aria-labelledby="settingsTitle">
+    <h2 id="settingsTitle">Settings</h2>
+    <div class="settings-list">
+      <label class="setting"><input type="checkbox" id="furiganaCheckbox"> <span>Show furigana<small>Readings above kanji in orders and item names</small></span></label>
+      <label class="setting"><input type="checkbox" id="voiceCheckbox"> <span>Voice<small>Speak orders and answers aloud</small></span></label>
+      <label class="setting"><input type="checkbox" id="listeningCheckbox"> <span>Listening practice<small>Hide the order text in Serve mode until you answer</small></span></label>
+      <label class="setting"><input type="checkbox" id="sfxCheckbox"> <span>Sound effects</span></label>
+      <label class="setting select"><span>Item names</span>
+        <select id="labelSelect">
+          <option value="ja">Japanese</option>
+          <option value="en">English</option>
+          <option value="off">Hidden</option>
+        </select>
       </label>
-      <br>
-      <label>
-        <input type="checkbox" id="voiceCheckbox"> Enable Voice
+      <label class="setting select"><span>Numbers</span>
+        <select id="maxNumberSelect">
+          <option value="5">1–5</option>
+          <option value="10">1–10</option>
+        </select>
       </label>
-      <br><br>
-      <button id="openCounterPage" class="ghost">Manage counters</button>
-      <br><br>
-      <button id="closeSettings">Close</button>
+      <label class="setting select"><span>Answers in Count mode</span>
+        <select id="answerStyleSelect">
+          <option value="choice">Multiple choice</option>
+          <option value="type">Type the reading</option>
+        </select>
+      </label>
     </div>
-  </div>
+    <p id="voiceNote" class="note" hidden></p>
+    <div class="dialog-actions">
+      <button id="resetProgressBtn" class="ghost danger" type="button">Reset progress</button>
+      <button id="closeSettingsBtn" type="button">Close</button>
+    </div>
+  </dialog>
 
-  <div id="counterPage" class="modal">
-    <div class="modal-content counter-modal" role="dialog" aria-modal="true" aria-labelledby="counterPageTitle">
-      <header class="counter-modal__header">
-        <h2 id="counterPageTitle">Counter preferences</h2>
-        <p>Select which counters appear in practice and review your accuracy.</p>
-      </header>
+  <!-- Counter guide & selection -->
+  <dialog id="guideDialog" class="dialog wide" aria-labelledby="guideTitle">
+    <header class="dialog-header">
+      <h2 id="guideTitle">Counters</h2>
+      <p>Choose what to practice, check your progress, and tap a counter for its readings. Tap any reading to hear it.</p>
+    </header>
+    <div class="guide-toolbar">
       <div id="counterSummary" class="counter-summary"></div>
-      <div id="counterList" class="counter-list" role="list"></div>
-      <div class="counter-modal__actions">
-        <button id="selectAllCounters" class="ghost">Select all counters</button>
-        <button id="closeCounterPage">Done</button>
-      </div>
+      <button id="selectAllCounters" class="ghost small" type="button">Select all</button>
     </div>
-  </div>
+    <div id="counterList" class="counter-list" role="list"></div>
+    <div class="dialog-actions">
+      <button id="closeGuideBtn" type="button">Done</button>
+    </div>
+  </dialog>
 
-  <script src="game.js"></script>
+  <!-- Challenge results -->
+  <dialog id="resultsDialog" class="dialog" aria-labelledby="resultsTitle">
+    <img id="resultsImg" alt="" width="110" height="110">
+    <h2 id="resultsTitle">Challenge complete!</h2>
+    <p id="resultsScore" class="results-score"></p>
+    <p id="resultsBest" class="note"></p>
+    <div id="resultsReview" class="results-review"></div>
+    <div class="dialog-actions">
+      <button id="resultsPracticeBtn" class="ghost" type="button">Back to practice</button>
+      <button id="resultsAgainBtn" type="button">Play again</button>
+    </div>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>

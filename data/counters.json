@@ -1,254 +1,384 @@
 {
-  "meta": {
-    "assetBasePath": "data/assets",
-    "imageFormat": "png",
-    "version": 3,
-    "ui": {
-      "defaultIconScale": 0.25,
-      "defaultStackOffsetPx": 10,
-      "defaultGhostOpacity": 0.6
-    }
-  },
+  "meta": { "version": 4 },
   "counters": [
     {
-      "counter": "冊",
-      "reading": "さつ",
-      "irregular": {
-        "1": "いっさつ",
-        "8": "はっさつ",
-        "10": "じっさつ",
-        "default": "{n}さつ"
+      "counter": "個",
+      "reading": "こ",
+      "category": "small, compact objects",
+      "note": "The general-purpose counter for small things: fruit, eggs, balls. When in doubt, 個 is often acceptable.",
+      "confusable": ["本", "枚", "缶", "袋"],
+      "readings": {
+        "1": ["いっこ"],
+        "2": ["にこ"],
+        "3": ["さんこ"],
+        "4": ["よんこ"],
+        "5": ["ごこ"],
+        "6": ["ろっこ"],
+        "7": ["ななこ", "しちこ"],
+        "8": ["はっこ", "はちこ"],
+        "9": ["きゅうこ"],
+        "10": ["じゅっこ", "じっこ"]
       },
-      "category": "bound volumes",
-      "icon": "data/assets/counters/satsu.png",
       "items": [
-        { "id": "book",      "label_en": "book",      "label_ja": "本",   "image": "data/assets/items/book/book.png" },
-        { "id": "magazine",  "label_en": "magazine",  "label_ja": "雑誌", "image": "data/assets/items/magazine/magazine.png" },
-        { "id": "notebook",  "label_en": "notebook",  "label_ja": "ノート","image": "data/assets/items/notebook/notebook.png" }
-      ]
-    },
-    {
-      "counter": "匹",
-      "reading": "ひき",
-      "irregular": {
-        "1": "いっぴき",
-        "3": "さんびき",
-        "6": "ろっぴき",
-        "8": "はっぴき",
-        "10": "じゅっぴき",
-        "default": "{n}ひき"
-      },
-      "category": "small animals",
-      "icon": "data/assets/counters/hiki.png",
-      "items": [
-        { "id": "cat",   "label_en": "cat",   "label_ja": "猫", "image": "data/assets/items/cat/cat.png" },
-        { "id": "dog",   "label_en": "dog",   "label_ja": "犬", "image": "data/assets/items/dog/dog.png" },
-        { "id": "fish",  "label_en": "fish",  "label_ja": "魚", "image": "data/assets/items/fish/fish.png" }
+        {"id": "apple", "label_en": "apple", "label_ja": "りんご", "kana": "りんご", "image": "data/assets/items/apple/apple.png"},
+        {"id": "egg", "label_en": "egg", "label_ja": "卵", "kana": "たまご", "image": "data/assets/items/egg/egg.png"},
+        {"id": "orange", "label_en": "orange", "label_ja": "オレンジ", "kana": "オレンジ", "image": "data/assets/items/orange/orange.png"},
+        {"id": "soccer_ball", "label_en": "soccer ball", "label_ja": "サッカーボール", "kana": "サッカーボール", "image": "data/assets/items/soccer_ball/soccer_ball.png"},
+        {"id": "basketball", "label_en": "basketball", "label_ja": "バスケットボール", "kana": "バスケットボール", "image": "data/assets/items/basket_ball/basket_ball.png"},
+        {"id": "tennis_ball", "label_en": "tennis ball", "label_ja": "テニスボール", "kana": "テニスボール", "image": "data/assets/items/tennis_ball/tennis_ball.png"},
+        {"id": "hat", "label_en": "hat", "label_ja": "帽子", "kana": "ぼうし", "image": "data/assets/items/hat/hat.png"}
       ]
     },
     {
       "counter": "本",
       "reading": "ほん",
-      "irregular": {
-        "1": "いっぽん",
-        "3": "さんぼん",
-        "6": "ろっぽん",
-        "8": "はっぽん",
-        "10": "じゅっぽん",
-        "default": "{n}ほん"
+      "category": "long, thin objects",
+      "note": "Pencils, bottles, carrots, umbrellas, trees. The reading shifts between ほん, ぼん and ぽん.",
+      "confusable": ["枚", "個", "缶"],
+      "readings": {
+        "1": ["いっぽん"],
+        "2": ["にほん"],
+        "3": ["さんぼん"],
+        "4": ["よんほん"],
+        "5": ["ごほん"],
+        "6": ["ろっぽん"],
+        "7": ["ななほん", "しちほん"],
+        "8": ["はっぽん", "はちほん"],
+        "9": ["きゅうほん"],
+        "10": ["じゅっぽん", "じっぽん"]
       },
-      "category": "long cylindrical objects",
-      "icon": "data/assets/counters/hon.png",
       "items": [
-        { "id": "carrot", "label_en": "carrot", "label_ja": "にんじん", "image": "data/assets/items/carrot/carrot.png" },
-        { "id": "bottle", "label_en": "bottle", "label_ja": "ボトル",   "image": "data/assets/items/bottle/bottle.png" },
-        { "id": "pencil", "label_en": "pencil", "label_ja": "えんぴつ", "image": "data/assets/items/pencil/pencil.png" }
+        {"id": "pencil", "label_en": "pencil", "label_ja": "鉛筆", "kana": "えんぴつ", "image": "data/assets/items/pencil/pencil.png"},
+        {"id": "bottle", "label_en": "bottle", "label_ja": "瓶", "kana": "びん", "image": "data/assets/items/bottle/bottle.png"},
+        {"id": "carrot", "label_en": "carrot", "label_ja": "にんじん", "kana": "にんじん", "image": "data/assets/items/carrot/carrot.png"}
       ]
     },
     {
       "counter": "枚",
       "reading": "まい",
-      "irregular": { "default": "{n}まい" },
-      "category": "flat objects",
-      "icon": "data/assets/counters/mai.png",
+      "category": "flat, thin objects",
+      "note": "Paper, CDs, plates, tickets, and also shirts. Completely regular readings.",
+      "confusable": ["冊", "着", "本"],
+      "readings": {
+        "1": ["いちまい"],
+        "2": ["にまい"],
+        "3": ["さんまい"],
+        "4": ["よんまい"],
+        "5": ["ごまい"],
+        "6": ["ろくまい"],
+        "7": ["ななまい", "しちまい"],
+        "8": ["はちまい"],
+        "9": ["きゅうまい"],
+        "10": ["じゅうまい"]
+      },
       "items": [
-        { "id": "paper",       "label_en": "sheet of paper", "label_ja": "紙",         "image": "data/assets/items/paper/paper.png" },
-        { "id": "cd",          "label_en": "CD",             "label_ja": "CD",         "image": "data/assets/items/cd/cd.png" },
-        { "id": "pizza_slice", "label_en": "pizza slice",    "label_ja": "ピザスライス","image": "data/assets/items/pizza_slice/pizza_slice.png" }
+        {"id": "paper", "label_en": "sheet of paper", "label_ja": "紙", "kana": "かみ", "image": "data/assets/items/paper/paper.png"},
+        {"id": "cd", "label_en": "CD", "label_ja": "CD", "kana": "シーディー", "image": "data/assets/items/cd/cd.png"},
+        {"id": "shirt", "label_en": "shirt", "label_ja": "シャツ", "kana": "シャツ", "image": "data/assets/items/shirt/shirt.png", "also": ["着"]}
+      ]
+    },
+    {
+      "counter": "冊",
+      "reading": "さつ",
+      "category": "books and bound volumes",
+      "note": "Books, magazines, notebooks. Not 本, even though 本 means “book”!",
+      "confusable": ["枚", "本"],
+      "readings": {
+        "1": ["いっさつ"],
+        "2": ["にさつ"],
+        "3": ["さんさつ"],
+        "4": ["よんさつ"],
+        "5": ["ごさつ"],
+        "6": ["ろくさつ"],
+        "7": ["ななさつ", "しちさつ"],
+        "8": ["はっさつ", "はちさつ"],
+        "9": ["きゅうさつ"],
+        "10": ["じゅっさつ", "じっさつ"]
+      },
+      "items": [
+        {"id": "book", "label_en": "book", "label_ja": "本", "kana": "ほん", "image": "data/assets/items/book/book.png"},
+        {"id": "magazine", "label_en": "magazine", "label_ja": "雑誌", "kana": "ざっし", "image": "data/assets/items/magazine/magazine.png"},
+        {"id": "notebook", "label_en": "notebook", "label_ja": "ノート", "kana": "ノート", "image": "data/assets/items/notebook/notebook.png"}
       ]
     },
     {
       "counter": "台",
       "reading": "だい",
-      "irregular": { "default": "{n}だい" },
-      "category": "machines/vehicles",
-      "icon": "data/assets/counters/dai.png",
+      "category": "machines and vehicles",
+      "note": "Cars, computers, TVs, bicycles, game consoles. Completely regular readings.",
+      "confusable": ["個", "軒"],
+      "readings": {
+        "1": ["いちだい"],
+        "2": ["にだい"],
+        "3": ["さんだい"],
+        "4": ["よんだい"],
+        "5": ["ごだい"],
+        "6": ["ろくだい"],
+        "7": ["ななだい", "しちだい"],
+        "8": ["はちだい"],
+        "9": ["きゅうだい"],
+        "10": ["じゅうだい"]
+      },
       "items": [
-        { "id": "car",        "label_en": "car",        "label_ja": "車",       "image": "data/assets/items/car/car.png" },
-        { "id": "computer",   "label_en": "computer",   "label_ja": "コンピューター","image": "data/assets/items/computer/computer.png" },
-        { "id": "game_console","label_en": "game console","label_ja": "ゲーム機","image": "data/assets/items/game_console/game_console.png" }
-      ]
-    },
-    {
-      "counter": "個",
-      "reading": "こ",
-      "irregular": { "default": "{n}こ" },
-      "category": "small general objects",
-      "icon": "data/assets/counters/ko.png",
-      "items": [
-        { "id": "apple",  "label_en": "apple",  "label_ja": "りんご", "image": "data/assets/items/apple/apple.png" },
-        { "id": "egg",    "label_en": "egg",    "label_ja": "卵",     "image": "data/assets/items/egg/egg.png" },
-        { "id": "orange", "label_en": "orange", "label_ja": "オレンジ","image": "data/assets/items/orange/orange.png" }
+        {"id": "car", "label_en": "car", "label_ja": "車", "kana": "くるま", "image": "data/assets/items/car/car.png"},
+        {"id": "computer", "label_en": "computer", "label_ja": "パソコン", "kana": "パソコン", "image": "data/assets/items/computer/computer.png"},
+        {"id": "game_console", "label_en": "game console", "label_ja": "ゲーム機", "kana": "ゲームき", "image": "data/assets/items/game_console/game_console.png"}
       ]
     },
     {
       "counter": "人",
       "reading": "にん",
-      "irregular": {
-        "1": "ひとり",
-        "2": "ふたり",
-        "default": "{n}にん"
-      },
       "category": "people",
-      "icon": "data/assets/counters/nin.png",
+      "note": "1 and 2 use native readings: ひとり, ふたり. Watch out for 4: よにん, not よんにん.",
+      "confusable": ["匹", "頭"],
+      "readings": {
+        "1": ["ひとり"],
+        "2": ["ふたり"],
+        "3": ["さんにん"],
+        "4": ["よにん"],
+        "5": ["ごにん"],
+        "6": ["ろくにん"],
+        "7": ["しちにん", "ななにん"],
+        "8": ["はちにん"],
+        "9": ["きゅうにん", "くにん"],
+        "10": ["じゅうにん"]
+      },
       "items": [
-        { "id": "person", "label_en": "person", "label_ja": "人", "image": "data/assets/items/person/person.png" }
+        {"id": "person", "label_en": "customer", "label_ja": "お客さん", "kana": "おきゃくさん", "image": "data/assets/items/person/person.png"}
       ]
     },
     {
-      "counter": "羽",
-      "reading": "わ",
-      "irregular": {
-        "1": "いちわ",
-        "2": "にわ",
-        "default": "{n}わ"
+      "counter": "匹",
+      "reading": "ひき",
+      "category": "small animals",
+      "note": "Cats, dogs, fish, insects. The reading shifts between ひき, びき and ぴき.",
+      "confusable": ["頭", "羽"],
+      "readings": {
+        "1": ["いっぴき"],
+        "2": ["にひき"],
+        "3": ["さんびき"],
+        "4": ["よんひき"],
+        "5": ["ごひき"],
+        "6": ["ろっぴき"],
+        "7": ["ななひき", "しちひき"],
+        "8": ["はっぴき", "はちひき"],
+        "9": ["きゅうひき"],
+        "10": ["じゅっぴき", "じっぴき"]
       },
-      "category": "birds/rabbits",
-      "icon": "data/assets/counters/wa.png",
       "items": [
-        { "id": "bird",    "label_en": "bird",    "label_ja": "鳥",   "image": "data/assets/items/bird/bird.png" },
-        { "id": "rabbit",  "label_en": "rabbit",  "label_ja": "うさぎ","image": "data/assets/items/rabbit/rabbit.png" },
-        { "id": "chicken", "label_en": "chicken", "label_ja": "鶏",   "image": "data/assets/items/chicken/chicken.png" }
+        {"id": "cat", "label_en": "cat", "label_ja": "猫", "kana": "ねこ", "image": "data/assets/items/cat/cat.png"},
+        {"id": "dog", "label_en": "dog", "label_ja": "犬", "kana": "いぬ", "image": "data/assets/items/dog/dog.png"},
+        {"id": "fish", "label_en": "fish", "label_ja": "魚", "kana": "さかな", "image": "data/assets/items/fish/fish.png"}
       ]
     },
     {
       "counter": "頭",
       "reading": "とう",
-      "irregular": { "default": "{n}とう" },
       "category": "large animals",
-      "icon": "data/assets/counters/tou.png",
+      "note": "Cows, horses, elephants: animals bigger than a person.",
+      "confusable": ["匹", "羽"],
+      "readings": {
+        "1": ["いっとう"],
+        "2": ["にとう"],
+        "3": ["さんとう"],
+        "4": ["よんとう"],
+        "5": ["ごとう"],
+        "6": ["ろくとう"],
+        "7": ["ななとう", "しちとう"],
+        "8": ["はっとう", "はちとう"],
+        "9": ["きゅうとう"],
+        "10": ["じゅっとう", "じっとう"]
+      },
       "items": [
-        { "id": "cow",     "label_en": "cow",     "label_ja": "牛", "image": "data/assets/items/cow/cow.png" },
-        { "id": "horse",   "label_en": "horse",   "label_ja": "馬", "image": "data/assets/items/horse/horse.png" },
-        { "id": "elephant","label_en": "elephant","label_ja": "象", "image": "data/assets/items/elephant/elephant.png" }
+        {"id": "cow", "label_en": "cow", "label_ja": "牛", "kana": "うし", "image": "data/assets/items/cow/cow.png"},
+        {"id": "horse", "label_en": "horse", "label_ja": "馬", "kana": "うま", "image": "data/assets/items/horse/horse.png"},
+        {"id": "elephant", "label_en": "elephant", "label_ja": "象", "kana": "ぞう", "image": "data/assets/items/elephant/elephant.png"}
+      ]
+    },
+    {
+      "counter": "羽",
+      "reading": "わ",
+      "category": "birds and rabbits",
+      "note": "Birds, and by tradition rabbits (匹 is also fine for rabbits).",
+      "confusable": ["匹", "頭"],
+      "readings": {
+        "1": ["いちわ"],
+        "2": ["にわ"],
+        "3": ["さんわ", "さんば"],
+        "4": ["よんわ"],
+        "5": ["ごわ"],
+        "6": ["ろくわ", "ろっぱ"],
+        "7": ["ななわ", "しちわ"],
+        "8": ["はちわ", "はっぱ"],
+        "9": ["きゅうわ"],
+        "10": ["じゅうわ", "じゅっぱ", "じっぱ"]
+      },
+      "items": [
+        {"id": "bird", "label_en": "bird", "label_ja": "鳥", "kana": "とり", "image": "data/assets/items/bird/bird.png"},
+        {"id": "chicken", "label_en": "chicken", "label_ja": "鶏", "kana": "にわとり", "image": "data/assets/items/chicken/chicken.png"},
+        {"id": "rabbit", "label_en": "rabbit", "label_ja": "うさぎ", "kana": "うさぎ", "image": "data/assets/items/rabbit/rabbit.png", "also": ["匹"]}
       ]
     },
     {
       "counter": "杯",
       "reading": "はい",
-      "irregular": {
-        "1": "いっぱい",
-        "3": "さんばい",
-        "6": "ろっぱい",
-        "8": "はっぱい",
-        "10": "じゅっぱい",
-        "default": "{n}はい"
+      "category": "cupfuls and glassfuls",
+      "note": "Drinks in cups or glasses, bowls of rice or ramen. The reading shifts between はい, ばい and ぱい.",
+      "confusable": ["缶", "本"],
+      "readings": {
+        "1": ["いっぱい"],
+        "2": ["にはい"],
+        "3": ["さんばい"],
+        "4": ["よんはい"],
+        "5": ["ごはい"],
+        "6": ["ろっぱい"],
+        "7": ["ななはい", "しちはい"],
+        "8": ["はっぱい", "はちはい"],
+        "9": ["きゅうはい"],
+        "10": ["じゅっぱい", "じっぱい"]
       },
-      "category": "cups/glasses of liquid",
-      "icon": "data/assets/counters/hai.png",
       "items": [
-        { "id": "tea_cup",    "label_en": "cup of tea",    "label_ja": "お茶",   "image": "data/assets/items/tea_cup/tea_cup.png" },
-        { "id": "beer_glass", "label_en": "glass of beer", "label_ja": "ビール", "image": "data/assets/items/beer_glass/beer_glass.png" },
-        { "id": "coffee_cup", "label_en": "cup of coffee", "label_ja": "コーヒー","image": "data/assets/items/coffee_cup/coffee_cup.png" }
-      ]
-    },
-    {
-      "counter": "着",
-      "reading": "ちゃく",
-      "irregular": { "default": "{n}ちゃく" },
-      "category": "clothing",
-      "icon": "data/assets/counters/chaku.png",
-      "items": [
-        { "id": "shirt", "label_en": "shirt", "label_ja": "シャツ", "image": "data/assets/items/shirt/shirt.png" },
-        { "id": "hat",   "label_en": "hat",   "label_ja": "帽子",   "image": "data/assets/items/hat/hat.png" },
-        { "id": "dress", "label_en": "dress", "label_ja": "ドレス", "image": "data/assets/items/dress/dress.png" }
-      ]
-    },
-    {
-      "counter": "足",
-      "reading": "そく",
-      "irregular": { "default": "{n}そく" },
-      "category": "pairs of footwear",
-      "icon": "data/assets/counters/soku.png",
-      "items": [
-        { "id": "shoes",   "label_en": "shoes (pair)",   "label_ja": "靴",   "image": "data/assets/items/shoes/shoes.png" },
-        { "id": "socks",   "label_en": "socks (pair)",   "label_ja": "靴下", "image": "data/assets/items/socks/socks.png" },
-        { "id": "sandals", "label_en": "sandals (pair)", "label_ja": "サンダル","image": "data/assets/items/sandals/sandals.png" }
-      ]
-    },
-    {
-      "counter": "軒",
-      "reading": "けん",
-      "irregular": { "default": "{n}けん" },
-      "category": "houses/buildings",
-      "icon": "data/assets/counters/ken.png",
-      "items": [
-        { "id": "house",          "label_en": "house",          "label_ja": "家",          "image": "data/assets/items/house/house.png" },
-        { "id": "apartment",      "label_en": "apartment",      "label_ja": "アパート",    "image": "data/assets/items/apartment/apartment.png" },
-        { "id": "office_building","label_en": "office building","label_ja": "オフィスビル","image": "data/assets/items/office_building/office_building.png" }
+        {"id": "tea_cup", "label_en": "cup of tea", "label_ja": "お茶", "kana": "おちゃ", "image": "data/assets/items/tea_cup/tea_cup.png"},
+        {"id": "coffee_cup", "label_en": "cup of coffee", "label_ja": "コーヒー", "kana": "コーヒー", "image": "data/assets/items/coffee_cup/coffee_cup.png"},
+        {"id": "beer_glass", "label_en": "glass of beer", "label_ja": "ビール", "kana": "ビール", "image": "data/assets/items/beer_glass/beer_glass.png"}
       ]
     },
     {
       "counter": "缶",
       "reading": "かん",
-      "irregular": {
-        "1": "いっかん",
-        "3": "さんかん",
-        "6": "ろっかん",
-        "8": "はっかん",
-        "10": "じゅっかん",
-        "default": "{n}かん"
+      "category": "cans",
+      "note": "Canned food and drinks. Canned drinks are also often counted with 本.",
+      "confusable": ["杯", "本"],
+      "readings": {
+        "1": ["いっかん"],
+        "2": ["にかん"],
+        "3": ["さんかん"],
+        "4": ["よんかん"],
+        "5": ["ごかん"],
+        "6": ["ろっかん"],
+        "7": ["ななかん", "しちかん"],
+        "8": ["はっかん", "はちかん"],
+        "9": ["きゅうかん"],
+        "10": ["じゅっかん", "じっかん"]
       },
-      "category": "cans and tinned drinks",
-      "icon": "data/assets/counters/kan.png",
       "items": [
-        { "id": "soda_can",   "label_en": "soda can",   "label_ja": "ジュース缶", "image": "data/assets/items/soda_can/soda_can.png" },
-        { "id": "coffee_can", "label_en": "coffee can", "label_ja": "コーヒー缶", "image": "data/assets/items/coffee_can/coffee_can.png" },
-        { "id": "soup_can",   "label_en": "soup can",   "label_ja": "スープ缶",   "image": "data/assets/items/soup_can/soup_can.png" }
+        {"id": "soda_can", "label_en": "can of soda", "label_ja": "缶ジュース", "kana": "かんジュース", "image": "data/assets/items/soda_can/soda_can.png", "also": ["本", "個"]},
+        {"id": "coffee_can", "label_en": "canned coffee", "label_ja": "缶コーヒー", "kana": "かんコーヒー", "image": "data/assets/items/coffee_can/coffee_can.png", "also": ["本", "個"]},
+        {"id": "soup_can", "label_en": "can of soup", "label_ja": "スープ缶", "kana": "スープかん", "image": "data/assets/items/soup_can/soup_can.png", "also": ["個"]}
+      ]
+    },
+    {
+      "counter": "着",
+      "reading": "ちゃく",
+      "category": "outfits and garments",
+      "note": "Dresses, suits, coats: clothes worn on the body. Shirts can take 着 or 枚.",
+      "confusable": ["枚", "足"],
+      "readings": {
+        "1": ["いっちゃく"],
+        "2": ["にちゃく"],
+        "3": ["さんちゃく"],
+        "4": ["よんちゃく"],
+        "5": ["ごちゃく"],
+        "6": ["ろくちゃく"],
+        "7": ["ななちゃく", "しちちゃく"],
+        "8": ["はっちゃく", "はちちゃく"],
+        "9": ["きゅうちゃく"],
+        "10": ["じゅっちゃく", "じっちゃく"]
+      },
+      "items": [
+        {"id": "dress", "label_en": "dress", "label_ja": "ドレス", "kana": "ドレス", "image": "data/assets/items/dress/dress.png"}
+      ]
+    },
+    {
+      "counter": "足",
+      "reading": "そく",
+      "category": "pairs of footwear",
+      "note": "Shoes, socks, sandals: one 足 is one pair.",
+      "confusable": ["着", "枚"],
+      "readings": {
+        "1": ["いっそく"],
+        "2": ["にそく"],
+        "3": ["さんぞく", "さんそく"],
+        "4": ["よんそく"],
+        "5": ["ごそく"],
+        "6": ["ろくそく"],
+        "7": ["ななそく", "しちそく"],
+        "8": ["はっそく", "はちそく"],
+        "9": ["きゅうそく"],
+        "10": ["じゅっそく", "じっそく"]
+      },
+      "items": [
+        {"id": "shoes", "label_en": "pair of shoes", "label_ja": "靴", "kana": "くつ", "image": "data/assets/items/shoes/shoes.png"},
+        {"id": "socks", "label_en": "pair of socks", "label_ja": "靴下", "kana": "くつした", "image": "data/assets/items/socks/socks.png"},
+        {"id": "sandals", "label_en": "pair of sandals", "label_ja": "サンダル", "kana": "サンダル", "image": "data/assets/items/sandals/sandals.png"}
+      ]
+    },
+    {
+      "counter": "軒",
+      "reading": "けん",
+      "category": "houses and shops",
+      "note": "Houses, shops, restaurants. 3 is usually さんげん.",
+      "confusable": ["棟", "台"],
+      "readings": {
+        "1": ["いっけん"],
+        "2": ["にけん"],
+        "3": ["さんげん", "さんけん"],
+        "4": ["よんけん"],
+        "5": ["ごけん"],
+        "6": ["ろっけん"],
+        "7": ["ななけん", "しちけん"],
+        "8": ["はっけん", "はちけん"],
+        "9": ["きゅうけん"],
+        "10": ["じゅっけん", "じっけん"]
+      },
+      "items": [
+        {"id": "house", "label_en": "house", "label_ja": "家", "kana": "いえ", "image": "data/assets/items/house/house.png"}
+      ]
+    },
+    {
+      "counter": "棟",
+      "reading": "とう",
+      "category": "large buildings",
+      "note": "Apartment blocks, office buildings, warehouses. Same readings as 頭.",
+      "confusable": ["軒", "台"],
+      "readings": {
+        "1": ["いっとう", "ひとむね"],
+        "2": ["にとう", "ふたむね"],
+        "3": ["さんとう"],
+        "4": ["よんとう"],
+        "5": ["ごとう"],
+        "6": ["ろくとう"],
+        "7": ["ななとう", "しちとう"],
+        "8": ["はっとう", "はちとう"],
+        "9": ["きゅうとう"],
+        "10": ["じゅっとう", "じっとう"]
+      },
+      "items": [
+        {"id": "apartment", "label_en": "apartment building", "label_ja": "アパート", "kana": "アパート", "image": "data/assets/items/apartment/apartment.png", "also": ["軒"]},
+        {"id": "office_building", "label_en": "office building", "label_ja": "ビル", "kana": "ビル", "image": "data/assets/items/office_building/office_building.png"}
       ]
     },
     {
       "counter": "袋",
       "reading": "ふくろ",
-      "irregular": {
-        "1": "ひとふくろ",
-        "2": "ふたふくろ",
-        "default": "{n}ふくろ"
+      "category": "bags and bagfuls",
+      "note": "Bags and the things sold in them. 1 and 2 use native readings: ひとふくろ, ふたふくろ.",
+      "confusable": ["個", "枚"],
+      "readings": {
+        "1": ["ひとふくろ"],
+        "2": ["ふたふくろ"],
+        "3": ["さんふくろ", "みふくろ"],
+        "4": ["よんふくろ", "よふくろ"],
+        "5": ["ごふくろ"],
+        "6": ["ろくふくろ", "ろっぷくろ"],
+        "7": ["ななふくろ", "しちふくろ"],
+        "8": ["はちふくろ", "はっぷくろ"],
+        "9": ["きゅうふくろ"],
+        "10": ["じゅっぷくろ", "じっぷくろ", "じゅうふくろ"]
       },
-      "category": "bags and pouches",
-      "icon": "data/assets/counters/fukuro.png",
       "items": [
-        { "id": "grocery_bag", "label_en": "grocery bag", "label_ja": "買い物袋", "image": "data/assets/items/grocery_bag/grocery_bag.png" },
-        { "id": "gift_bag",    "label_en": "gift bag",    "label_ja": "ギフト袋", "image": "data/assets/items/gift_bag/gift_bag.png" },
-        { "id": "trash_bag",   "label_en": "trash bag",   "label_ja": "ゴミ袋",   "image": "data/assets/items/trash_bag/trash_bag.png" }
-      ]
-    },
-    {
-      "counter": "球",
-      "reading": "きゅう",
-      "irregular": {
-        "1": "いっきゅう",
-        "6": "ろっきゅう",
-        "8": "はっきゅう",
-        "10": "じゅっきゅう",
-        "default": "{n}きゅう"
-      },
-      "category": "balls and round sports gear",
-      "icon": "data/assets/counters/kyuu.png",
-      "items": [
-        { "id": "soccer_ball",  "label_en": "soccer ball",  "label_ja": "サッカーボール",   "image": "data/assets/items/soccer_ball/soccer_ball.png" },
-        { "id": "basketball",   "label_en": "basketball",   "label_ja": "バスケットボール", "image": "data/assets/items/basketball/basketball.png" },
-        { "id": "tennis_ball",  "label_en": "tennis ball",  "label_ja": "テニスボール",    "image": "data/assets/items/tennis_ball/tennis_ball.png" }
+        {"id": "grocery_bag", "label_en": "shopping bag", "label_ja": "買い物袋", "kana": "かいものぶくろ", "image": "data/assets/items/grocery_bag/grocery_bag.png", "also": ["個"]},
+        {"id": "trash_bag", "label_en": "garbage bag", "label_ja": "ゴミ袋", "kana": "ゴミぶくろ", "image": "data/assets/items/trash_bag/trash_bag.png", "also": ["個"]}
       ]
     }
   ]
