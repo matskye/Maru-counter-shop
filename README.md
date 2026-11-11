@@ -53,7 +53,8 @@ Other features:
 
 - **Free practice** (Serve / Count / Mix) and a ten-round **Challenge** for extra drilling with any counters you tick, weighted towards the ones you miss.
 - **Counter guide** (📖 Counters): readings 1–10 for every counter with the irregular ones highlighted, example items, your stars and accuracy, and a "learn this one next" button to reorder the lesson plan.
-- **Settings**: furigana, voice (text-to-speech), listening practice (order text hidden), item names in Japanese/English/hidden, multiple choice or typed answers (hiragana or romaji).
+- **Settings**: furigana, voice, listening practice (order text hidden), item names in Japanese/English/hidden, multiple choice or typed answers (hiragana or romaji).
+- **Voice** uses the browser's own text-to-speech, so nothing is sent anywhere. It needs a Japanese voice on the device: Chrome, Edge and Safari have one; some browsers and Linux systems do not. Where there is none, the replay buttons and voice settings are hidden rather than left dead, and Settings explains why (with a "turn voice on anyway" button for devices that can speak but do not list their voices).
 - Works with mouse, touch and keyboard (`Enter` = Done/Next, `1`–`4` = answer, `R` = replay, `H` = hint).
 
 Progress and settings are stored in the browser's `localStorage`.
@@ -76,7 +77,8 @@ style.css           styles
 js/logic.js         game rules: readings, questions, answer checking, lesson plan and spaced repetition (no DOM)
 js/rewards.js       yen, shop ranks, decorations and the stamp card (no DOM)
 js/story.js         opening, chapter scenes, regular customers and their story beats
-js/app.js           UI, storage, speech
+js/speech.js        text-to-speech with detection of a usable Japanese voice
+js/app.js           UI and storage
 data/counters.json  counters, readings and items
 data/assets/        images
 tests/              unit tests for the logic and the data file

@@ -14,6 +14,7 @@ import {
   REGULARS, parseRuby, spokenText, emptyStory, normalizeStory, hearts, metRegulars, regularFor,
   regularById, allScenes, pendingScenes, markSeen
 } from "./story.js";
+import { speech } from "./speech.js";
 
 const CHALLENGE_ROUNDS = 10;
 const SHELF_SIZE = 8;
@@ -49,7 +50,7 @@ const els = {
   settingsDialog: $("settingsDialog"), guideDialog: $("guideDialog"), resultsDialog: $("resultsDialog"), summaryDialog: $("summaryDialog"),
   furigana: $("furiganaCheckbox"), voice: $("voiceCheckbox"), listening: $("listeningCheckbox"), sfx: $("sfxCheckbox"),
   labelSelect: $("labelSelect"), maxNumberSelect: $("maxNumberSelect"), answerStyleSelect: $("answerStyleSelect"),
-  voiceNote: $("voiceNote"),
+  voiceNote: $("voiceNote"), voiceNoteText: $("voiceNoteText"), tryVoiceBtn: $("tryVoiceBtn"), helpDialog: $("helpDialog"),
   counterSummary: $("counterSummary"), counterList: $("counterList"), selectAllBtn: $("selectAllCounters"),
   resultsImg: $("resultsImg"), resultsTitle: $("resultsTitle"), resultsScore: $("resultsScore"),
   resultsBest: $("resultsBest"), resultsReview: $("resultsReview"),
@@ -93,7 +94,7 @@ const store = {
 };
 
 const DEFAULT_SETTINGS = {
-  furigana: false, voice: true, listening: false, sfx: true,
+  furigana: false, voice: true, listening: false, sfx: true, forceVoice: false,
   labels: "ja", maxNumber: 10, answerStyle: "choice", gameMode: "mix"
 };
 
@@ -144,6 +145,13 @@ function freshProgress() {
 
 const yen = amount => `¥${amount.toLocaleString("en-US")}`;
 
+/** Change a button's text without disturbing its icon. */
+function setLabel(button, text) {
+  const label = button.querySelector(".label");
+  if (label) label.textContent = text;
+  else button.textContent = text;
+}
+
 const saveSettings = () => store.set("maruSettings", state.settings);
 const saveStats = () => store.set("counterStats", state.stats);
 const saveProgress = () => store.set("maruProgress", state.progress);
@@ -193,33 +201,6 @@ function amountRuby(counter, number) {
 }
 
 /* ---------- Sound ---------- */
-
-const speech = {
-  supported: "speechSynthesis" in window,
-  voice: null,
-  init() {
-    if (!this.supported) return;
-    const pick = () => {
-      const voices = window.speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().replace("_", "-").startsWith("ja"));
-      this.voice = voices.find(v => v.localService) || voices[0] || null;
-      updateVoiceUi();
-    };
-    pick();
-    window.speechSynthesis.addEventListener("voiceschanged", pick);
-  },
-  say(text, { slow = false, force = false } = {}) {
-    if (!this.supported || !text || (!state.settings.voice && !force)) return;
-    const utterance = new SpeechSynthesisUtterance(text);
-    if (this.voice) utterance.voice = this.voice;
-    utterance.lang = "ja-JP";
-    utterance.rate = slow ? 0.55 : 0.95;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-  },
-  stop() {
-    if (this.supported) window.speechSynthesis.cancel();
-  }
-};
 
 let audioContext = null;
 function playTone(kind) {
@@ -316,7 +297,7 @@ function renderHome() {
     btn.disabled = false;
   });
   renderShopBanner();
-  els.startShiftBtn.textContent = firstTime ? "▶ Start your first shift" : "▶ Start a shift";
+  setLabel(els.startShiftBtn, firstTime ? "Start your first shift" : "Start a shift");
 
   if (firstTime) {
     els.homeMessage.textContent = "Welcome! I'm Maru. Work a short shift in my shop each day and I'll teach you the Japanese counters one at a time, then bring each one back just before you forget it.";
@@ -351,7 +332,7 @@ function renderHome() {
     },
       h("span", { class: "kanji" }, counter.counter),
       h("span", { class: "kana" }, counter.reading),
-      h("span", { class: "stars" }, locked ? (counter === nextUp ? "next up" : "🔒") : starText(stars)),
+      h("span", { class: "stars" }, locked ? (counter === nextUp ? "next up" : "") : starText(stars)),
       dueKeys.has(counter.counter) ? h("span", { class: "due-dot", title: "Reviews ready" }) : null
     );
   };
@@ -387,7 +368,7 @@ function renderShopBanner() {
   els.rankIcon.textContent = info.rank.icon;
   els.rankName.replaceChildren(info.rank.ja === info.rank.kana ? info.rank.ja : ruby(info.rank.ja, info.rank.kana));
   els.rankEn.textContent = info.rank.en;
-  els.yenBalance.textContent = `💴 ${yen(game.yen)}`;
+  els.yenBalance.textContent = yen(game.yen);
   const percent = Math.round(info.fraction * 100);
   els.rankBar.style.width = `${percent}%`;
   els.rankBar.parentElement.setAttribute("aria-valuenow", String(percent));
@@ -408,7 +389,7 @@ function renderShopBanner() {
   els.storyBadge.textContent = String(waiting);
 
   const stamps = stampList(state.data);
-  els.stampCount.textContent = `${stamps.filter(s => game.stamps[s.id]).length}/${stamps.length}`;
+  els.stampCount.textContent = `${stamps.filter(s => game.stamps[s.id]).length} of ${stamps.length} collected`;
 }
 
 function stampNode(stamp, date) {
@@ -519,7 +500,7 @@ function renderStoryLine() {
   els.storyJa.replaceChildren(...(line.ja ? ["「", ...rubyNodes(line.ja), "」"] : []));
   els.storyEn.textContent = line.en;
   els.storyDots.textContent = scene.lines.map((_, i) => (i === index ? "●" : "○")).join(" ");
-  els.storyNextBtn.textContent = index === scene.lines.length - 1 ? "Continue ▶" : "Next ▶";
+  setLabel(els.storyNextBtn, index === scene.lines.length - 1 ? "Continue" : "Next");
   if (line.ja) speech.say(spokenText(line.ja));
   else speech.stop();
 }
@@ -574,7 +555,7 @@ function openStoryLog() {
       openStoryLog();
       renderShopBanner();
     })
-  }, seen.has(scene.id) ? "▶ " : "● New: ", scene.title)));
+  }, seen.has(scene.id) ? "" : "New: ", scene.title)));
   if (!els.storyLogDialog.open) els.storyLogDialog.showModal();
 }
 
@@ -739,7 +720,7 @@ function finishShift() {
 
   const now = Date.now();
   const lines = [];
-  lines.push(h("p", { class: "takings" }, `💴 ${yen(shift.earned)} in takings`, perfect ? ` (includes a ${yen(PERFECT_BONUS)} perfect-shift bonus)` : ""));
+  lines.push(h("p", { class: "takings" }, `${yen(shift.earned)} in takings`, perfect ? ` (includes a ${yen(PERFECT_BONUS)} perfect-shift bonus)` : ""));
   if (rank.index > shift.rankIndex) {
     lines.push(h("p", { class: "rank-up" }, `${rank.rank.icon} The shop has grown into a `, ja(rank.rank.ja), ` (${rank.rank.en.toLowerCase()})!`));
   } else if (rank.next) {
@@ -791,7 +772,7 @@ function roundSpeech(round, phase) {
 
 function isListeningRound() {
   return state.round && state.round.mode !== "count" && state.phase === "asking" &&
-    state.settings.listening && state.settings.voice && speech.supported;
+    state.settings.listening && state.settings.voice && speech.ready;
 }
 
 function nextFromReviewQueue(mode) {
@@ -928,7 +909,7 @@ function renderStatus() {
     els.challengeTotal.textContent = String(CHALLENGE_ROUNDS);
     els.challengeScore.textContent = String(state.challenge.score);
   }
-  els.challengeBtn.textContent = state.challenge ? "✕ End challenge" : "🏁 Challenge";
+  els.challengeBtn.textContent = state.challenge ? "End challenge" : "Challenge";
   els.challengeBtn.classList.toggle("ghost", Boolean(state.challenge));
 }
 
@@ -1008,7 +989,7 @@ function renderHint() {
   const visible = available && state.hintVisible;
   els.hint.hidden = !visible;
   els.hintBtn.setAttribute("aria-expanded", String(visible));
-  els.hintBtn.textContent = visible ? "🙈 Hide hint" : "💡 Hint";
+  setLabel(els.hintBtn, visible ? "Hide hint" : "Hint");
   if (!visible) return;
   const { counter, entry } = round;
   if (round.mode === "serve") {
@@ -1029,16 +1010,24 @@ function renderHint() {
 }
 
 function updateVoiceUi() {
-  const canSpeak = speech.supported && state.settings.voice && Boolean(state.round);
+  // Everything marked .needs-speech (replay buttons, voice settings, "tap to hear" hints) is hidden by
+  // CSS unless the browser really can speak Japanese.
+  document.body.classList.toggle("speech-ready", speech.ready);
+  const canSpeak = speech.ready && state.settings.voice && Boolean(state.round);
   [els.replayBtn, els.slowBtn].forEach(btn => {
     btn.disabled = !canSpeak;
-    btn.title = canSpeak ? "" : speech.supported ? "Turn on Voice in Settings to hear this." : "Your browser does not support speech.";
+    btn.title = canSpeak || !speech.ready ? "" : "Turn on Voice in Settings to hear this.";
   });
-  let note = "";
-  if (!speech.supported) note = "This browser has no text-to-speech, so voice features are unavailable.";
-  else if (!speech.voice) note = "No Japanese voice was found on this device, so speech may sound wrong or be silent. Installing a Japanese voice in your system settings fixes this.";
-  els.voiceNote.textContent = note;
+  els.listening.disabled = !speech.ready || !state.settings.voice;
+  const notes = {
+    unsupported: "This browser has no text-to-speech, so the voice and listening features are hidden. Everything else works as normal.",
+    "no-voice": "No Japanese voice was found on this device, so the voice and listening features are hidden. Installing a Japanese voice in your system settings, or using Chrome, Edge or Safari, brings them back.",
+    checking: "Looking for a Japanese voice…"
+  };
+  const note = notes[speech.status] || "";
+  els.voiceNoteText.textContent = note;
   els.voiceNote.hidden = !note;
+  els.tryVoiceBtn.hidden = speech.status !== "no-voice";
 }
 
 function makeTile(entry, { onClick, draggable = false, count = 0, title }) {
@@ -1321,6 +1310,8 @@ function showResult(correct, lines, { soft = false } = {}) {
   els.result.style.animation = "none";
   void els.result.offsetWidth;
   els.result.style.animation = "";
+  // On a phone the explanation sits below the shelf: bring it into view.
+  if (window.innerWidth <= 720) els.result.scrollIntoView({ block: "center", behavior: "smooth" });
 }
 
 function finishRound(correct, lines) {
@@ -1390,7 +1381,7 @@ function finishRound(correct, lines) {
 
   const challengeOver = state.challenge && state.challenge.round >= CHALLENGE_ROUNDS;
   const shiftOver = state.shift && !state.shift.steps.length;
-  els.nextBtn.textContent = challengeOver ? "See results ▶" : shiftOver ? "Finish shift ▶" : "Next ▶";
+  setLabel(els.nextBtn, challengeOver ? "See results" : shiftOver ? "Finish shift" : "Next");
   els.nextBtn.focus({ preventScroll: true });
   if (correct) {
     state.advanceTimer = window.setTimeout(advance, AUTO_ADVANCE_MS);
@@ -1538,7 +1529,7 @@ function renderGuide(openKey) {
           h("strong", { lang: "ja" }, counter.reading),
           h("span", {}, counter.category)),
         h("span", { class: "counter-progress" },
-          locked ? h("span", { class: "level" }, counter === upNext ? "Next up" : "🔒 Not started")
+          locked ? h("span", { class: "level" }, counter === upNext ? "Next up" : "Not started")
             : h("span", { class: `level ${["learning", "learning", "strong", "mastered"][stars]}` }, starText(stars)),
           h("br"),
           h("small", {}, acc === null ? "not practiced yet" : `${Math.round(acc * 100)}% of ${stat.correct + stat.incorrect}`))
@@ -1593,7 +1584,7 @@ function syncSettingsForm() {
   els.furigana.checked = s.furigana;
   els.voice.checked = s.voice;
   els.listening.checked = s.listening;
-  els.listening.disabled = !speech.supported || !s.voice;
+  els.listening.disabled = !speech.ready || !s.voice;
   els.sfx.checked = s.sfx;
   els.labelSelect.value = s.labels;
   els.maxNumberSelect.value = String(s.maxNumber);
@@ -1692,6 +1683,15 @@ function bindEvents() {
     showHome();
   });
 
+  // Help, and the escape hatch for devices that can speak but do not list their voices
+  $("openHelpBtn").addEventListener("click", () => els.helpDialog.showModal());
+  $("closeHelpBtn").addEventListener("click", () => els.helpDialog.close());
+  els.tryVoiceBtn.addEventListener("click", () => {
+    changeSetting("forceVoice", true, { rerender: false });
+    speech.force();
+    speech.say("こんにちは", { force: true });
+  });
+
   // Guide
   $("openGuideBtn").addEventListener("click", () => openGuide());
   $("closeGuideBtn").addEventListener("click", () => els.guideDialog.close());
@@ -1740,7 +1740,7 @@ function bindEvents() {
   });
 
   // Click on the backdrop closes a dialog.
-  [els.settingsDialog, els.guideDialog, els.decorDialog, els.stampsDialog, els.storyLogDialog].forEach(dialog => dialog.addEventListener("click", event => {
+  [els.settingsDialog, els.guideDialog, els.decorDialog, els.stampsDialog, els.storyLogDialog, els.helpDialog].forEach(dialog => dialog.addEventListener("click", event => {
     if (event.target === dialog) dialog.close();
   }));
 
@@ -1776,7 +1776,14 @@ function bindEvents() {
 
 async function init() {
   bindEvents();
-  speech.init();
+  speech.init({
+    isEnabled: () => state.settings.voice,
+    forced: state.settings.forceVoice,
+    onChange: () => {
+      updateVoiceUi();
+      if (state.round) render(); // e.g. listening mode becomes possible once a voice has loaded
+    }
+  });
   syncSettingsForm();
   updateVoiceUi();
   try {
