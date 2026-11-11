@@ -1,5 +1,5 @@
 import {
-  prepareData, naiveReading, primaryReading, readingsFor, isIrregular, acceptedReadingsForItem, amountText,
+  prepareData, naiveReading, primaryReading, readingsFor, commonReadingsFor, commonReadingsForItem, isIrregular, acceptedReadingsForItem, amountText,
   itemAccepts, pickRound, buildShelf, checkServe, buildChoices, romajiToHiragana, normalizeTypedAnswer,
   checkTypedAnswer, normalizeStats, recordResult, accuracy,
   cardIds, cardForRound, emptyProgress, normalizeProgress, lockedCounters, nextNewCard, dueCards, nextDueTime,
@@ -1275,10 +1275,11 @@ function finishCount(correct, givenReading, givenCounterKey) {
     lines.push(counter.abstract
       ? h("p", {}, amountRuby(counter, number), ` (${entry.item.label_en})`)
       : h("p", {}, name(), ` × ${number} = `, amountRuby(counter, number)));
-    const others = counter.abstract ? [] : acceptedReadingsForItem(state.data, entry, number).filter(r => !readingsFor(counter, number).includes(r));
-    const same = readingsFor(counter, number).slice(1);
+    // Mention only common alternatives; rare variants are accepted but not taught.
+    const others = counter.abstract ? [] : commonReadingsForItem(state.data, entry, number).filter(r => !readingsFor(counter, number).includes(r));
+    const same = commonReadingsFor(counter, number).slice(1);
     const also = [...same, ...others];
-    if (also.length) lines.push(h("p", {}, "Other ways to say it: ", ja(also.slice(0, 4).join("、")), "."));
+    if (also.length) lines.push(h("p", {}, "Also fine: ", ja(also.slice(0, 4).join("、")), "."));
   } else {
     lines.push(h("p", { class: "headline" }, ja("ざんねん…"), " Not quite."));
     lines.push(h("p", {}, "You answered ", ja(givenReading), ". The answer is ", amountRuby(counter, number), "."));
@@ -1452,7 +1453,7 @@ function aboveTen(counter) {
   return [
     h("p", { class: "above-ten" }, "Above ten, the last digit decides the reading:"),
     h("div", { class: "reading-grid" }, picks.map(n => {
-      const readings = readingsFor(counter, n);
+      const readings = commonReadingsFor(counter, n);
       return h("button", {
         class: `reading-cell${isIrregular(counter, n) ? " irregular" : ""}`, type: "button", lang: "ja",
         title: readings.length > 1 ? `Also: ${readings.slice(1).join("、")}` : "Tap to hear",
@@ -1468,7 +1469,7 @@ function counterDetail(counter, { withNote = true } = {}) {
   return h("div", { class: "counter-detail" },
     withNote ? h("p", {}, counter.note) : null,
     h("div", { class: "reading-grid" }, NUMBERS.map(n => {
-      const readings = readingsFor(counter, n);
+      const readings = commonReadingsFor(counter, n);
       return h("button", {
         class: `reading-cell${isIrregular(counter, n) ? " irregular" : ""}`, type: "button", lang: "ja",
         title: readings.length > 1 ? `Also: ${readings.slice(1).join("、")}` : "Tap to hear",

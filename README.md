@@ -1,6 +1,6 @@
 # Maru's Counter Shop
 
-A browser game for practicing **Japanese counters** (助数詞) with Maru the red panda: 57 counters in eight chapters, from 個 and 本 to 泊, 艘 and 貫, including readings above ten.
+A browser game for practicing **Japanese counters** (助数詞) with Maru the red panda: 58 counters in eight chapters, from 個 and 本 to 泊, 艘 and 貫, including readings above ten.
 
 ## How it works
 
@@ -15,7 +15,7 @@ A browser game for practicing **Japanese counters** (助数詞) with Maru the re
   | Clock and calendar | 時 分 日 月 歳 回 階 |
   | Animals and clothes | 頭 羽 足 着 |
   | Food and drink | 缶 皿 切れ 袋 箱 膳 粒 玉 串 貫 束 |
-  | How long, how often | 年 か月 週間 時間 泊 番 |
+  | How long, how often | 年 か月 週間 日間 時間 泊 番 |
   | Buildings and vehicles | 軒 棟 機 両 隻 艘 脚 |
   | Paper, culture and more | 通 部 件 点 曲 問 輪 組 体 発 滴 名 |
 - Every counter is broken into small things to remember: what it is used for, its regular readings, and one card for **each irregular reading** (いっぽん, さんぼん, ろっぽん…).
@@ -116,6 +116,7 @@ Everything the game knows lives in `data/counters.json`. Each counter looks like
 }
 ```
 
+- `rare` (optional, same shape as `readings`) lists dated or disputed variants such as さんば for 三羽. They are accepted when typed and never used as wrong options, but they are not shown in the guide or in feedback. If you are unsure whether a variant is standard, put it here.
 - `readings` needs an entry for every number from 1 to 10. Each is a list: the standard reading first, then any other reading that should be accepted (they are never offered as wrong answers).
 - `confusable` lists counters learners mix this one up with; their items are preferred as distractors.
 - `also` on an item lists other counters that are also correct for it. Such an item is accepted for those counters and never used as a wrong option for them.

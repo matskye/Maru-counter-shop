@@ -73,12 +73,24 @@ export function naiveReading(counter, number) {
  */
 export function readingsFor(counter, number) {
   const explicit = counter.readings[String(number)];
-  if (Array.isArray(explicit) && explicit.length) return explicit;
+  if (Array.isArray(explicit) && explicit.length) {
+    const rare = counter.rare && counter.rare[String(number)];
+    return rare ? [...explicit, ...rare] : explicit;
+  }
   if (number <= 10 || number > maxNumber(counter)) return [];
   const digit = String(number % 10 || 10);
   const tails = (counter.compound && counter.compound[digit]) || counter.readings[digit] || [];
   const prefix = tensPrefix(number);
   return tails.map(tail => prefix + tail);
+}
+
+/**
+ * The readings worth showing a learner. `rare` holds dated or disputed variants (さんば, みはこ…):
+ * they are accepted when typed and never offered as wrong answers, but they are not taught.
+ */
+export function commonReadingsFor(counter, number) {
+  const explicit = counter.readings[String(number)];
+  return Array.isArray(explicit) && explicit.length ? explicit : readingsFor(counter, number);
 }
 
 /** The standard reading (e.g. さんぼん). */
@@ -125,6 +137,19 @@ export function acceptedCounterKeys(entry) {
 
 export function itemAccepts(entry, counterKey) {
   return acceptedCounterKeys(entry).includes(counterKey);
+}
+
+/** The readings to mention as "other ways to say it": common ones only, across the item's counters. */
+export function commonReadingsForItem(data, entry, number) {
+  const out = [];
+  acceptedCounterKeys(entry).forEach(key => {
+    const counter = data.byKey.get(key);
+    if (!counter) return;
+    commonReadingsFor(counter, number).forEach(r => {
+      if (!out.includes(r)) out.push(r);
+    });
+  });
+  return out;
 }
 
 /** Every reading that is a correct way to count `number` of this item. */
