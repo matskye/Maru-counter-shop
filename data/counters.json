@@ -1,5 +1,5 @@
 {
-  "meta": { "version": 6 },
+  "meta": { "version": 7 },
   "counters": [
     {
       "counter": "個",
@@ -342,13 +342,13 @@
       "reading": "にち",
       "group": "Clock and calendar",
       "category": "days of the month",
-      "note": "The 1st to the 10th use native readings (ついたち, ふつか, みっか…). After that it is regular 〜にち, except 14日 じゅうよっか, 20日 はつか and 24日 にじゅうよっか.",
+      "note": "The 1st to the 10th use native readings (ついたち, ふつか, みっか…). After that it is regular 〜にち, except 14日 じゅうよっか, 20日 はつか and 24日 にじゅうよっか. (一日 read いちにち means “one day”, a length of time: that is 日間.)",
       "abstract": true,
       "max": 31,
       "compound": {"1": ["いちにち"], "2": ["ににち"], "3": ["さんにち"], "5": ["ごにち"], "6": ["ろくにち"], "7": ["しちにち"], "8": ["はちにち"], "9": ["くにち"], "10": ["じゅうにち"]},
       "confusable": [],
       "readings": {
-        "1": ["ついたち", "いちにち"],
+        "1": ["ついたち"],
         "2": ["ふつか"],
         "3": ["みっか"],
         "4": ["よっか"],
@@ -496,20 +496,21 @@
       "reading": "わ",
       "group": "Animals and clothes",
       "category": "birds and rabbits",
-      "note": "Birds, and by tradition rabbits (匹 is also fine for rabbits).",
+      "note": "Birds. Rabbits are traditionally counted with 羽 too, though 匹 is just as common for them today.",
       "confusable": ["匹", "頭"],
       "readings": {
         "1": ["いちわ"],
         "2": ["にわ"],
-        "3": ["さんわ", "さんば"],
+        "3": ["さんわ"],
         "4": ["よんわ"],
         "5": ["ごわ"],
-        "6": ["ろくわ", "ろっぱ"],
+        "6": ["ろくわ"],
         "7": ["ななわ", "しちわ"],
-        "8": ["はちわ", "はっぱ"],
+        "8": ["はちわ"],
         "9": ["きゅうわ"],
-        "10": ["じゅうわ", "じゅっぱ", "じっぱ"]
+        "10": ["じゅうわ"]
       },
+      "rare": {"3": ["さんば"], "6": ["ろっぱ"], "8": ["はっぱ"], "10": ["じゅっぱ", "じっぱ"]},
       "items": [
         {"id": "bird", "label_en": "bird", "label_ja": "鳥", "kana": "とり", "image": "data/assets/items/bird/bird.png"},
         {"id": "chicken", "label_en": "chicken", "label_ja": "鶏", "kana": "にわとり", "image": "data/assets/items/chicken/chicken.png"},
@@ -608,15 +609,16 @@
       "readings": {
         "1": ["ひとさら"],
         "2": ["ふたさら"],
-        "3": ["さんさら", "みさら"],
-        "4": ["よんさら", "よさら"],
+        "3": ["さんさら"],
+        "4": ["よんさら"],
         "5": ["ごさら"],
         "6": ["ろくさら"],
         "7": ["ななさら", "しちさら"],
-        "8": ["はちさら", "はっさら"],
+        "8": ["はちさら"],
         "9": ["きゅうさら"],
-        "10": ["じゅっさら", "じっさら", "じゅうさら"]
+        "10": ["じゅっさら", "じっさら"]
       },
+      "rare": {"3": ["みさら"], "4": ["よさら"], "8": ["はっさら"], "10": ["じゅうさら"]},
       "items": [
         {"id": "curry", "label_en": "plate of curry", "label_ja": "カレー", "kana": "カレー", "emoji": "🍛"},
         {"id": "pasta", "label_en": "plate of pasta", "label_ja": "スパゲッティ", "kana": "スパゲッティ", "emoji": "🍝"},
@@ -628,25 +630,27 @@
       "reading": "きれ",
       "group": "Food and drink",
       "category": "slices and cut pieces",
-      "note": "Slices of pizza, cake, meat or fish. 1 and 2 are ひときれ, ふたきれ.",
+      "note": "A piece cut from something bigger: a slice of pizza, cake, watermelon, meat or fish (a whole pizza is 枚, a whole cake 個). 1 and 2 are ひときれ, ふたきれ.",
       "max": 10,
       "confusable": ["枚", "個", "皿"],
       "readings": {
         "1": ["ひときれ"],
         "2": ["ふたきれ"],
-        "3": ["さんきれ", "みきれ"],
-        "4": ["よんきれ", "よきれ"],
+        "3": ["さんきれ"],
+        "4": ["よんきれ"],
         "5": ["ごきれ"],
-        "6": ["ろくきれ", "ろっきれ"],
+        "6": ["ろくきれ"],
         "7": ["ななきれ", "しちきれ"],
-        "8": ["はちきれ", "はっきれ"],
+        "8": ["はちきれ"],
         "9": ["きゅうきれ"],
-        "10": ["じゅっきれ", "じっきれ", "じゅうきれ"]
+        "10": ["じゅっきれ", "じっきれ"]
       },
+      "rare": {"3": ["みきれ"], "4": ["よきれ"], "6": ["ろっきれ"], "8": ["はっきれ"], "10": ["じゅうきれ"]},
       "items": [
         {"id": "pizza_slice", "label_en": "slice of pizza", "label_ja": "ピザ", "kana": "ピザ", "image": "data/assets/items/pizza_slice/pizza_slice.png", "also": ["つ"]},
         {"id": "cake", "label_en": "slice of cake", "label_ja": "ケーキ", "kana": "ケーキ", "emoji": "🍰", "also": ["個", "つ"]},
-        {"id": "steak", "label_en": "cut of meat", "label_ja": "肉", "kana": "にく", "emoji": "🥩"}
+        {"id": "steak", "label_en": "cut of meat", "label_ja": "肉", "kana": "にく", "emoji": "🥩"},
+        {"id": "watermelon", "label_en": "slice of watermelon", "label_ja": "すいか", "kana": "すいか", "emoji": "🍉"}
       ]
     },
     {
@@ -660,19 +664,20 @@
       "readings": {
         "1": ["ひとふくろ"],
         "2": ["ふたふくろ"],
-        "3": ["さんふくろ", "みふくろ"],
-        "4": ["よんふくろ", "よふくろ"],
+        "3": ["さんふくろ"],
+        "4": ["よんふくろ"],
         "5": ["ごふくろ"],
-        "6": ["ろくふくろ", "ろっぷくろ"],
+        "6": ["ろくふくろ"],
         "7": ["ななふくろ", "しちふくろ"],
-        "8": ["はちふくろ", "はっぷくろ"],
+        "8": ["はちふくろ"],
         "9": ["きゅうふくろ"],
         "10": ["じゅっぷくろ", "じっぷくろ", "じゅうふくろ"]
       },
+      "rare": {"3": ["みふくろ"], "4": ["よふくろ"], "6": ["ろっぷくろ"], "8": ["はっぷくろ"]},
       "items": [
         {"id": "grocery_bag", "label_en": "shopping bag", "label_ja": "買い物袋", "kana": "かいものぶくろ", "image": "data/assets/items/grocery_bag/grocery_bag.png", "also": ["個", "つ"]},
         {"id": "trash_bag", "label_en": "garbage bag", "label_ja": "ゴミ袋", "kana": "ゴミぶくろ", "image": "data/assets/items/trash_bag/trash_bag.png", "also": ["個", "つ"]},
-        {"id": "peanuts", "label_en": "bag of peanuts", "label_ja": "ピーナッツ", "kana": "ピーナッツ", "emoji": "🥜"}
+        {"id": "paper_bag", "label_en": "paper shopping bag", "label_ja": "紙袋", "kana": "かみぶくろ", "emoji": "🛍️", "also": ["個", "つ"]}
       ]
     },
     {
@@ -686,15 +691,16 @@
       "readings": {
         "1": ["ひとはこ"],
         "2": ["ふたはこ"],
-        "3": ["さんぱこ", "さんはこ", "みはこ"],
-        "4": ["よんはこ", "よはこ"],
+        "3": ["さんぱこ", "さんはこ"],
+        "4": ["よんはこ"],
         "5": ["ごはこ"],
         "6": ["ろっぱこ", "ろくはこ"],
         "7": ["ななはこ", "しちはこ"],
         "8": ["はっぱこ", "はちはこ"],
         "9": ["きゅうはこ"],
-        "10": ["じゅっぱこ", "じっぱこ", "じゅうはこ"]
+        "10": ["じゅっぱこ", "じっぱこ"]
       },
+      "rare": {"3": ["みはこ"], "4": ["よはこ"], "10": ["じゅうはこ"]},
       "items": [
         {"id": "box", "label_en": "cardboard box", "label_ja": "段ボール箱", "kana": "だんボールばこ", "emoji": "📦", "also": ["個", "つ"]},
         {"id": "present", "label_en": "gift box", "label_ja": "プレゼント", "kana": "プレゼント", "emoji": "🎁", "also": ["個", "つ"]}
@@ -705,7 +711,7 @@
       "reading": "ぜん",
       "group": "Food and drink",
       "category": "pairs of chopsticks, bowls of rice",
-      "note": "Pairs of chopsticks and servings of rice. Regular readings.",
+      "note": "Pairs of chopsticks, and rice served in a bowl as part of a meal (杯 also works for the bowlful). Regular readings.",
       "confusable": ["本", "杯", "組"],
       "readings": {
         "1": ["いちぜん"],
@@ -735,15 +741,16 @@
       "readings": {
         "1": ["ひとつぶ"],
         "2": ["ふたつぶ"],
-        "3": ["さんつぶ", "みつぶ"],
-        "4": ["よんつぶ", "よつぶ"],
+        "3": ["さんつぶ"],
+        "4": ["よんつぶ"],
         "5": ["ごつぶ"],
         "6": ["ろくつぶ"],
         "7": ["ななつぶ", "しちつぶ"],
-        "8": ["はちつぶ", "はっつぶ"],
+        "8": ["はちつぶ"],
         "9": ["きゅうつぶ"],
-        "10": ["じゅっつぶ", "じっつぶ", "じゅうつぶ"]
+        "10": ["じゅっつぶ", "じっつぶ"]
       },
+      "rare": {"3": ["みつぶ"], "4": ["よつぶ"], "8": ["はっつぶ"], "10": ["じゅうつぶ"]},
       "items": [
         {"id": "pill", "label_en": "pill", "label_ja": "薬", "kana": "くすり", "emoji": "💊"},
         {"id": "candy", "label_en": "candy", "label_ja": "あめ", "kana": "あめ", "emoji": "🍬", "also": ["個", "つ"]},
@@ -755,24 +762,25 @@
       "reading": "たま",
       "group": "Food and drink",
       "category": "round heads of produce",
-      "note": "Whole watermelons, melons, heads of cabbage or lettuce, portions of noodles. 1 and 2 are ひとたま, ふたたま.",
+      "note": "Whole, uncut round produce: melons, onions, heads of cabbage or lettuce. Once it is cut, a piece is a 切れ. 1 and 2 are ひとたま, ふたたま.",
       "max": 10,
       "confusable": ["個", "切れ"],
       "readings": {
         "1": ["ひとたま"],
         "2": ["ふたたま"],
-        "3": ["さんたま", "みたま"],
-        "4": ["よんたま", "よたま"],
+        "3": ["さんたま"],
+        "4": ["よんたま"],
         "5": ["ごたま"],
         "6": ["ろくたま"],
         "7": ["ななたま", "しちたま"],
-        "8": ["はちたま", "はったま"],
+        "8": ["はちたま"],
         "9": ["きゅうたま"],
         "10": ["じゅうたま", "じゅったま", "じったま"]
       },
+      "rare": {"3": ["みたま"], "4": ["よたま"], "8": ["はったま"]},
       "items": [
-        {"id": "watermelon", "label_en": "watermelon", "label_ja": "すいか", "kana": "すいか", "emoji": "🍉", "also": ["個", "つ"]},
-        {"id": "melon", "label_en": "melon", "label_ja": "メロン", "kana": "メロン", "emoji": "🍈", "also": ["個", "つ"]},
+        {"id": "onion", "label_en": "whole onion", "label_ja": "玉ねぎ", "kana": "たまねぎ", "emoji": "🧅", "also": ["個", "つ"]},
+        {"id": "melon", "label_en": "whole melon", "label_ja": "メロン", "kana": "メロン", "emoji": "🍈", "also": ["個", "つ"]},
         {"id": "hakusai", "label_en": "head of Chinese cabbage", "label_ja": "白菜", "kana": "はくさい", "emoji": "🥬", "also": ["個", "つ"]}
       ]
     },
@@ -787,18 +795,19 @@
       "readings": {
         "1": ["ひとくし"],
         "2": ["ふたくし"],
-        "3": ["さんくし", "みくし"],
-        "4": ["よんくし", "よくし"],
+        "3": ["さんくし"],
+        "4": ["よんくし"],
         "5": ["ごくし"],
-        "6": ["ろくくし", "ろっくし"],
+        "6": ["ろくくし"],
         "7": ["ななくし", "しちくし"],
-        "8": ["はちくし", "はっくし"],
+        "8": ["はちくし"],
         "9": ["きゅうくし"],
-        "10": ["じゅっくし", "じっくし", "じゅうくし"]
+        "10": ["じゅっくし", "じっくし"]
       },
+      "rare": {"3": ["みくし"], "4": ["よくし"], "6": ["ろっくし"], "8": ["はっくし"], "10": ["じゅうくし"]},
       "items": [
-        {"id": "dango", "label_en": "skewer of dango", "label_ja": "だんご", "kana": "だんご", "emoji": "🍡", "also": ["本"]},
-        {"id": "oden", "label_en": "skewer of oden", "label_ja": "おでん", "kana": "おでん", "emoji": "🍢", "also": ["本"]}
+        {"id": "dango", "label_en": "skewer of dango", "label_ja": "串だんご", "kana": "くしだんご", "emoji": "🍡", "also": ["本"]},
+        {"id": "oden", "label_en": "skewer of oden", "label_ja": "串おでん", "kana": "くしおでん", "emoji": "🍢", "also": ["本"]}
       ]
     },
     {
@@ -806,7 +815,7 @@
       "reading": "かん",
       "group": "Food and drink",
       "category": "pieces of sushi",
-      "note": "Pieces of nigiri sushi. Same readings as 缶.",
+      "note": "Pieces of nigiri sushi: in everyday use one 貫 is one piece, though some shops count a pair as one. Same readings as 缶.",
       "confusable": ["個", "皿", "切れ"],
       "readings": {
         "1": ["いっかん"],
@@ -835,15 +844,16 @@
       "readings": {
         "1": ["ひとたば"],
         "2": ["ふたたば"],
-        "3": ["さんたば", "みたば"],
-        "4": ["よんたば", "よたば"],
+        "3": ["さんたば"],
+        "4": ["よんたば"],
         "5": ["ごたば"],
         "6": ["ろくたば"],
         "7": ["ななたば", "しちたば"],
-        "8": ["はちたば", "はったば"],
+        "8": ["はちたば"],
         "9": ["きゅうたば"],
-        "10": ["じゅったば", "じったば", "じゅうたば"]
+        "10": ["じゅったば", "じったば"]
       },
+      "rare": {"3": ["みたば"], "4": ["よたば"], "8": ["はったば"], "10": ["じゅうたば"]},
       "items": [
         {"id": "bouquet", "label_en": "bouquet", "label_ja": "花束", "kana": "はなたば", "emoji": "💐"},
         {"id": "rice_sheaf", "label_en": "sheaf of rice", "label_ja": "稲", "kana": "いね", "emoji": "🌾"}
@@ -922,6 +932,32 @@
       ]
     },
     {
+      "counter": "日間",
+      "reading": "にちかん",
+      "group": "How long, how often",
+      "category": "days (duration)",
+      "note": "How many days something lasts: the date readings plus かん (ふつかかん, みっかかん… はつかかん). One day is usually just 一日, read いちにち, never ついたち.",
+      "abstract": true,
+      "compound": {"1": ["いちにちかん"], "2": ["ににちかん"], "3": ["さんにちかん"], "5": ["ごにちかん"], "6": ["ろくにちかん"], "7": ["しちにちかん"], "8": ["はちにちかん"], "9": ["くにちかん"], "10": ["じゅうにちかん"]},
+      "confusable": [],
+      "readings": {
+        "1": ["いちにちかん", "いちにち"],
+        "2": ["ふつかかん"],
+        "3": ["みっかかん"],
+        "4": ["よっかかん"],
+        "5": ["いつかかん"],
+        "6": ["むいかかん"],
+        "7": ["なのかかん"],
+        "8": ["ようかかん"],
+        "9": ["ここのかかん"],
+        "10": ["とおかかん"],
+        "20": ["はつかかん"]
+      },
+      "items": [
+        {"id": "ctx_days", "label_en": "length in days", "label_ja": "日数", "kana": "にっすう", "emoji": "🌅"}
+      ]
+    },
+    {
       "counter": "時間",
       "reading": "じかん",
       "group": "How long, how often",
@@ -957,7 +993,7 @@
         "1": ["いっぱく"],
         "2": ["にはく"],
         "3": ["さんぱく"],
-        "4": ["よんはく", "よんぱく"],
+        "4": ["よんはく"],
         "5": ["ごはく"],
         "6": ["ろっぱく"],
         "7": ["ななはく", "しちはく"],
@@ -965,6 +1001,7 @@
         "9": ["きゅうはく"],
         "10": ["じゅっぱく", "じっぱく"]
       },
+      "rare": {"4": ["よんぱく"]},
       "items": [
         {"id": "ctx_nights", "label_en": "nights' stay", "label_ja": "宿泊", "kana": "しゅくはく", "emoji": "🛏️"}
       ]
@@ -1027,8 +1064,8 @@
       "compound": {"1": ["いっとう"], "2": ["にとう"]},
       "confusable": ["軒", "台"],
       "readings": {
-        "1": ["いっとう", "ひとむね"],
-        "2": ["にとう", "ふたむね"],
+        "1": ["いっとう"],
+        "2": ["にとう"],
         "3": ["さんとう"],
         "4": ["よんとう"],
         "5": ["ごとう"],
@@ -1038,6 +1075,7 @@
         "9": ["きゅうとう"],
         "10": ["じゅっとう", "じっとう"]
       },
+      "rare": {"1": ["ひとむね"], "2": ["ふたむね"]},
       "items": [
         {"id": "apartment", "label_en": "apartment building", "label_ja": "アパート", "kana": "アパート", "image": "data/assets/items/apartment/apartment.png", "also": ["軒"]},
         {"id": "office_building", "label_en": "office building", "label_ja": "ビル", "kana": "ビル", "image": "data/assets/items/office_building/office_building.png"},
@@ -1074,7 +1112,7 @@
       "reading": "りょう",
       "group": "Buildings and vehicles",
       "category": "train carriages",
-      "note": "Carriages of a train. Regular readings.",
+      "note": "Carriages of a train: one 両 is one carriage, not a whole train. Regular readings.",
       "confusable": ["台", "機"],
       "readings": {
         "1": ["いちりょう"],
@@ -1089,7 +1127,7 @@
         "10": ["じゅうりょう"]
       },
       "items": [
-        {"id": "train_car", "label_en": "train carriage", "label_ja": "電車", "kana": "でんしゃ", "emoji": "🚃"},
+        {"id": "train_car", "label_en": "train carriage", "label_ja": "車両", "kana": "しゃりょう", "emoji": "🚃"},
         {"id": "tram", "label_en": "tram", "label_ja": "路面電車", "kana": "ろめんでんしゃ", "emoji": "🚋"}
       ]
     },
@@ -1098,7 +1136,7 @@
       "reading": "せき",
       "group": "Buildings and vehicles",
       "category": "large ships",
-      "note": "Ships and large boats: いっせき, はっせき, じゅっせき.",
+      "note": "Ships and larger boats: いっせき, はっせき, じゅっせき. The line between 隻 and 艘 is loose; size is only a rule of thumb.",
       "confusable": ["艘", "台", "機"],
       "readings": {
         "1": ["いっせき"],
@@ -1122,7 +1160,7 @@
       "reading": "そう",
       "group": "Buildings and vehicles",
       "category": "small boats",
-      "note": "Small boats: yachts, rowing boats, canoes.",
+      "note": "Small boats: yachts, rowing boats, canoes. 隻 is also heard for these.",
       "confusable": ["隻", "台"],
       "readings": {
         "1": ["いっそう"],
@@ -1137,8 +1175,8 @@
         "10": ["じゅっそう", "じっそう"]
       },
       "items": [
-        {"id": "yacht", "label_en": "sailing boat", "label_ja": "ヨット", "kana": "ヨット", "emoji": "⛵"},
-        {"id": "canoe", "label_en": "canoe", "label_ja": "カヌー", "kana": "カヌー", "emoji": "🛶"}
+        {"id": "yacht", "label_en": "sailing boat", "label_ja": "ヨット", "kana": "ヨット", "emoji": "⛵", "also": ["隻"]},
+        {"id": "canoe", "label_en": "canoe", "label_ja": "カヌー", "kana": "カヌー", "emoji": "🛶", "also": ["隻"]}
       ]
     },
     {
@@ -1344,15 +1382,16 @@
       "readings": {
         "1": ["ひとくみ"],
         "2": ["ふたくみ"],
-        "3": ["さんくみ", "みくみ"],
-        "4": ["よんくみ", "よくみ"],
+        "3": ["さんくみ"],
+        "4": ["よんくみ"],
         "5": ["ごくみ"],
-        "6": ["ろくくみ", "ろっくみ"],
+        "6": ["ろくくみ"],
         "7": ["ななくみ", "しちくみ"],
-        "8": ["はちくみ", "はっくみ"],
+        "8": ["はちくみ"],
         "9": ["きゅうくみ"],
-        "10": ["じゅっくみ", "じっくみ", "じゅうくみ"]
+        "10": ["じゅっくみ", "じっくみ"]
       },
+      "rare": {"3": ["みくみ"], "4": ["よくみ"], "6": ["ろっくみ"], "8": ["はっくみ"], "10": ["じゅうくみ"]},
       "items": [
         {"id": "gloves", "label_en": "pair of gloves", "label_ja": "手袋", "kana": "てぶくろ", "emoji": "🧤"},
         {"id": "cards", "label_en": "deck of cards", "label_ja": "トランプ", "kana": "トランプ", "emoji": "🃏"},
@@ -1396,7 +1435,7 @@
         "1": ["いっぱつ"],
         "2": ["にはつ"],
         "3": ["さんぱつ"],
-        "4": ["よんはつ", "よんぱつ"],
+        "4": ["よんはつ"],
         "5": ["ごはつ"],
         "6": ["ろっぱつ"],
         "7": ["ななはつ", "しちはつ"],
@@ -1404,6 +1443,7 @@
         "9": ["きゅうはつ"],
         "10": ["じゅっぱつ", "じっぱつ"]
       },
+      "rare": {"4": ["よんぱつ"]},
       "items": [
         {"id": "firework", "label_en": "firework", "label_ja": "花火", "kana": "はなび", "emoji": "🎆"}
       ]

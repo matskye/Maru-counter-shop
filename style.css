@@ -1285,7 +1285,8 @@ h1 {
 }
 
 .lesson-head .counter-kanji {
-  width: 78px;
+  min-width: 78px;
+  padding: 0 12px;
   height: 78px;
   font-size: 2.8rem;
   border-radius: 20px;
@@ -1612,7 +1613,9 @@ h1 {
 
 .counter-kanji {
   flex: none;
-  width: 48px;
+  min-width: 48px; /* grows for two-character counters such as 日間 and か月 */
+  padding: 0 8px;
+  white-space: nowrap;
   height: 48px;
   display: grid;
   place-items: center;

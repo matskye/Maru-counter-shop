@@ -7,7 +7,8 @@ import {
   romajiToHiragana, checkTypedAnswer, normalizeStats, recordResult, counterWeight, masteryLevel,
   hasNativeStem, amountText, cardIds, cardForRound, emptyProgress, normalizeProgress, nextNewCard, buildShift,
   gradeCard, counterStars, roundForCard, updateDayStreak, dueCards, BOX_HOURS,
-  maxNumber, sinoNumber, isForced, roundReadings, basicCardIds, advancedCardIds, bigNumbers, specialNumbers
+  maxNumber, sinoNumber, isForced, roundReadings, basicCardIds, advancedCardIds, bigNumbers, specialNumbers,
+  commonReadingsFor, commonReadingsForItem
 } from "../js/logic.js";
 
 const raw = JSON.parse(readFileSync(new URL("../data/counters.json", import.meta.url), "utf8"));
@@ -32,7 +33,11 @@ test("data: every counter has readings 1-10, hiragana only, and existing images"
   const labels = new Set();
   for (const c of data.counters) {
     for (let n = 1; n <= 10; n++) assert.ok(Array.isArray(c.readings[String(n)]) && c.readings[String(n)].length, `${c.counter} ${n}`);
-    for (const [n, list] of [...Object.entries(c.readings), ...Object.entries(c.compound || {})]) {
+    for (const [n, list] of Object.entries(c.rare || {})) {
+      assert.ok(c.readings[n], `${c.counter} rare ${n} needs a standard reading too`);
+      for (const r of list) assert.ok(!c.readings[n].includes(r), `${c.counter} ${n}: ${r} is listed as both common and rare`);
+    }
+    for (const [n, list] of [...Object.entries(c.readings), ...Object.entries(c.compound || {}), ...Object.entries(c.rare || {})]) {
       for (const r of list) assert.match(r, /^[ぁ-ゖ]+$/, `${c.counter} ${n}: ${r}`);
       assert.equal(new Set(list).size, list.length, `${c.counter} ${n} has duplicates`);
     }
@@ -391,4 +396,57 @@ test("forced counters: abstract ones and borrowed items", () => {
   const plain = { mode: "count", counter: C("人"), number: 2, entry: entryOf("person") };
   assert.ok(!isForced(plain));
   assert.ok(roundReadings(data, plain).includes("にめい"));
+});
+
+test("audit regressions: dates versus durations, and the standard answer key", () => {
+  // The 1st of the month is ついたち; いちにち is a length of time and belongs to 日間.
+  assert.deepEqual(readingsFor(C("日"), 1), ["ついたち"]);
+  assert.ok(soundAlikeDistractors(C("日"), 1).includes("いちにち"), "いちにち is now a wrong answer for the date");
+  assert.deepEqual(readingsFor(C("日間"), 1), ["いちにちかん", "いちにち"]);
+  const expect = {
+    日: { 14: "じゅうよっか", 20: "はつか", 24: "にじゅうよっか", 31: "さんじゅういちにち" },
+    日間: { 2: "ふつかかん", 10: "とおかかん", 11: "じゅういちにちかん", 14: "じゅうよっかかん", 20: "はつかかん", 30: "さんじゅうにちかん" },
+    人: { 1: "ひとり", 2: "ふたり", 11: "じゅういちにん", 12: "じゅうににん", 21: "にじゅういちにん" },
+    歳: { 20: "はたち" },
+    時: { 4: "よじ", 7: "しちじ", 9: "くじ" },
+    時間: { 4: "よじかん" },
+    本: { 1: "いっぽん", 3: "さんぼん" },
+    匹: { 6: "ろっぴき" },
+    階: { 3: "さんがい" },
+    杯: { 1: "いっぱい", 3: "さんばい" }
+  };
+  for (const [key, table] of Object.entries(expect)) {
+    for (const [n, reading] of Object.entries(table)) assert.equal(primaryReading(C(key), Number(n)), reading, `${n}${key}`);
+  }
+  // No supported number is ever left without a reading.
+  for (const c of data.counters) {
+    for (const n of [11, 14, 20, 21, 24, 30, 40]) {
+      if (n <= maxNumber(c)) assert.ok(readingsFor(c, n).length, `${n}${c.counter}`);
+    }
+  }
+});
+
+test("rare variants are accepted but not taught", () => {
+  const wa = C("羽");
+  assert.ok(readingsFor(wa, 3).includes("さんば"), "accepted when typed");
+  assert.deepEqual(commonReadingsFor(wa, 3), ["さんわ"], "not shown");
+  assert.ok(!soundAlikeDistractors(wa, 3).includes("さんば"), "never a wrong option");
+  assert.ok(checkTypedAnswer("mihako", readingsFor(C("箱"), 3)));
+  assert.ok(!commonReadingsFor(C("箱"), 3).includes("みはこ"));
+  const rabbit = entryOf("rabbit");
+  assert.ok(acceptedReadingsForItem(data, rabbit, 3).includes("さんば"));
+  assert.deepEqual(commonReadingsForItem(data, rabbit, 3), ["さんわ", "さんびき"]);
+  // the first-listed reading of every counter is a common one
+  for (const c of data.counters) {
+    for (let n = 1; n <= 10; n++) assert.equal(primaryReading(c, n), commonReadingsFor(c, n)[0]);
+  }
+});
+
+test("items show the unit they are counted in", () => {
+  assert.equal(entryOf("train_car").item.label_ja, "車両");
+  assert.equal(entryOf("watermelon").counter.counter, "切れ", "the picture is a slice");
+  assert.equal(entryOf("onion").counter.counter, "玉");
+  assert.equal(entryOf("paper_bag").counter.counter, "袋");
+  assert.ok(!data.allItems.some(e => e.item.id === "peanuts"));
+  assert.ok(entryOf("dango").item.label_ja.startsWith("串"));
 });

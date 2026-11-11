@@ -159,7 +159,7 @@ export const REGULARS = [
     oops: ["もう{一度|いちど}。", "Once more."],
     beats: [
       [
-        { who: "sensei", ja: "この{手紙|てがみ}、{一通|いっつう}{読|よ}んでみますか。", en: "Would you like to try reading one of these letters?" },
+        { who: "sensei", ja: "{手紙|てがみ}が{何通|なんつう}かあります。{一通|いっつう}{読|よ}んでみますか。", en: "I have a few letters here. Would you like to try reading one?" },
         { who: "narrator", en: "You can read more of it than you expected." }
       ],
       [
@@ -178,9 +178,9 @@ export const OPENING = [
   { who: "narrator", en: "A rainy evening. You duck under the awning of a tiny street stall to wait it out." },
   { who: "maru", ja: "いらっしゃいませ！", en: "Welcome!" },
   { who: "narrator", en: "The shopkeeper is a red panda in a party hat. You decide not to ask about the hat." },
-  { who: "maru", ja: "{私|わたし}はマル。{君|きみ}、{日本語|にほんご}を{勉強|べんきょう}している？", en: "I'm Maru. You're studying Japanese?" },
+  { who: "maru", ja: "{私|わたし}はマル。{日本語|にほんご}を{勉強|べんきょう}しているの？", en: "I'm Maru. Are you studying Japanese?" },
   { who: "narrator", en: "You nod, and try to buy three apples. “Apple… three… please?”" },
-  { who: "maru", ja: "りんごを{三|さん}…{何|なに}？", en: "Three… what of apples?" },
+  { who: "maru", ja: "りんごを{三|さん}…{何|なん}て{数|かぞ}えるんだっけ？", en: "Apples, three… now, how do we count those?" },
   { who: "narrator", en: "In Japanese, Maru explains, you don't just say “three”. Flat things, long things, small animals, people: each is counted in its own way." },
   { who: "maru", ja: "ここで{働|はたら}かない？{教|おし}えるよ。", en: "Why not work here? I'll teach you." },
   { who: "narrator", en: "The stall is small and the shelves are half empty, but the rain isn't stopping. You tie on an apron." },
@@ -267,7 +267,7 @@ export const CHAPTER_SCENES = {
       { who: "narrator", en: "A traveller with an enormous backpack studies the shelves, then her phrasebook, then the shelves." },
       { who: "maria", ja: "すみません。{日本語|にほんご}、まだ{下手|へた}です。", en: "Sorry. My Japanese is still bad." },
       { who: "maru", ja: "{大丈夫|だいじょうぶ}。この{人|ひと}も{勉強中|べんきょうちゅう}だよ。", en: "It's fine. This one is still learning too." },
-      { who: "maria", ja: "{日本|にほん}に{三|さん}か{月|げつ}います。", en: "I will be in Japan for three months." },
+      { who: "maria", ja: "{日本|にほん}に{三|さん}か{月|げつ}いる{予定|よてい}です。", en: "I plan to be in Japan for three months." },
       { who: "narrator", en: "How long, how many nights, how many weeks: Maria needs exactly the words you are about to learn." }
     ],
     outro: [
